@@ -1,0 +1,21 @@
+--------------------------------------------------------
+--  DDL for Sequence I2B2_TAG_ID_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "I2B2METADATA"."I2B2_TAG_ID_SEQ"  MINVALUE 1 MAXVALUE 999999999999 INCREMENT BY 1 START WITH 6 CACHE 5 NOORDER  NOCYCLE ;
+
+   --------------------------------------------------------
+--  DDL for Trigger TRG_I2B2_TAG_ID
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "I2B2METADATA"."TRG_I2B2_TAG_ID" 
+before insert on "I2B2_TAGS"    
+for each row begin     
+  if inserting then       
+    if :NEW."TAG_ID" is null then          
+      select I2B2_TAG_ID_SEQ.nextval into :NEW."TAG_ID" from dual;       
+    end if;    
+  end if; 
+end;
+/
+ALTER TRIGGER "I2B2METADATA"."TRG_I2B2_TAG_ID" ENABLE;
