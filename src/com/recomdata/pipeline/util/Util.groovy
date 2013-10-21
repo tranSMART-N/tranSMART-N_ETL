@@ -1,37 +1,18 @@
-/*************************************************************************
- * tranSMART - translational medicine data mart
- * 
- * Copyright 2008-2012 Janssen Research & Development, LLC.
- * 
- * This product includes software developed at Janssen Research & Development, LLC.
- * 
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
- * as published by the Free Software  * Foundation, either version 3 of the License, or (at your option) any later version, along with the following terms:
- * 1.	You may convey a work based on this program in accordance with section 5, provided that you retain the above notices.
- * 2.	You may convey verbatim copies of this program code as you receive it, in any medium, provided that you retain the above notices.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS    * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- *
- ******************************************************************/
-  
-
 package com.recomdata.pipeline.util
-
 import groovy.sql.Sql
-import java.io.IOException;
-import java.sql.SQLClientInfoException;
-import java.util.Properties;
-
-import org.apache.log4j.Logger;
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
 
 class Util {
 
 	private static final long MEGABYTE = 1024L * 1024L;
-
+	
 	private static final Logger log = Logger.getLogger(Util)
+
+	Util(Level logLevel){
+		log.setLevel(logLevel)
+	}
+
 
 	/**
 	 * load and combine common.properties with data specific property file
@@ -48,19 +29,14 @@ class Util {
 		fis.close();
 		def common = new ConfigSlurper().parse(prop1)
 
-		def config
-		if(file.equals("")){
-			config = common
-		}else{
-			Properties prop2 = new Properties();
-			FileInputStream fism = new FileInputStream(file);
-			prop2.load(fism);
-			fism.close();
-			def module = new ConfigSlurper().parse(prop2)
-
-			config = common.merge(module)
-		}
-
+		Properties prop2 = new Properties();
+		FileInputStream fism = new FileInputStream(file);
+		prop2.load(fism);
+		fism.close();
+		def module = new ConfigSlurper().parse(prop2)
+		
+		def config = common.merge(module)
+		
 		return config.toProperties()
 	}
 
@@ -225,22 +201,22 @@ class Util {
 		}
 	}
 
-
+	
 	public static long bytesToMegabytes(long bytes) {
 		return bytes / MEGABYTE;
 	}
-
-
+	
+	
 	static String getMemoryUsage(Runtime runtime){
 		// Run the garbage collector
 		runtime.gc();
-
+		
 		// Calculate the used memory
 		long memory = runtime.totalMemory() - runtime.freeMemory();
-
+		
 		return "JVM Memory Usage: Total: ${bytesToMegabytes(runtime.totalMemory())}MB; Free: ${bytesToMegabytes(runtime.freeMemory())}MB; Used: ${bytesToMegabytes(memory)}MB"
 	}
-
+	
 
 	static List getChromosomeList(){
 		List chrs = []
@@ -437,4 +413,23 @@ class Util {
 		log.info "End creating the table $projectInfoTable ... "
 	}
 
+    /**
+     *  get Netezza's current schema
+     *
+     * @param sql
+     * @return  the name of current schema
+     */
+    static String getNetezzaCurrentSchema(Sql sql) {
+        return sql.firstRow("select current_schema")[0]
+    }
+
+    /**
+     * extract database type info from JDBC URL
+     *
+     * @param props
+     * @return
+     */
+    static String getDatabaseType(Properties props){
+        return props.("url").split(":")[1].toString().toLowerCase()
+    }
 }
