@@ -1,13 +1,7 @@
-set define off;
-create or replace
-PROCEDURE      "TM_CZ"."I2B2_ADD_NODE" 
-(
-  TrialID VARCHAR2,
-  path VARCHAR2,
-  path_name VARCHAR2
- ,currentJobID NUMBER := null
-) AUTHID CURRENT_USER
-AS
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_ADD_NODE(CHARACTER VARYING(50), CHARACTER VARYING(2000), CHARACTER VARYING(500), BIGINT)
+RETURNS CHARACTER VARYING(ANY)
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
 /*************************************************************************
 * Copyright 2008-2012 Janssen Research & Development, LLC.
 *
@@ -23,143 +17,139 @@ AS
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************/
-  
-  root_node		varchar2(2000);
-  root_level	int;
-  
+Declare
+	--	Alias for parameters
+	TrialID 		alias for $1;
+	input_path 		alias for $2;
+	path_name		alias for $3;
+	currentJobID 	alias for $4;
+ 
+  root_node		varchar(2000);
+  root_level	int4;
+  etlDate		timestamp;
   
   --Audit variables
-  newJobFlag INTEGER(1);
+  newJobFlag int4;
   databaseName VARCHAR(100);
   procedureName VARCHAR(100);
-  jobID number(18,0);
-  stepCt number(18,0);
+  jobID numeric(18,0);
+  stepCt numeric(18,0);
   
 BEGIN
     
-  stepCt := 0;
+	stepCt := 0;
+	select now() into etlDate;
 	
-  --Set Audit Parameters
-  newJobFlag := 0; -- False (Default)
-  jobID := currentJobID;
+	--Set Audit Parameters
+	newJobFlag := 0; -- False (Default)
+	jobID := currentJobID;
 
-  SELECT sys_context('USERENV', 'CURRENT_SCHEMA') INTO databaseName FROM dual;
-  procedureName := $$PLSQL_UNIT;
+	databaseName := 'TM_CZ';
+	procedureName := 'I2B2_ADD_NODE';
   
-	select parse_nth_value(path, 2, '\') into root_node from dual;
+	select tm_cz.parse_nth_value(input_path, 2, '\') into root_node from dual;
 	
 	select c_hlevel into root_level
-	from table_access
+	from i2b2metadata.table_access
 	where c_name = root_node;
 
-  --Audit JOB Initialization
-  --If Job ID does not exist, then this is a single procedure run and we need to create it
-  IF(jobID IS NULL or jobID < 1)
-  THEN
-    newJobFlag := 1; -- True
-    czx_start_audit (procedureName, databaseName, jobID);
-  END IF;
+	--Audit JOB Initialization
+	--If Job ID does not exist, then this is a single procedure run and we need to create it
+	IF(jobID IS NULL or jobID < 1)
+	THEN
+		newJobFlag := 1; -- True
+		--select czx_start_audit (procedureName, databaseName) into jobId;
+	END IF;
   
-  if path = ''  or path = '%' or path_name = ''
-  then 
-  	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Missing path or name - path:' || path || ' name: ' || path_name,SQL%ROWCOUNT,stepCt,'Done');
-  else
-  /*
-    --Delete existing node.
-    --I2B2
-    DELETE 
-      FROM OBSERVATION_FACT 
-    WHERE 
-      concept_cd IN (SELECT C_BASECODE FROM I2B2 WHERE C_FULLNAME = PATH);
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Deleted any concepts for path from I2B2DEMODATA observation_fact',SQL%ROWCOUNT,stepCt,'Done');
-    COMMIT;
-
-      --CONCEPT DIMENSION
-    DELETE 
-      FROM CONCEPT_DIMENSION
-    WHERE 
-      CONCEPT_PATH = path;
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Deleted any concepts for path from I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
-    COMMIT;
+	if input_path = ''  or input_path = '%' or path_name = ''
+	then 
+		stepCt := stepCt + 1;
+		--call czx_write_audit(jobId,databaseName,procedureName,'Missing path or name - path:' || input_path || ' name: ' || path_name,SQL%ROWCOUNT,stepCt,'Done');
+	else
+		--CONCEPT DIMENSION
+		insert into i2b2demodata.concept_dimension
+		(concept_cd
+		,concept_path
+		,name_char
+		,update_date
+		,download_date
+		,mport_date
+		,ourcesystem_cd
+		)
+		select next value for i2b2demodata.concept_id::varchar
+			  ,input_path,
+			  ,to_char(path_name)
+			  ,etlDate,
+			  ,etlDate,
+			  ,etlDate,
+			  ,TrialID
+		where not exists (select 1 from i2b2demodata.concept_dimension x where input_path = x.concept_path);
+		stepCt := stepCt + 1;
+		--call czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
     
-      --I2B2
-      DELETE
-        FROM i2b2
-      WHERE 
-        C_FULLNAME = PATH;
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Deleted path from I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
-    COMMIT;
-   */ 
-      --CONCEPT DIMENSION
-    INSERT INTO CONCEPT_DIMENSION
-      (CONCEPT_CD, CONCEPT_PATH, NAME_CHAR,  UPDATE_DATE,  DOWNLOAD_DATE, IMPORT_DATE, SOURCESYSTEM_CD)
-    select
-      concept_id.nextval,
-      path,
-      to_char(path_name),
-      sysdate,
-      sysdate,
-      sysdate,
-      TrialID
-	  from dual
-	  where not exists (select 1 from concept_dimension x where path = x.concept_path);
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
-    COMMIT;
-    
-    --I2B2
-    INSERT
-     INTO I2B2
-      (c_hlevel, C_FULLNAME, C_NAME, C_VISUALATTRIBUTES, c_synonym_cd, C_FACTTABLECOLUMN, C_TABLENAME, C_COLUMNNAME,
-      C_DIMCODE, C_TOOLTIP, UPDATE_DATE, DOWNLOAD_DATE, IMPORT_DATE, SOURCESYSTEM_CD, c_basecode, C_OPERATOR, c_columndatatype, c_comment,
-	  i2b2_id, m_applied_path)
-    SELECT 
-      (length(concept_path) - nvl(length(replace(concept_path, '\')),0)) / length('\') - 2 + root_level,
-      CONCEPT_PATH,
-      NAME_CHAR,
-      'FA',
-      'N',
-      'CONCEPT_CD',
-      'CONCEPT_DIMENSION',
-      'CONCEPT_PATH',
-      CONCEPT_PATH,
-      CONCEPT_PATH,
-      sysdate,
-      sysdate,
-      sysdate,
-      SOURCESYSTEM_CD,
-      CONCEPT_CD,
-      'LIKE',
-      'T',
-      decode(TrialID,null,null,'trial:' || TrialID),
-	  i2b2_id_seq.nextval,
-	  '@'
-    FROM
-      CONCEPT_DIMENSION
-    WHERE 
-      CONCEPT_PATH = path
-	  and not exists
-		  (select 1 from i2b2 x where path = x.c_fullname);
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
-    COMMIT;
-	  END IF;
+		--I2B2
+		insert into i2b2metadata.i2b2
+		(c_hlevel
+		,c_fullname
+		,c_name
+		,c_visualattributes
+		,c_synonym_cd
+		,c_facttablecolumn
+		,c_tablename
+		,c_columnname
+		,c_dimcode
+		,c_tooltip
+		,update_date
+		,download_date
+		,import_date
+		,sourcesystem_cd
+		,c_basecode
+		,c_operator
+		,c_columndatatype
+		,c_comment
+		,m_applied_path
+		)
+		select (length(concept_path) - coalesce(length(replace(concept_path, '\')),0)) / length('\') - 2 + root_level
+			  ,concept_path
+			  ,name_char
+			  ,'FA'
+			  ,'N'
+			  ,'CONCEPT_CD'
+			  ,'CONCEPT_DIMENSION'
+			  ,'CONCEPT_PATH'
+			  ,concept_path
+			  ,concept_path
+			  ,etldate
+			  ,etldate
+			  ,etldate
+			  ,sourcesystem_cd
+			  ,concept_cd
+			  ,'LIKE'
+			  ,'T'
+			  ,case when TrialID is null then null else 'trial:' || TrialID end
+			  ,'@'
+		from i2b2demodata.concept_dimension
+		where concept_path = input_path
+		  and not exists
+			 (select 1 from i2b2metadata.i2b2 x where input_path = x.c_fullname);
+		stepCt := stepCt + 1;
+		--call czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
+	end if;
+	
       ---Cleanup OVERALL JOB if this proc is being run standalone
-  IF newJobFlag = 1
-  THEN
-    czx_end_audit (jobID, 'SUCCESS');
-  END IF;
+	if newjobflag = 1
+	then
+		--call czx_end_audit (jobID, 'SUCCESS');
+	end if;
 
-  EXCEPTION
-  WHEN OTHERS THEN
-    --Handle errors.
-    czx_error_handler (jobID, procedureName);
-    --End Proc
-    czx_end_audit (jobID, 'FAIL');
+	exception
+	when others then
+		raise notice 'error: %', SQLERRM;
+		--Handle errors.
+		--call czx_error_handler (jobID, procedureName);
+		--End Proc
+		--call czx_end_audit (jobID, 'FAIL');
 
-  
 END;
+END_PROC;
+

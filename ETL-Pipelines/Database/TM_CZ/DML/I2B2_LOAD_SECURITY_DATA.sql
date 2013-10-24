@@ -1,9 +1,7 @@
-set define off;
-  CREATE OR REPLACE PROCEDURE "TM_CZ"."I2B2_LOAD_SECURITY_DATA" 
-(
-  currentJobID NUMBER := null
-) AUTHID CURRENT_USER
-AS
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_LOAD_SECURITY_DATA(NUMERIC(18,0))
+RETURNS NUMERIC
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
 /*************************************************************************
 * Copyright 2008-2012 Janssen Research & Development, LLC.
 *
@@ -19,39 +17,46 @@ AS
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************/
-
+Declare
+	--	Alias for parameters
+	currentJobID alias for $1;
+	
   --Audit variables
-  newJobFlag INTEGER(1);
+  newJobFlag int4;
   databaseName VARCHAR(100);
   procedureName VARCHAR(100);
-  jobID number(18,0);
-  stepCt number(18,0);
+  jobID numeric(18,0);
+  stepCt numeric(18,0);
   
-  secNodeExists		int;
+  secNodeExists		int4;
+  etlDate			timestamp;
+  bslash			char(1);
 
 BEGIN
 
   --Set Audit Parameters
   newJobFlag := 0; -- False (Default)
   jobID := currentJobID;
+  select now() into etlDate;
+  bslash := '\\';
 
-  SELECT sys_context('USERENV', 'CURRENT_SCHEMA') INTO databaseName FROM dual;
-  procedureName := $$PLSQL_UNIT;
+  databaseName := 'TM_CZ';
+  procedureName := 'I2B2_LOAD_SECURITY_DATA';
 
   --Audit JOB Initialization
   --If Job ID does not exist, then this is a single procedure run and we need to create it
   IF(jobID IS NULL or jobID < 1)
   THEN
     newJobFlag := 1; -- True
-    czx_start_audit (procedureName, databaseName, jobID);
+    --select tm_cz.czx_start_audit (procedureName, databaseName) into jobID;
   END IF;
 
   stepCt := 0;
 
-  Execute immediate ('truncate table I2B2METADATA.i2b2_secure');
+  Execute immediate 'truncate table I2B2METADATA.i2b2_secure';
 
   stepCt := stepCt + 1;
-  czx_write_audit(jobId,databaseName,procedureName,'Truncate I2B2METADATA i2b2_secure',0,stepCt,'Done');
+  --call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Truncate I2B2METADATA i2b2_secure',0,stepCt,'Done');
 
   insert into I2B2METADATA.i2b2_secure(
     C_HLEVEL,
@@ -100,20 +105,19 @@ BEGIN
     b.VALUETYPE_CD,
 	coalesce(f.tval_char,'EXP:PUBLIC')
     from I2B2METADATA.I2B2 b
-		,(select distinct case when sourcesystem_cd like '%:%' then substr(sourcesystem_cd,1,instr(sourcesystem_cd,':')-1)
+	left outer join (select distinct case when sourcesystem_cd like '%:%' then substr(sourcesystem_cd,1,instr(sourcesystem_cd,':')-1)
 							   else sourcesystem_cd end as sourcesystem_cd
-				,tval_char from observation_fact where concept_cd = 'SECURITY') f
-	where b.sourcesystem_cd = f.sourcesystem_cd(+);
+				,tval_char from i2b2demodata.observation_fact where concept_cd = 'SECURITY') f
+	on b.sourcesystem_cd = f.sourcesystem_cd;
     stepCt := stepCt + 1;
-    czx_write_audit(jobId,databaseName,procedureName,'Insert security data into I2B2METADATA i2b2_secure',SQL%ROWCOUNT,stepCt,'Done');
-    commit;
+    --czx_write_audit(jobId,databaseName,procedureName,'Insert security data into I2B2METADATA i2b2_secure',SQL%ROWCOUNT,stepCt,'Done');
 	
 	--	check if SECURITY node exists in i2b2
-	
+
 	select count(*) into secNodeExists
 	from i2b2metadata.i2b2
-	where c_fullname = '\Public Studies\SECURITY\';
-	
+	where c_fullname = bslash || 'Public Studies' || bslash || 'SECURITY' || bslash;
+
 	if secNodeExists = 0 then
 		insert into i2b2metadata.i2b2
 		(c_hlevel
@@ -137,10 +141,10 @@ BEGIN
 		,import_date
 		,sourcesystem_cd
 		,valuetype_cd
-		,i2b2_id
+		,m_applied_path
 		)
 		select 1 as c_hlevel
-			  ,'\Public Studies\SECURITY\' as c_fullname
+			  ,bslash || 'Public Studies' || bslash || 'SECURITY' || bslash as c_fullname
 			  ,'SECURITY' as c_name
 			  ,'N' as c_synonym_cd
 			  ,'CA' as c_visualattributes
@@ -152,27 +156,25 @@ BEGIN
 			  ,'concept_path' as c_columnname
 			  ,'T' as c_columndatatype
 			  ,'LIKE' as c_operator
-			  ,'\Public Studies\SECURITY\' as c_dimcode
+			  ,bslash || 'Public Studies' || bslash || 'SECURITY' || bslash as c_dimcode
 			  ,null as c_comment
-			  ,'\Public Studies\SECURITY\' as c_tooltip
-			  ,sysdate as update_date
+			  ,bslash || 'Public Studies' || bslash || 'SECURITY' || bslash as c_tooltip
+			  ,etlDate as update_date
 			  ,null as download_date
-			  ,sysdate as import_date
+			  ,etlDate as import_date
 			  ,null as sourcesystem_cd
 			  ,null as valuetype_cd
-			  ,I2B2_ID_SEQ.nextval as i2b2_id
-		from dual;
+			  ,'@' as m_applied_path;
 			  
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to i2b2',SQL%ROWCOUNT,stepCt,'Done');
-		COMMIT;	
+		--call czx_write_audit(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to i2b2',SQL%ROWCOUNT,stepCt,'Done');	
 	end if;
 
 	--	check if SECURITY node exists in concept_dimension
 	
 	select count(*) into secNodeExists
 	from i2b2demodata.concept_dimension
-	where concept_path = '\Public Studies\SECURITY\';
+	where concept_path = bslash || 'Public Studies' || bslash || 'SECURITY' || bslash;
 	
 	if secNodeExists = 0 then
 		insert into i2b2demodata.concept_dimension
@@ -185,29 +187,30 @@ BEGIN
 		,sourcesystem_cd
 		)
 		select 'SECURITY'
-			 ,'\Public Studies\SECURITY\'
+			 ,bslash || 'Public Studies' || bslash || 'SECURITY' || bslash
 			 ,'SECURITY'
-			 ,sysdate
-			 ,sysdate
-			 ,sysdate
-			 ,null
-		from dual;
+			 ,etlDate
+			 ,etlDate
+			 ,etlDate
+			 ,null;
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
-		commit;
+		--call czx_write_audit(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
 	end if;
-	
+
     ---Cleanup OVERALL JOB if this proc is being run standalone
 	IF newJobFlag = 1
 	THEN
-	czx_end_audit (jobID, 'SUCCESS');
+		--call czx_end_audit (jobID, 'SUCCESS');
 	END IF;
 
 	EXCEPTION
 	WHEN OTHERS THEN
+		raise notice 'error: %', SQLERRM;
 		--Handle errors.
-		czx_error_handler (jobID, procedureName);
+		--call czx_error_handler (jobID, procedureName);
 		--End Proc
-		czx_end_audit (jobID, 'FAIL');
+		--call czx_end_audit (jobID, 'FAIL');
 
 end;
+END_PROC;
+

@@ -1,11 +1,7 @@
-set define off;
-CREATE OR REPLACE PROCEDURE "I2B2_CREATE_SECURITY_FOR_TRIAL" 
-(
-  trial_id VARCHAR2
- ,secured_study varchar2 := 'N'
- ,currentJobID NUMBER := null
-) AUTHID CURRENT_USER
-AS
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_CREATE_SECURITY_FOR_TRIAL(CHARACTER VARYING(50), CHARACTER VARYING(10), BIGINT)
+RETURNS CHARACTER VARYING(ANY)
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
 /*************************************************************************
 * Copyright 2008-2012 Janssen Research and Development, LLC.
 *
@@ -21,39 +17,46 @@ AS
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************/
-
-	TrialID 			varchar2(100);
-	securedStudy 		varchar2(5);
-	pExists				int;
-	v_bio_experiment_id	number(18,0);
-	etlDate				date;
-	v_sso_id			number(18,0);
+Declare
+	--	Alias for parameters
+	trial_id alias for $1;
+	secured_study alias for $2;
+	currentJobID alias for $3;
+ 
+	TrialID 			varchar(100);
+	securedStudy 		varchar(5);
+	pExists				int4;
+	v_bio_experiment_id	numeric(18,0);
+	etlDate				timestamp;
+	v_sso_id			numeric(18,0);
+	bslash				char(1);
   
 	--Audit variables
-	newJobFlag INTEGER(1);
+	newJobFlag int4;
 	databaseName VARCHAR(100);
 	procedureName VARCHAR(100);
-	jobID number(18,0);
-	stepCt number(18,0);
+	jobID numeric(18,0);
+	stepCt numeric(18,0);
 
 BEGIN
 	TrialID := trial_id;
 	securedStudy := secured_study;
-	select etlDate into etlDate from dual;
+	select now() into etlDate;
+	bslash := '\\';
   
 	--Set Audit Parameters
 	newJobFlag := 0; -- False (Default)
 	jobID := currentJobID;
 
-	SELECT sys_context('USERENV', 'CURRENT_SCHEMA') INTO databaseName FROM dual;
-	procedureName := $$PLSQL_UNIT;
+	databaseName := 'TM_CZ';
+	procedureName := 'I2B2_CREATE_SECURITY_FOR_TRIAL';
 
 	--Audit JOB Initialization
 	--If Job ID does not exist, then this is a single procedure run and we need to create it
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		czx_start_audit (procedureName, databaseName, jobID);
+		--select tm_cz.czx_start_audit (procedureName, databaseName) into jobID;
 	END IF;
   
 	stepCt := 0;
@@ -64,9 +67,7 @@ BEGIN
 			   else modifier_cd end = TrialId
 	  and concept_cd = 'SECURITY';
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Delete security records for trial from I2B2DEMODATA observation_fact',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;
+	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete security records for trial from I2B2DEMODATA observation_fact',SQL%ROWCOUNT,stepCt,'Done');
 
 	insert into i2b2demodata.observation_fact
     (patient_num
@@ -88,7 +89,7 @@ BEGIN
 		  ,'@'
 		  ,'@'
 		  ,'T'
-		  ,decode(securedStudy,'N','EXP:PUBLIC','EXP:' || trialID)
+		  ,case when securedStudy = 'N' then 'EXP:PUBLIC' else 'EXP:' || trialID end
 		  ,'@'
 		  ,'@'
 		  ,etlDate
@@ -96,21 +97,17 @@ BEGIN
 		  ,etlDate
 		  ,TrialId
 		  ,1
-	from patient_dimension
+	from i2b2demodata.patient_dimension
 	where sourcesystem_cd like TrialID || ':%';
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert security records for trial from I2B2DEMODATA observation_fact',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;
+	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert security records for trial from I2B2DEMODATA observation_fact',SQL%ROWCOUNT,stepCt,'Done');
 	
 	--	insert patients to patient_trial table
 	
-	delete from patient_trial
+	delete from i2b2demodata.patient_trial
 	where trial  = TrialID;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Delete data for trial from I2B2DEMODATA patient_trial',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;
+	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete data for trial from I2B2DEMODATA patient_trial',SQL%ROWCOUNT,stepCt,'Done');
   
 	insert into i2b2demodata.patient_trial
 	(patient_num
@@ -119,12 +116,11 @@ BEGIN
 	)
 	select patient_num, 
 		   TrialID,
-		   decode(securedStudy,'Y','EXP:' || TrialID,'EXP:PUBLIC')
-	from patient_dimension
+		   case when securedStudy = 'Y' then 'EXP:' || TrialID else 'EXP:PUBLIC' end
+	from i2b2demodata.patient_dimension
 	where sourcesystem_cd like TrialID || ':%';
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert data for trial into I2B2DEMODATA patient_trial',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert data for trial into I2B2DEMODATA patient_trial',SQL%ROWCOUNT,stepCt,'Done');
 	
 	--	if secure study, then create bio_experiment record if needed and insert to search_secured_object
 	
@@ -144,11 +140,9 @@ BEGIN
 				(title, accession, etl_id)
 				select 'Metadata not available'
 					  ,TrialId
-					  ,'METADATA:' || TrialId
-				from dual;
+					  ,'METADATA:' || TrialId;
 				stepCt := stepCt + 1;
-				czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into biomart.bio_experiment',SQL%ROWCOUNT,stepCt,'Done');
-				commit;
+				--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into biomart.bio_experiment',SQL%ROWCOUNT,stepCt,'Done');
 			end if;
 			
 			select bio_experiment_id into v_bio_experiment_id
@@ -162,7 +156,7 @@ BEGIN
 			,bio_data_unique_id
 			)
 			select v_bio_experiment_id
-				  ,parse_nth_value(md.c_fullname,2,'\') || ' - ' || md.c_name as display_name
+				  ,tm_cz.parse_nth_value(md.c_fullname,2,bslash) || ' - ' || md.c_name as display_name
 				  ,'EXPERIMENT' as data_type
 				  ,'EXP:' || TrialId as bio_data_unique_id
 			from i2b2metadata.i2b2 md
@@ -174,8 +168,7 @@ BEGIN
 				 (select 1 from searchapp.search_secure_object so
 				  where v_bio_experiment_id = so.bio_data_id);
 			stepCt := stepCt + 1;
-			czx_write_audit(jobId,databaseName,procedureName,'Inserted trial/study into SEARCHAPP search_secure_object',SQL%ROWCOUNT,stepCt,'Done');
-			commit;
+			-- call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted trial/study into SEARCHAPP search_secure_object',SQL%ROWCOUNT,stepCt,'Done');
 		end if;
 	else
 		--	if securedStudy = N, delete entry from searchapp.search_secure_object
@@ -189,40 +182,38 @@ BEGIN
 			delete from searchapp.search_auth_sec_object_access
 			where secure_object_id = v_sso_id;
 			stepCt := stepCt + 1;
-			czx_write_audit(jobId,databaseName,procedureName,'Removed study secure object id from search_auth_sec_object_access',1,stepCt,'Done');
-			commit;
+			--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Removed study secure object id from search_auth_sec_object_access',1,stepCt,'Done');
 		
 			--	delete security links between users and study
 		
 			delete from searchapp.search_auth_user_sec_access
 			where search_secure_object_id = v_sso_id;
 			stepCt := stepCt + 1;
-			czx_write_audit(jobId,databaseName,procedureName,'Removed study secure object id from search_auth_user_sec_access',1,stepCt,'Done');
-			commit;
+			-- call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Removed study secure object id from search_auth_user_sec_access',1,stepCt,'Done');
 
 			--	delete search_secure_object
 			
 			delete from searchapp.search_secure_object
 			where bio_data_unique_id = 'EXP:' || TrialId;
 			stepCt := stepCt + 1;
-			czx_write_audit(jobId,databaseName,procedureName,'Deleted trial/study from SEARCHAPP search_secure_object',SQL%ROWCOUNT,stepCt,'Done');
-			commit;
+			--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Deleted trial/study from SEARCHAPP search_secure_object',SQL%ROWCOUNT,stepCt,'Done');
 		end if;		
 	end if;
      
     ---Cleanup OVERALL JOB if this proc is being run standalone
-  IF newJobFlag = 1
-  THEN
-    czx_end_audit (jobID, 'SUCCESS');
-  END IF;
+	IF newJobFlag = 1
+	THEN
+		--call tm_cz.czx_end_audit (jobID, 'SUCCESS');
+	END IF;
 
-  EXCEPTION
-  WHEN OTHERS THEN
-    --Handle errors.
-    czx_error_handler (jobID, procedureName);
-    --End Proc
-    czx_end_audit (jobID, 'FAIL');
+	EXCEPTION
+	WHEN OTHERS THEN
+		raise notice 'error: %', SQLERRM;
+		--Handle errors.
+		--call tm_cz.czx_error_handler (jobID, procedureName);
+		--End Proc
+		--call tm_cz.czx_end_audit (jobID, 'FAIL');
 	
 END;
+END_PROC;
 
- 

@@ -1,12 +1,7 @@
-set define off;
-create or replace
-PROCEDURE         "I2B2_FILL_IN_TREE" 
-(
-  trial_id VARCHAR2
- ,input_path VARCHAR2
- ,currentJobID NUMBER := null
-) AUTHID CURRENT_USER
-AS
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_FILL_IN_TREE(CHARACTER VARYING(50), CHARACTER VARYING(500), BIGINT)
+RETURNS CHARACTER VARYING(ANY)
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
 /*************************************************************************
 * Copyright 2008-2012 Janssen Research & Development, LLC.
 *
@@ -22,86 +17,89 @@ AS
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************/
-  TrialID varchar2(100);
+Declare
+	--	Alias for parameters
+	trial_id alias for $1;
+	input_path alias for $2;
+	currentJobID alias for $3;
+ 
+	TrialID varchar(100);
   
     --Audit variables
-	newJobFlag INTEGER(1);
+	newJobFlag int4;
 	databaseName VARCHAR(100);
 	procedureName VARCHAR(100);
-	jobID number(18,0);
-	stepCt number(18,0);
+	jobID numeric(18,0);
+	stepCt numeric(18,0);
   
-	auditText 	varchar2(4000);
-	etlDate		date;
-	root_level	int;
-	curr_node	varchar2(700);
-	node_name	varchar2(700);
-	v_count		NUMBER;
-  
-	--Get the nodes
-	CURSOR cNodes is
-		--Trimming off the last node as it would never need to be added.
-		select distinct substr(c_fullname, 1,instr(c_fullname,'\',-2,1)) as c_fullname
-		from i2b2 
-		where c_fullname like input_path || '%'
-		union
-		--	add input_path if filling in upper-level nodes only
-		select input_path as c_fullname from dual;
-		--  and c_visualattributes like 'L%';
-		--  and c_hlevel > = 2;
+	auditText 	varchar(4000);
+	etlDate		timestamp;
+	root_level	int4;
+	curr_node	varchar(700);
+	node_name	varchar(700);
+	v_count		int8;
+	bslash		char(1);
+	v_concept_id	bigint;
+	
+	r_cNodes	record;
   
 BEGIN
 	TrialID := upper(trial_id);
   
     stepCt := 0;
-	select sysdate into etlDate from dual;
+	select now() into etlDate;
+	bslash := '\\';
 	
 	--Set Audit Parameters
 	newJobFlag := 0; -- False (Default)
 	jobID := currentJobID;
 
-	SELECT sys_context('USERENV', 'CURRENT_SCHEMA') INTO databaseName FROM dual;
-	procedureName := $$PLSQL_UNIT;
+	databaseName := 'TM_CZ';
+	procedureName := 'I2B2_FILL_IN_TREE';
 
 	--Audit JOB Initialization
 	--If Job ID does not exist, then this is a single procedure run and we need to create it
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		czx_start_audit (procedureName, databaseName, jobID);
+		--select czx_start_audit (procedureName, databaseName) into jobId;
 	END IF;
   
-  	select parse_nth_value(input_path, 2, '\') into curr_node from dual;
+  	curr_node := tm_cz.parse_nth_value(input_path, 2, bslash);
 	
 	select c_hlevel into root_level
-	from table_access
+	from i2b2metadata.table_access
 	where c_name = curr_node;
 	
 	--start node with the first slash
 	
-	execute immediate('truncate table tm_wz.wt_folder_nodes');
+	execute immediate 'truncate table tm_wz.wt_folder_nodes';
  
 	--Iterate through each node
-	FOR r_cNodes in cNodes Loop
-		--Determine how many nodes there are and iterate through
-    
-		for loop_counter in 1 .. (length(r_cNodes.c_fullname) - nvl(length(replace(r_cNodes.c_fullname, '\')),0)) / length('\')
+	FOR r_cNodes in	
+		select distinct substr(c_fullname, 1,instr(c_fullname,bslash,-2,1)) as c_fullname
+		from i2b2metadata.i2b2 
+		where c_fullname like input_path || '%'
+		union
+		--	add input_path if filling in upper-level nodes only
+		select input_path as c_fullname
+	loop
+		for loop_counter in 1 .. (length(r_cNodes.c_fullname) - coalesce(length(replace(r_cNodes.c_fullname, bslash,'')),0)) / length(bslash)
 		LOOP
 			--Determine Node:
-			curr_node := substr(r_cNodes.c_fullname,1,instr(r_cNodes.c_fullname,'\',-1,loop_counter));	
-			if curr_node is not null and curr_node != '\' then
+			curr_node := substr(r_cNodes.c_fullname,1,instr(r_cNodes.c_fullname,bslash,-1,loop_counter));	
+			node_name := tm_cz.parse_nth_value(curr_node,length(curr_node)-length(replace(curr_node,bslash,'')),bslash);
+			if curr_node is not null and curr_node != bslash then
 				insert into tm_wz.wt_folder_nodes
-				(folder_path)
-				values(curr_node);
+				(folder_path,folder_name)
+				values(curr_node,node_name);
 			end if;
 		end loop;
-	end loop;
-		
-	commit;
+	end loop;	
 			
 	--	bulk insert concept_dimension records
-		
-	insert into concept_dimension
+	
+	insert into i2b2demodata.concept_dimension
 	(concept_cd
 	,concept_path
 	,name_char
@@ -109,23 +107,22 @@ BEGIN
 	,download_date
 	,import_date
 	,sourcesystem_cd)
-	Select concept_id.nextval
-		  ,y.folder_path
-		  ,parse_nth_value(y.folder_path,length(y.folder_path)-length(replace(y.folder_path,'\',null)),'\')
+	Select next value for i2b2demodata.concept_id
+	      ,folder_path
+		  ,folder_name
 		  ,etlDate
 		  ,etlDate
 		  ,etlDate
 		  ,TrialID
-	from (select distinct folder_path from tm_wz.wt_folder_nodes x
+	from (select distinct folder_path, folder_name from tm_wz.wt_folder_nodes
 		  where not exists
-			   (select 1 from concept_dimension cd where x.folder_path = cd.concept_path)) y ;
+			   (select 1 from i2b2demodata.concept_dimension cd where folder_path = cd.concept_path)) y ;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
-	COMMIT;
+	--call czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
     
 	--	bulk insert the i2b2 records
-	
-	insert into i2b2
+	raise notice 'before i2b2';
+	insert into i2b2metadata.i2b2
 	(c_hlevel
 	,c_fullname
 	,c_name
@@ -144,9 +141,8 @@ BEGIN
 	,c_operator
 	,c_columndatatype
 	,c_comment
-	,i2b2_id
 	,m_applied_path)
-    select (length(concept_path) - nvl(length(replace(concept_path, '\')),0)) / length('\') - 2 + root_level
+    select (length(concept_path) - coalesce(length(replace(concept_path, bslash, '')),0)) / length(bslash) - 2 + root_level
 		  ,concept_path
 		  ,name_char
 		  ,'FA'
@@ -163,29 +159,30 @@ BEGIN
 		  ,concept_cd
 		  ,'LIKE'
 		  ,'T'
-		  ,decode(TrialID,null,null,'trial:' || TrialID)
-		  ,i2b2_id_seq.nextval
+		  ,case when TrialID is null then null else 'trial:' || TrialID end
 		  ,'@'
-    from concept_dimension cd
+    from i2b2demodata.concept_dimension cd
     where cd.concept_path in (select distinct folder_path from tm_wz.wt_folder_nodes)
 	  and not exists
-		  (select 1 from i2b2 x
+		  (select 1 from i2b2metadata.i2b2 x
 		   where cd.concept_path = x.c_fullname);
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
-    COMMIT;
+	--call czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
 
       ---Cleanup OVERALL JOB if this proc is being run standalone
-  IF newJobFlag = 1
-  THEN
-    czx_end_audit (jobID, 'SUCCESS');
-  END IF;
+	IF newJobFlag = 1
+	THEN
+		--call czx_end_audit (jobID, 'SUCCESS');
+	END IF;
 
-  EXCEPTION
-  WHEN OTHERS THEN
-    --Handle errors.
-    czx_error_handler (jobID, procedureName);
-    --End Proc
-    czx_end_audit (jobID, 'FAIL');
+	EXCEPTION
+	WHEN OTHERS THEN
+		raise notice 'error: %', SQLERRM;
+		--Handle errors.
+		--call czx_error_handler (jobID, procedureName);
+		--End Proc
+		--call czx_end_audit (jobID, 'FAIL');
 	
 END;
+END_PROC;
+

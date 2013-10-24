@@ -1,9 +1,8 @@
-set define off;
-CREATE OR REPLACE FUNCTION "PARSE_NTH_VALUE" (pValue varchar2, location NUMBER, delimiter VARCHAR2)
-   return varchar2
-is
-   v_posA number;
-   v_posB number;
+CREATE OR REPLACE PROCEDURE "TM_CZ"."PARSE_NTH_VALUE" (varchar(1000), int4, varchar(4))
+returns varchar(1000)
+LANGUAGE NZPLSQL 
+AS 
+BEGIN_PROC
 /*************************************************************************
 * Copyright 2008-2012 Janssen Research & Development, LLC.
 *
@@ -19,6 +18,13 @@ is
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************/	
+Declare
+	pValue alias for $1;
+	location alias for $2;
+	delimiter alias for $3;
+	
+   v_posA int4;
+   v_posB int4;
 begin
 
    if location = 1 then
@@ -38,10 +44,5 @@ begin
    
    return substr (pValue, v_posA, v_posB - v_posA);
 
-end parse_nth_value;
-
- 
- 
- 
-/
- 
+end;
+end_proc;
