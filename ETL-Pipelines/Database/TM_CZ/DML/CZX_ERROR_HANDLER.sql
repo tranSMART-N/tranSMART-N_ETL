@@ -1,52 +1,48 @@
-set define off;
-CREATE OR REPLACE PROCEDURE "CZX_ERROR_HANDLER" 
-(
-  jobID NUMBER,
-  procedureName NVARCHAR2
-) AUTHID CURRENT_USER
-AS
-/*************************************************************************
-* Copyright 2008-2012 Janssen Research & Development, LLC.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-******************************************************************/
+CREATE OR REPLACE PROCEDURE TM_CZ.CZX_ERROR_HANDLER(bigint, CHARACTER VARYING(ANY))
+RETURNS INTEGER
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
 
-  databaseName NVARCHAR2(100);
-	errorNumber NUMBER(18,0);
-	errorMessage NVARCHAR2(1000);
-  errorStack NVARCHAR2(4000);
-  errorBackTrace NVARCHAR2(4000);
-	stepNo NUMBER(18,0);
+DECLARE
+	jobID ALIAS FOR $1;
+	procedureName ALIAS FOR $2;
+  
+  	databaseName VARCHAR(100);
+	errorNumber NUMERIC(18,0);
+	errorMessage VARCHAR(1000);
+  	errorStack VARCHAR(4000);
+  	errorBackTrace VARCHAR(4000);
+	stepNo NUMERIC(18,0);	
 
+	
 BEGIN
   --Get DB Name
 	select database_name INTO databaseName
-		from cz_job_master 
-		where job_id=jobID;
+	from tm_cz.cz_job_master 
+	where job_id=jobID;
+		
   --Get Latest Step
-	select max(step_number) into stepNo from cz_job_audit where job_id = jobID;
+	select max(step_number) into stepNo 
+	from tm_cz.cz_job_audit 
+	where job_id = jobID;
   
   --Get all error info
-  errorNumber := SQLCODE;
+  errorNumber := -1; --SQLCODE;
   errorMessage := SQLERRM;
-  errorStack := dbms_utility.format_error_stack;
-  errorBackTrace := dbms_utility.format_error_backtrace;
+  --errorStack := dbms_utility.format_error_stack;
+  --errorBackTrace := dbms_utility.format_error_backtrace;
 
   --Update the audit step for the error
-  czx_write_audit(jobID, databaseName,procedureName, 'Job Failed: See error log for details',SQL%ROWCOUNT, stepNo, 'FAIL');
+  CALL tm_cz.czx_write_audit(jobID, databaseName,procedureName, 'Job Failed: See error log for details',ROW_COUNT, stepNo, 'FAIL');
 
-  
   --write out the error info
-  czx_write_error(jobID, errorNumber, errorMessage, errorStack, errorBackTrace);
+  CALL tm_cz.czx_write_error(jobID, errorNumber, errorMessage, errorStack, errorBackTrace);
 
+return 0;
+
+ exception 
+	when OTHERS then
+	RAISE NOTICE 'Exception Raised: %', SQLERRM;
 END;
+
+END_PROC;
