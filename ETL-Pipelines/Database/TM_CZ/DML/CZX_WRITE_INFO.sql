@@ -1,41 +1,20 @@
-set define off;
-
-  CREATE OR REPLACE PROCEDURE "TM_CZ"."CZX_WRITE_INFO" 
-(
-  v_job_id IN NUMBER DEFAULT NULL ,
-  v_message_id IN NUMBER DEFAULT NULL ,
-  v_message_line IN NUMBER DEFAULT NULL ,
-  v_message_procedure IN VARCHAR2 DEFAULT NULL ,
-  v_info_message IN VARCHAR2 DEFAULT NULL
-)
-AUTHID CURRENT_USER
-AS
-/*************************************************************************
-* Copyright 2008-2012 Janssen Research & Development, LLC.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-******************************************************************/
-PRAGMA AUTONOMOUS_TRANSACTION;
-
+CREATE OR REPLACE PROCEDURE TM_CZ.CZX_WRITE_INFO(INTEGER, INTEGER, INTEGER, VARCHAR(ANY), VARCHAR(ANY))
+RETURNS INTEGER
+EXECUTE AS OWNER
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
+DECLARE
+	JOBID ALIAS FOR $1;
+	MESSAGEID ALIAS FOR $2;
+	MESSAGELINE ALIAS FOR $3;
+	MESSAGEPROC ALIAS FOR $4;
+	INFOMESSAGE ALIAS FOR $5;
 BEGIN
 
-   INSERT INTO cz_job_message
-     ( job_id, message_id, message_line, message_procedure, info_message )
-     VALUES ( v_job_id, v_message_id, v_message_line, v_message_procedure, v_info_message );
-	 
-  COMMIT;
+   INSERT INTO TM_CZ.CZ_JOB_MESSAGE
+     ( JOB_ID, MESSAGE_ID, MESSAGE_LINE, MESSAGE_PROCEDURE, INFO_MESSAGE )
+     VALUES ( JOBID, MESSAGEID, MESSAGELINE, MESSAGEPROC, INFOMESSAGE );
 
-EXCEPTION
-    WHEN OTHERS THEN ROLLBACK;
+RETURN 0;
 END;
-
+END_PROC;
