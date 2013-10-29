@@ -1,41 +1,28 @@
-set define off;
-
-  CREATE OR REPLACE PROCEDURE "TM_CZ"."CZX_WRITE_AUDIT" (JOBID IN NUMBER,
-	DATABASENAME IN VARCHAR2 ,
-	PROCEDURENAME IN VARCHAR2 ,
-	STEPDESC IN VARCHAR2 ,
-	RECORDSMANIPULATED IN NUMBER,
-	STEPNUMBER IN NUMBER,
-	STEPSTATUS IN VARCHAR2)
-  AUTHID CURRENT_USER
-AS
-/*************************************************************************
-* Copyright 2008-2012 Janssen Research & Development, LLC.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-******************************************************************/
- PRAGMA AUTONOMOUS_TRANSACTION;
-
-  LASTTIME TIMESTAMP;
-  v_version_id NUMBER;
-
+CREATE OR REPLACE PROCEDURE TM_CZ.CZX_WRITE_AUDIT(BIGINT, CHARACTER VARYING(ANY), CHARACTER VARYING(ANY), CHARACTER VARYING(ANY), NUMERIC(ANY), NUMERIC(ANY), CHARACTER VARYING(ANY))
+RETURNS INTEGER
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
+DECLARE
+	JOBID ALIAS FOR $1;
+	DATABASENAME ALIAS FOR $2;
+	PROCEDURENAME ALIAS FOR $3;
+	STEPDESC ALIAS FOR $4;
+	RECORDSMANIPULATED ALIAS FOR $5;
+	STEPNUMBER ALIAS FOR $6;
+	STEPSTATUS ALIAS FOR $7;
+	
+	LASTTIME TIMESTAMP;
+  	v_version_id numeric;
+	
 BEGIN
+
   SELECT MAX(JOB_DATE)
     INTO LASTTIME
-    FROM CZ_JOB_AUDIT
+    FROM TM_CZ.CZ_JOB_AUDIT
     WHERE JOB_ID = JOBID;
 
-	INSERT 	INTO CZ_JOB_AUDIT(
+	INSERT 	INTO TM_CZ.CZ_JOB_AUDIT(
+		SEQ_ID,
 		JOB_ID,
 		DATABASE_NAME,
  		PROCEDURE_NAME,
@@ -47,6 +34,7 @@ BEGIN
     TIME_ELAPSED_SECS
 	)
 	SELECT
+	    next value for tm_cz.SEQ_CZ_JOB_AUDIT,
  		JOBID,
 		DATABASENAME,
 		PROCEDURENAME,
@@ -54,18 +42,22 @@ BEGIN
 		RECORDSMANIPULATED,
 		STEPNUMBER,
 		STEPSTATUS,
-    SYSTIMESTAMP,
-      COALESCE(
+    current_timestamp,
+      10000; 
+	  /*COALESCE(
       EXTRACT (DAY    FROM (SYSTIMESTAMP - LASTTIME))*24*60*60 +
       EXTRACT (HOUR   FROM (SYSTIMESTAMP - LASTTIME))*60*60 +
       EXTRACT (MINUTE FROM (SYSTIMESTAMP - LASTTIME))*60 +
       EXTRACT (SECOND FROM (SYSTIMESTAMP - LASTTIME))
       ,0)
-  FROM DUAL;
+  		FROM DUAL;*/
 
-  COMMIT;
-
-EXCEPTION
-    WHEN OTHERS THEN ROLLBACK;
+RETURN 0;
+exception 
+when OTHERS then
+	RAISE NOTICE 'Exception Raised: %', SQLERRM;
+	return -16;
 END;
- 
+
+END_PROC;
+
