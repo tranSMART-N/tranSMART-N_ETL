@@ -24,9 +24,13 @@ Declare
 	path_name		alias for $3;
 	currentJobID 	alias for $4;
  
-  root_node		varchar(2000);
-  root_level	int4;
-  etlDate		timestamp;
+	root_node		varchar(2000);
+	root_level	int4;
+	etlDate		timestamp;
+	bslash		char(1);
+	v_concept_id	bigint;
+	pExists		int4;
+  
   
   --Audit variables
   newJobFlag int4;
@@ -36,9 +40,10 @@ Declare
   stepCt numeric(18,0);
   
 BEGIN
-    
+     raise notice 'in add_node';
 	stepCt := 0;
 	select now() into etlDate;
+	bslash := '\\';
 	
 	--Set Audit Parameters
 	newJobFlag := 0; -- False (Default)
@@ -46,9 +51,9 @@ BEGIN
 
 	databaseName := 'TM_CZ';
 	procedureName := 'I2B2_ADD_NODE';
-  
-	select tm_cz.parse_nth_value(input_path, 2, '\') into root_node from dual;
-	
+ 
+	root_node := tm_cz.parse_nth_value(input_path, 2, bslash);
+
 	select c_hlevel into root_level
 	from i2b2metadata.table_access
 	where c_name = root_node;
@@ -66,74 +71,86 @@ BEGIN
 		stepCt := stepCt + 1;
 		--call czx_write_audit(jobId,databaseName,procedureName,'Missing path or name - path:' || input_path || ' name: ' || path_name,SQL%ROWCOUNT,stepCt,'Done');
 	else
-		--CONCEPT DIMENSION
-		insert into i2b2demodata.concept_dimension
-		(concept_cd
-		,concept_path
-		,name_char
-		,update_date
-		,download_date
-		,mport_date
-		,ourcesystem_cd
-		)
-		select next value for i2b2demodata.concept_id::varchar
-			  ,input_path,
-			  ,to_char(path_name)
-			  ,etlDate,
-			  ,etlDate,
-			  ,etlDate,
-			  ,TrialID
-		where not exists (select 1 from i2b2demodata.concept_dimension x where input_path = x.concept_path);
-		stepCt := stepCt + 1;
-		--call czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
-    
-		--I2B2
-		insert into i2b2metadata.i2b2
-		(c_hlevel
-		,c_fullname
-		,c_name
-		,c_visualattributes
-		,c_synonym_cd
-		,c_facttablecolumn
-		,c_tablename
-		,c_columnname
-		,c_dimcode
-		,c_tooltip
-		,update_date
-		,download_date
-		,import_date
-		,sourcesystem_cd
-		,c_basecode
-		,c_operator
-		,c_columndatatype
-		,c_comment
-		,m_applied_path
-		)
-		select (length(concept_path) - coalesce(length(replace(concept_path, '\')),0)) / length('\') - 2 + root_level
-			  ,concept_path
-			  ,name_char
-			  ,'FA'
-			  ,'N'
-			  ,'CONCEPT_CD'
-			  ,'CONCEPT_DIMENSION'
-			  ,'CONCEPT_PATH'
-			  ,concept_path
-			  ,concept_path
-			  ,etldate
-			  ,etldate
-			  ,etldate
-			  ,sourcesystem_cd
-			  ,concept_cd
-			  ,'LIKE'
-			  ,'T'
-			  ,case when TrialID is null then null else 'trial:' || TrialID end
-			  ,'@'
+	
+		select count(*) into pExists
 		from i2b2demodata.concept_dimension
-		where concept_path = input_path
-		  and not exists
-			 (select 1 from i2b2metadata.i2b2 x where input_path = x.c_fullname);
-		stepCt := stepCt + 1;
-		--call czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
+		where input_path = concept_path;
+		
+		if pexists = 0 then
+			select next value for i2b2demodata.CONCEPT_ID into v_concept_id;
+			--CONCEPT DIMENSION
+			insert into i2b2demodata.concept_dimension
+			(concept_cd
+			,concept_path
+			,name_char
+			,update_date
+			,download_date
+			,import_date
+			,sourcesystem_cd
+			)
+			select v_concept_id
+				  ,input_path
+				  ,path_name
+				  ,etlDate
+				  ,etlDate
+				  ,etlDate
+				  ,TrialID;
+			stepCt := stepCt + 1;
+			--call czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
+		end if;
+    raise notice 'before i2b2';
+	
+		select count(*) into pExists
+		from i2b2metadata.i2b2
+		where input_path = c_fullname;
+		
+		if pExists = 0 then 
+			--I2B2
+			insert into i2b2metadata.i2b2
+			(c_hlevel
+			,c_fullname
+			,c_name
+			,c_visualattributes
+			,c_synonym_cd
+			,c_facttablecolumn
+			,c_tablename
+			,c_columnname
+			,c_dimcode
+			,c_tooltip
+			,update_date
+			,download_date
+			,import_date
+			,sourcesystem_cd
+			,c_basecode
+			,c_operator
+			,c_columndatatype
+			,c_comment
+			,m_applied_path
+			)
+			select (length(concept_path) - coalesce(length(replace(concept_path, bslash, '')),0)) / length(bslash) - 2 + root_level
+				  ,concept_path
+				  ,name_char
+				  ,'FA'
+				  ,'N'
+				  ,'CONCEPT_CD'
+				  ,'CONCEPT_DIMENSION'
+				  ,'CONCEPT_PATH'
+				  ,concept_path
+				  ,concept_path
+				  ,etldate
+				  ,etldate
+				  ,etldate
+				  ,sourcesystem_cd
+				  ,concept_cd
+				  ,'LIKE'
+				  ,'T'
+				  ,case when TrialID is null then null else 'trial:' || TrialID end
+				  ,'@'
+			from i2b2demodata.concept_dimension
+			where concept_path = input_path;
+			stepCt := stepCt + 1;
+			--call czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
+		end if;
 	end if;
 	
       ---Cleanup OVERALL JOB if this proc is being run standalone
@@ -141,7 +158,8 @@ BEGIN
 	then
 		--call czx_end_audit (jobID, 'SUCCESS');
 	end if;
-
+	
+	--return null;
 	exception
 	when others then
 		raise notice 'error: %', SQLERRM;
