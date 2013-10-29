@@ -11,11 +11,13 @@ DECLARE
 	STEPNUMBER ALIAS FOR $6;
 	STEPSTATUS ALIAS FOR $7;
 	
-	LASTTIME TIMESTAMP;
+	LASTTIME	TIMESTAMP;
   	v_version_id numeric;
+	startTime	timestamp;
 	
 BEGIN
 
+  select now() into startTime;
   SELECT MAX(JOB_DATE)
     INTO LASTTIME
     FROM TM_CZ.CZ_JOB_AUDIT
@@ -42,15 +44,14 @@ BEGIN
 		RECORDSMANIPULATED,
 		STEPNUMBER,
 		STEPSTATUS,
-    current_timestamp,
-      10000; 
-	  /*COALESCE(
-      EXTRACT (DAY    FROM (SYSTIMESTAMP - LASTTIME))*24*60*60 +
-      EXTRACT (HOUR   FROM (SYSTIMESTAMP - LASTTIME))*60*60 +
-      EXTRACT (MINUTE FROM (SYSTIMESTAMP - LASTTIME))*60 +
-      EXTRACT (SECOND FROM (SYSTIMESTAMP - LASTTIME))
-      ,0)
-  		FROM DUAL;*/
+    	startTime,
+   --   10000; 
+	  COALESCE(
+      EXTRACT (DAY    FROM (startTime - LASTTIME))*24*60*60 +
+      EXTRACT (HOUR   FROM (startTime - LASTTIME))*60*60 +
+      EXTRACT (MINUTE FROM (startTime - LASTTIME))*60 +
+      EXTRACT (SECOND FROM (startTime - LASTTIME))
+      ,0);
 
 RETURN 0;
 exception 
@@ -60,4 +61,3 @@ when OTHERS then
 END;
 
 END_PROC;
-
