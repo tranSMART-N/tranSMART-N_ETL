@@ -63,7 +63,7 @@
   <created_user>-</created_user>
   <created_date>2011&#47;11&#47;30 14:48:31.453</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;10&#47;30 11:17:46.704</modified_date>
+  <modified_date>2013&#47;10&#47;31 13:02:19.623</modified_date>
   </info>
   <notepads>
   </notepads>
@@ -91,70 +91,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Get Variables</from><to>Add job_id</to><enabled>Y</enabled> </hop>  <hop> <from>Add job_id</from><to>run i2b2_load_study_metadata</to><enabled>Y</enabled> </hop>  </order>
-  <step>
-    <name>Add job_id</name>
-    <type>Constant</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>job_id</name>
-        <type>Integer</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <nullif>-1</nullif>
-        <length>-1</length>
-        <precision>-1</precision>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>360</xloc>
-      <yloc>153</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Get Variables</name>
-    <type>GetVariable</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>load_type</name>
-        <variable>${LOAD_TYPE}</variable>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>both</trim_type>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>181</xloc>
-      <yloc>155</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
+  <hop> <from>Generate job_id</from><to>run i2b2_load_study_metadata</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>run i2b2_load_study_metadata</name>
     <type>DBProc</type>
@@ -181,8 +118,40 @@
     <auto_commit>Y</auto_commit>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>568</xloc>
-      <yloc>154</yloc>
+      <xloc>435</xloc>
+      <yloc>156</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Generate job_id</name>
+    <type>RowGenerator</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>job_id</name>
+        <type>Integer</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif>-1</nullif>
+        <length>-1</length>
+        <precision>-1</precision>
+      </field>
+    </fields>
+    <limit>1</limit>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>213</xloc>
+      <yloc>156</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
