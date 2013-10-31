@@ -5,20 +5,21 @@ BEGIN_PROC
 DECLARE
 	P_JOB_ID ALIAS FOR $1;
 	P_JOB_STATUS ALIAS FOR $2;
-	--ENDDATE TIMESTAMP;
+	v_end_date TIMESTAMP;
 BEGIN
 
---ENDDATE := now();
+	select now() into v_end_date;
 
 	UPDATE TM_CZ.CZ_JOB_MASTER
 		SET 
 			ACTIVE='N',
-			END_DATE = current_timestamp,--ENDDATE,
-      TIME_ELAPSED_SECS = 123456, /*
-      EXTRACT (DAY    FROM (ENDDATE - START_DATE))*24*60*60 + 
-      EXTRACT (HOUR   FROM (ENDDATE - START_DATE))*60*60 + 
-      EXTRACT (MINUTE FROM (ENDDATE - START_DATE))*60 + 
-      EXTRACT (SECOND FROM (ENDDATE - START_DATE))*/
+			END_DATE = v_end_date,
+      TIME_ELAPSED_SECS = COALESCE(
+      EXTRACT (DAY    FROM (START_DATE - v_end_date))*24*60*60 +
+      EXTRACT (HOUR   FROM (START_DATE - v_end_date))*60*60 +
+      EXTRACT (MINUTE FROM (START_DATE - v_end_date))*60 +
+      EXTRACT (SECOND FROM (START_DATE - v_end_date))
+      ,0),
 			JOB_STATUS = P_JOB_STATUS
 		WHERE ACTIVE='Y' 
 		AND JOB_ID = P_JOB_ID;
