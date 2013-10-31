@@ -1190,7 +1190,7 @@ BEGIN
 		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete study-level modifiers from modifier_metadata',rowCount,stepCt,'Done');	
 		
 	end if;
-	raise notice 'after modifiers';
+
 	--	insert records to de_concept_visit if not exists
 	
 	insert into deapp.de_concept_visit
