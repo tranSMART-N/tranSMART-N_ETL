@@ -8,7 +8,7 @@
   <created_user>-</created_user>
   <created_date>2011&#47;11&#47;09 09:34:02.533</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;10&#47;18 10:34:17.573</modified_date>
+  <modified_date>2013&#47;10&#47;29 17:51:21.559</modified_date>
     <parameters>
         <parameter>
             <name>COLUMN_MAP_FILE</name>
@@ -186,8 +186,8 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>801</xloc>
-      <yloc>260</yloc>
+      <xloc>776</xloc>
+      <yloc>258</yloc>
       </entry>
     <entry>
       <name>Check if LOAD_TYPE=I</name>
@@ -697,7 +697,17 @@
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>1067</xloc>
-      <yloc>256</yloc>
+      <yloc>251</yloc>
+      </entry>
+    <entry>
+      <name>Success 2</name>
+      <description/>
+      <type>SUCCESS</type>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>929</xloc>
+      <yloc>706</yloc>
       </entry>
   </entries>
   <hops>
@@ -893,6 +903,15 @@
     <hop>
       <from>Set variables</from>
       <to>Validate parameters</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load standard output file and process</from>
+      <to>Success 2</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>

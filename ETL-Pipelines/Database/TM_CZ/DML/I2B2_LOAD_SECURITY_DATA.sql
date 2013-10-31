@@ -27,6 +27,7 @@ Declare
   procedureName VARCHAR(100);
   jobID numeric(18,0);
   stepCt numeric(18,0);
+  rowCount		numeric(18,0);
   
   secNodeExists		int4;
   etlDate			timestamp;
@@ -48,7 +49,7 @@ BEGIN
   IF(jobID IS NULL or jobID < 1)
   THEN
     newJobFlag := 1; -- True
-    --select tm_cz.czx_start_audit (procedureName, databaseName) into jobID;
+    jobId := tm_cz.czx_start_audit (procedureName, databaseName);
   END IF;
 
   stepCt := 0;
@@ -56,7 +57,7 @@ BEGIN
   Execute immediate 'truncate table I2B2METADATA.i2b2_secure';
 
   stepCt := stepCt + 1;
-  --call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Truncate I2B2METADATA i2b2_secure',0,stepCt,'Done');
+  call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Truncate I2B2METADATA i2b2_secure',0,stepCt,'Done');
 
   insert into I2B2METADATA.i2b2_secure(
     C_HLEVEL,
@@ -109,8 +110,9 @@ BEGIN
 							   else sourcesystem_cd end as sourcesystem_cd
 				,tval_char from i2b2demodata.observation_fact where concept_cd = 'SECURITY') f
 	on b.sourcesystem_cd = f.sourcesystem_cd;
+	rowCount := ROW_COUNT;
     stepCt := stepCt + 1;
-    --czx_write_audit(jobId,databaseName,procedureName,'Insert security data into I2B2METADATA i2b2_secure',SQL%ROWCOUNT,stepCt,'Done');
+    call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert security data into I2B2METADATA i2b2_secure',rowCount,stepCt,'Done');
 	
 	--	check if SECURITY node exists in i2b2
 
@@ -165,9 +167,9 @@ BEGIN
 			  ,null as sourcesystem_cd
 			  ,null as valuetype_cd
 			  ,'@' as m_applied_path;
-			  
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;
-		--call czx_write_audit(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to i2b2',SQL%ROWCOUNT,stepCt,'Done');	
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to i2b2',rowCount,stepCt,'Done');	
 	end if;
 
 	--	check if SECURITY node exists in concept_dimension
@@ -193,23 +195,24 @@ BEGIN
 			 ,etlDate
 			 ,etlDate
 			 ,null;
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;
-		--call czx_write_audit(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
+		call tm_cz.czx_(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to concept_dimension',rowCount,stepCt,'Done');
 	end if;
 
     ---Cleanup OVERALL JOB if this proc is being run standalone
 	IF newJobFlag = 1
 	THEN
-		--call czx_end_audit (jobID, 'SUCCESS');
+		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
 
 	EXCEPTION
 	WHEN OTHERS THEN
 		raise notice 'error: %', SQLERRM;
 		--Handle errors.
-		--call czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName);
 		--End Proc
-		--call czx_end_audit (jobID, 'FAIL');
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
 
 end;
 END_PROC;

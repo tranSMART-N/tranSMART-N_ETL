@@ -28,6 +28,7 @@ Declare
 	procedureName VARCHAR(100);
 	jobID numeric(18,0);
 	stepCt numeric(18,0);
+	rowCount	numeric(18,0);
   
 	bslash char(1);
   
@@ -45,7 +46,7 @@ BEGIN
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		-- select tm_cz.czx_start_audit (procedureName, databaseName) into jobID;
+		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
 	END IF;
     	
 	stepCt := 0;
@@ -53,8 +54,9 @@ BEGIN
   
 	delete from i2b2demodata.concept_counts
 	where concept_path like input_path || '%';
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete counts for trial from I2B2DEMODATA concept_counts',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete counts for trial from I2B2DEMODATA concept_counts',rowCount,stepCt,'Done');
 	
 	--	Join each node (folder or leaf) in the path to it's leaf in the work table to count patient numbers
 
@@ -77,9 +79,10 @@ BEGIN
 	  and tpm.patient_num = p.patient_num
 	  and la.c_basecode = tpm.concept_cd
 	group by fa.c_fullname
-			,ltrim(SUBSTR(fa.c_fullname, 1,instr(fa.c_fullname, bslash,-1,2)));			
+			,ltrim(SUBSTR(fa.c_fullname, 1,instr(fa.c_fullname, bslash,-1,2)));	
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	-- call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert counts for trial into I2B2DEMODATA concept_counts',SQL%ROWCOUNT,stepCt,'Done');
+	-- call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert counts for trial into I2B2DEMODATA concept_counts',rowCount,stepCt,'Done');
 	
 	--SET ANY NODE WITH MISSING OR ZERO COUNTS TO HIDDEN
 
@@ -94,8 +97,9 @@ BEGIN
 			  where c_fullname = zc.concept_path
 			  and zc.patient_count = 0)
 		and c_name != 'SECURITY';
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	-- call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Nodes hidden with missing/zero counts for trial into I2B2DEMODATA concept_counts',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Nodes hidden with missing/zero counts for trial into I2B2DEMODATA concept_counts',rowCount,stepCt,'Done');
 	
     ---Cleanup OVERALL JOB if this proc is being run standalone
 	IF newJobFlag = 1
@@ -107,9 +111,9 @@ BEGIN
 	WHEN OTHERS THEN
 		raise notice 'error: %', SQLERRM;
 		--Handle errors.
-		--call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName);
 		--End Proc
-		--call tm_cz.czx_end_audit (jobID, 'FAIL');
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
 	
 END;
 END_PROC;

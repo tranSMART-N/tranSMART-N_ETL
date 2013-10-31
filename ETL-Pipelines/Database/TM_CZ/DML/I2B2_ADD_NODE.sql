@@ -38,10 +38,12 @@ Declare
   procedureName VARCHAR(100);
   jobID numeric(18,0);
   stepCt numeric(18,0);
+  rowCount		numeric(18,0);
   
 BEGIN
-     raise notice 'in add_node';
+
 	stepCt := 0;
+	rowCount := 0;
 	select now() into etlDate;
 	bslash := '\\';
 	
@@ -63,13 +65,13 @@ BEGIN
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		--select czx_start_audit (procedureName, databaseName) into jobId;
+		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
 	END IF;
   
 	if input_path = ''  or input_path = '%' or path_name = ''
 	then 
 		stepCt := stepCt + 1;
-		--call czx_write_audit(jobId,databaseName,procedureName,'Missing path or name - path:' || input_path || ' name: ' || path_name,SQL%ROWCOUNT,stepCt,'Done');
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Missing path or name - path:' || input_path || ' name: ' || path_name,rowCount,stepCt,'Done');
 	else
 	
 		select count(*) into pExists
@@ -95,10 +97,10 @@ BEGIN
 				  ,etlDate
 				  ,etlDate
 				  ,TrialID;
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
-			--call czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',rowCount,stepCt,'Done');
 		end if;
-    raise notice 'before i2b2';
 	
 		select count(*) into pExists
 		from i2b2metadata.i2b2
@@ -148,15 +150,16 @@ BEGIN
 				  ,'@'
 			from i2b2demodata.concept_dimension
 			where concept_path = input_path;
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
-			--call czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',rowCount,stepCt,'Done');
 		end if;
 	end if;
 	
       ---Cleanup OVERALL JOB if this proc is being run standalone
 	if newjobflag = 1
 	then
-		--call czx_end_audit (jobID, 'SUCCESS');
+		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	end if;
 	
 	--return null;
@@ -164,9 +167,9 @@ BEGIN
 	when others then
 		raise notice 'error: %', SQLERRM;
 		--Handle errors.
-		--call czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName);
 		--End Proc
-		--call czx_end_audit (jobID, 'FAIL');
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
 
 END;
 END_PROC;

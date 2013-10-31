@@ -37,6 +37,7 @@ Declare
 	procedureName VARCHAR(100);
 	jobID numeric(18,0);
 	stepCt numeric(18,0);
+	rowCount		numeric(18,0);
 
 BEGIN
 	TrialID := trial_id;
@@ -56,7 +57,7 @@ BEGIN
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		--select tm_cz.czx_start_audit (procedureName, databaseName) into jobID;
+		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
 	END IF;
   
 	stepCt := 0;
@@ -66,8 +67,9 @@ BEGIN
 			   then sourcesystem_cd
 			   else modifier_cd end = TrialId
 	  and concept_cd = 'SECURITY';
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete security records for trial from I2B2DEMODATA observation_fact',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete security records for trial from I2B2DEMODATA observation_fact',rowCount,stepCt,'Done');
 
 	insert into i2b2demodata.observation_fact
     (patient_num
@@ -99,15 +101,17 @@ BEGIN
 		  ,1
 	from i2b2demodata.patient_dimension
 	where sourcesystem_cd like TrialID || ':%';
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert security records for trial from I2B2DEMODATA observation_fact',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert security records for trial from I2B2DEMODATA observation_fact',rowCount,stepCt,'Done');
 	
 	--	insert patients to patient_trial table
 	
 	delete from i2b2demodata.patient_trial
 	where trial  = TrialID;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete data for trial from I2B2DEMODATA patient_trial',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete data for trial from I2B2DEMODATA patient_trial',rowCount,stepCt,'Done');
   
 	insert into i2b2demodata.patient_trial
 	(patient_num
@@ -119,8 +123,9 @@ BEGIN
 		   case when securedStudy = 'Y' then 'EXP:' || TrialID else 'EXP:PUBLIC' end
 	from i2b2demodata.patient_dimension
 	where sourcesystem_cd like TrialID || ':%';
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert data for trial into I2B2DEMODATA patient_trial',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert data for trial into I2B2DEMODATA patient_trial',rowCount,stepCt,'Done');
 	
 	--	if secure study, then create bio_experiment record if needed and insert to search_secured_object
 	
@@ -141,8 +146,9 @@ BEGIN
 				select 'Metadata not available'
 					  ,TrialId
 					  ,'METADATA:' || TrialId;
+				rowCount := ROW_COUNT;
 				stepCt := stepCt + 1;
-				--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into biomart.bio_experiment',SQL%ROWCOUNT,stepCt,'Done');
+				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into biomart.bio_experiment',rowCount,stepCt,'Done');
 			end if;
 			
 			select bio_experiment_id into v_bio_experiment_id
@@ -167,8 +173,9 @@ BEGIN
 			  and not exists
 				 (select 1 from searchapp.search_secure_object so
 				  where v_bio_experiment_id = so.bio_data_id);
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
-			-- call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted trial/study into SEARCHAPP search_secure_object',SQL%ROWCOUNT,stepCt,'Done');
+			-- call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted trial/study into SEARCHAPP search_secure_object',rowCount,stepCt,'Done');
 		end if;
 	else
 		--	if securedStudy = N, delete entry from searchapp.search_secure_object
@@ -181,13 +188,15 @@ BEGIN
 		
 			delete from searchapp.search_auth_sec_object_access
 			where secure_object_id = v_sso_id;
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
-			--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Removed study secure object id from search_auth_sec_object_access',1,stepCt,'Done');
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Removed study secure object id from search_auth_sec_object_access',1,stepCt,'Done');
 		
 			--	delete security links between users and study
 		
 			delete from searchapp.search_auth_user_sec_access
 			where search_secure_object_id = v_sso_id;
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
 			-- call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Removed study secure object id from search_auth_user_sec_access',1,stepCt,'Done');
 
@@ -195,24 +204,25 @@ BEGIN
 			
 			delete from searchapp.search_secure_object
 			where bio_data_unique_id = 'EXP:' || TrialId;
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
-			--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Deleted trial/study from SEARCHAPP search_secure_object',SQL%ROWCOUNT,stepCt,'Done');
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Deleted trial/study from SEARCHAPP search_secure_object',rowCount,stepCt,'Done');
 		end if;		
 	end if;
      
     ---Cleanup OVERALL JOB if this proc is being run standalone
 	IF newJobFlag = 1
 	THEN
-		--call tm_cz.czx_end_audit (jobID, 'SUCCESS');
+		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
 
 	EXCEPTION
 	WHEN OTHERS THEN
 		raise notice 'error: %', SQLERRM;
 		--Handle errors.
-		--call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName);
 		--End Proc
-		--call tm_cz.czx_end_audit (jobID, 'FAIL');
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
 	
 END;
 END_PROC;

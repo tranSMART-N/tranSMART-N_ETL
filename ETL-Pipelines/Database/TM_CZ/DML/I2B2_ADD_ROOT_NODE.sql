@@ -30,6 +30,7 @@ Declare
 	procedureName varchar(100);
 	jobID 		numeric(18,0);
 	stepCt 		numeric(18,0);
+	rowCount	numeric(18,0);
 
 	rootNode	varchar(200);
 	rootPath	varchar(200);
@@ -43,6 +44,7 @@ Begin
 	select now() into etlDate;
 
     stepCt := 0;
+	rowCount := 0;
 	
 	--Set Audit Parameters
 	newJobFlag := 0; -- False (Default)
@@ -56,11 +58,11 @@ Begin
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		-- select czx_start_audit (procedureName, databaseName) into jobId;
+		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
 	END IF;
 	
 	stepCt := stepCt + 1;
-	-- call czx_write_audit(jobId,databaseName,procedureName,'Start ' || procedureName,0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Start ' || procedureName,0,stepCt,'Done');
 	
 	insert into i2b2metadata.table_access
 	select rootNode as c_table_cd
@@ -89,9 +91,9 @@ Begin
 	where not exists
 		(select 1 from i2b2metadata.table_access x
 		 where x.c_table_cd = rootNode);
-	
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	-- call czx_write_audit(jobId,databaseName,procedureName,'Insert to table_access',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert to table_access',rowCount,stepCt,'Done');
 
 	--	insert root_node into i2b2
 	
@@ -143,26 +145,27 @@ Begin
 		  ,'@'
 	where not exists
 		 (select 1 from i2b2metadata.i2b2 x
-		  where x.c_name = rootNode);		  
+		  where x.c_name = rootNode);		
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	-- call czx_write_audit(jobId,databaseName,procedureName,'Insert root_node ' || rootNode || ' to i2b2',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert root_node ' || rootNode || ' to i2b2',rowCount,stepCt,'Done');
 			
 	stepCt := stepCt + 1;
-	-- call czx_write_audit(jobId,databaseName,procedureName,'End ' || procedureName,0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'End ' || procedureName,0,stepCt,'Done');
 
 	--Cleanup OVERALL JOB if this proc is being run standalone
 	IF newJobFlag = 1
 	THEN
-		-- call czx_end_audit (jobID, 'SUCCESS');
+		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
 
 	EXCEPTION
 	WHEN OTHERS THEN
 		raise notice 'error: %', SQLERRM;
 		--Handle errors.
-		-- call czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName);
 		--End Proc
-		-- call czx_end_audit (jobID, 'FAIL');
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
 	
 END;
 END_PROC;

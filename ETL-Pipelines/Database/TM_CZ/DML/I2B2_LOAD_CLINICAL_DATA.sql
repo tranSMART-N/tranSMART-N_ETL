@@ -1,14 +1,7 @@
-set define off;
-create or replace
-PROCEDURE "I2B2_LOAD_CLINICAL_DATA" 
-(
-  trial_id 			IN	VARCHAR2
- ,top_node			in  varchar2
- ,secure_study		in varchar2 := 'N'
- ,highlight_study	in	varchar2 := 'N'
- ,currentJobID		IN	NUMBER := null
-) AUTHID CURRENT_USER
-AS
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_LOAD_CLINICAL_DATA(CHARACTER VARYING(50), CHARACTER VARYING(2000), CHARACTER VARYING(4), CHARACTER VARYING(4), BIGINT)
+RETURNS CHARACTER VARYING(ANY)
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
 /*************************************************************************
 * Copyright 2008-2012 Janssen Research & Development, LLC.
 *
@@ -24,118 +17,106 @@ AS
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************/
-   
-  topNode		VARCHAR2(2000);
-  topLevel		number(10,0);
-  root_node		varchar2(2000);
-  root_level	int;
-  study_name	varchar2(2000);
-  TrialID		varchar2(100);
-  secureStudy	varchar2(200);
-  etlDate		date;
-  tPath			varchar2(2000);
-  pCount		int;
-  pExists		int;
-  rtnCode		int;
-  tText			varchar2(2000);
-  v_bio_experiment_id	number(18,0);
-  levelName		varchar2(200);
-  dCount		int;
-  tmp_vocab		varchar2(500);
-  tmp_components	varchar2(1000);
-  tmp_leaf		varchar2(1000);
-  tmp_label_vocab	varchar2(500);
-  tmp_label_node	varchar2(2000);
-  tmp_label		varchar2(500);
-  tmp_vocab_codes	varchar2(1000);
-  vCount		int;
+Declare
+	--	alias for parameters
+	trial_id 		alias for $1;
+	top_node		alias for $2;
+	secure_study	alias for $3;
+	highlight_study	alias for $4;
+	currentJobID	alias for $5;
+ 
+  topNode		varchar(2000);
+  topLevel		numeric(10,0);
+  root_node		varchar(2000);
+  root_level	int4;
+  study_name	varchar(2000);
+  TrialID		varchar(100);
+  secureStudy	varchar(200);
+  etlDate		timestamp;
+  tPath			varchar(2000);
+  pCount		int4;
+  pExists		int4;
+  rtnCode		int4;
+  tText			varchar(2000);
+  v_bio_experiment_id	numeric(18,0);
+  levelName		varchar(200);
+  dCount		int4;
+  tmp_vocab		varchar(500);
+  tmp_components	varchar(1000);
+  tmp_leaf		varchar(1000);
+  tmp_label_vocab	varchar(500);
+  tmp_label_node	varchar(2000);
+  tmp_label		varchar(500);
+  tmp_vocab_codes	varchar(1000);
+  vCount		int4;
+  bslash		char(1);
+  regexp_date	varchar(500);
+  regexp_numeric	varchar(500);
+  date_metadataxml	varchar(1000);
+  num_metadataxml	varchar(1000);
 
-  Type vocab_rec is record
-  (vocab_leaf	varchar2(1000)
-  ,vocab_codes	varchar2(500)
-  ,label_components	varchar2(1000)
-  ,data_label	varchar2(500)
-  );
-  
-  Type vocab_table is table of vocab_rec;
-  vocab_array vocab_table;
+	vocab_rec	record;
+	del_nodes	record;
 
   
-    --Audit variables
-  newJobFlag INTEGER(1);
-  databaseName VARCHAR(100);
-  procedureName VARCHAR(100);
-  jobID number(18,0);
-  stepCt number(18,0);
-  
-  duplicate_values	exception;
-  invalid_topNode	exception;
-  multiple_visit_names	exception;
-  invalid_visit_date	exception;
-  invalid_end_date	exception;
-  invalid_enroll_date	exception;
-  duplicate_visit_dates	exception;
-  no_study_data			exception;
-  parent_node_exists	exception;
-  
-  CURSOR addNodes is
-  select DISTINCT 
-         leaf_node,
-    		 node_name
-  from  wt_trial_nodes a
-  ;
-   
-	--	cursor to define the path for delete_one_node  this will delete any nodes that are hidden after i2b2_create_concept_counts
-
-	CURSOR delNodes is
-	select distinct c_fullname 
-	from  i2b2
-	where c_fullname like topNode || '%'
-      and substr(c_visualattributes,2,1) = 'H';
-
+	--Audit variables
+	newJobFlag int4;
+	databaseName VARCHAR(100);
+	procedureName VARCHAR(100);
+	jobID numeric(18,0);
+	stepCt numeric(18,0);
+	rowCount	numeric(18,0);
 	  
 BEGIN
   
 	TrialID := upper(trial_id);
 	secureStudy := upper(secure_study);
+	bslash := '\\';
+	regexp_date := '((((19|20)([2468][048]|[13579][26]|0[48])|2000)-02-29|((19|20)[0-9]{2}-(0[4678]|1[02])-(0[1-9]|[12][0-9]|30)|(19|20)[0-9]{2}-(0[1359]|11)-(0[1-9]|[12][0-9]|3[01])|(19|20)[0-9]{2}-02-(0[1-9]|1[0-9]|2[0-8])))\s([01][0-9]|2[0-3]):([012345][0-9]):([012345][0-9]))';
+	regexp_numeric := '^[0-9]+(\.[0-9]+)?$';
+	date_metadataxml := '<?xml version="1.0"?><ValueMetadata><Version>3.02</Version><CreationDateTime>08/14/2008 01:22:59</CreationDateTime><TestID></TestID><TestName></TestName><DataType>PosFloat</DataType><CodeType></CodeType><Loinc></Loinc><Flagstouse></Flagstouse><Oktousevalues>Y</Oktousevalues><MaxStringLength></MaxStringLength><LowofLowValue>0</LowofLowValue><HighofLowValue>0</HighofLowValue><LowofHighValue>100</LowofHighValue>100<HighofHighValue>100</HighofHighValue><LowofToxicValue></LowofToxicValue><HighofToxicValue></HighofToxicValue><EnumValues></EnumValues><CommentsDeterminingExclusion><Com></Com></CommentsDeterminingExclusion><UnitValues><NormalUnits>ratio</NormalUnits><EqualUnits></EqualUnits><ExcludingUnits></ExcludingUnits><ConvertingUnits><Units></Units><MultiplyingFactor></MultiplyingFactor></ConvertingUnits></UnitValues><Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>';
+	num_metadataxml := '<?xml version="1.0"?><ValueMetadata><Version>3.02</Version><CreationDateTime>08/14/2008 01:22:59</CreationDateTime><TestID></TestID><TestName></TestName><DataType>PosFloat</DataType><CodeType></CodeType><Loinc></Loinc><Flagstouse>LNH</Flagstouse><Oktousevalues>Y</Oktousevalues><MaxStringLength></MaxStringLength><LowofLowValue>0</LowofLowValue><HighofLowValue>0</HighofLowValue><LowofHighValue>100</LowofHighValue>100<HighofHighValue>100</HighofHighValue><LowofToxicValue></LowofToxicValue><HighofToxicValue></HighofToxicValue><EnumValues></EnumValues><CommentsDeterminingExclusion><Com></Com></CommentsDeterminingExclusion><UnitValues><NormalUnits>ratio</NormalUnits><EqualUnits></EqualUnits><ExcludingUnits></ExcludingUnits><ConvertingUnits><Units></Units><MultiplyingFactor></MultiplyingFactor></ConvertingUnits></UnitValues><Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>';
 	
 	--Set Audit Parameters
 	newJobFlag := 0; -- False (Default)
 	jobID := currentJobID;
 
-	SELECT sys_context('USERENV', 'CURRENT_SCHEMA') INTO databaseName FROM dual;
-	procedureName := $$PLSQL_UNIT;
+	databaseName := 'TM_CZ';
+	procedureName := 'I2B2_LOAD_CLINICAL_DATA';
 	
-	select sysdate into etlDate from dual;
+	select now() into etlDate;
 
 	--Audit JOB Initialization
 	--If Job ID does not exist, then this is a single procedure run and we need to create it
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		czx_start_audit (procedureName, databaseName, jobID);
+		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
 	END IF;
     	
 	stepCt := 0;
 
 	stepCt := stepCt + 1;
 	tText := 'Start i2b2_load_clinical_data for ' || TrialId;
-	czx_write_audit(jobId,databaseName,procedureName,tText,0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,tText,0,stepCt,'Done');
 	
 	if (secureStudy not in ('Y','N') ) then
 		secureStudy := 'Y';
 	end if;
 	
-	topNode := REGEXP_REPLACE('\' || top_node || '\','(\\){2,}', '\');
+	topNode := REGEXP_REPLACE(bslash || top_node || bslash,'(\\){2,}', bslash);
 	
 	--	figure out how many nodes (folders) are at study name and above
 	--	\Public Studies\Clinical Studies\Pancreatic_Cancer_Smith_GSE22780\: topLevel = 4, so there are 3 nodes
 	--	\Public Studies\GSE12345\: topLevel = 3, so there are 2 nodes
 	
-	select length(topNode)-length(replace(topNode,'\','')) into topLevel from dual;
+	topLevel := length(topNode)-length(replace(topNode,bslash,''));
 	
 	if topLevel < 3 then
-		raise invalid_topNode;
+		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Path specified in top_node must contain at least 2 nodes',1,stepCt,'ERROR');
+		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_end_audit (jobId,'FAIL');
+		return 16;
 	end if;	
 	
 	--	check if study data exists in lt_src_clinical_data
@@ -145,18 +126,71 @@ BEGIN
 	where study_id = TrialId;
 	
 	if pExists = 0 then
-		raise no_study_data;
+		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'No data found for study in lt_src_clinical_data',1,stepCt,'ERROR');
+		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_end_audit (jobId,'FAIL');
+		return 16;
+	end if;
+
+	--	check if visit_date is date
+
+	select count(*) into pExists
+	from tm_lz.lt_src_clinical_data
+	where visit_date is not null
+	  and cast(regexp_extract(visit_date,regexp_date) as varchar(50)) != visit_date;
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Check for invalid visit_date',rowCount,stepCt,'Done');
+		  
+	if pExists > 0 then
+		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Invalid visit_date in tm_lz.lt_src_clinical_data',1,stepCt,'ERROR');
+		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_end_audit (jobId,'FAIL');
+		return 16;
+	end if;
+
+	--	check if end_date is date
+
+	select count(*) into pExists
+	from tm_lz.lt_src_clinical_data
+	where end_date is not null
+	  and cast(regexp_extract(end_date,regexp_date) as varchar(50)) != end_date;
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Check for invalid end_date',rowCount,stepCt,'Done');
+		  
+	if pExists > 0 then
+		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Invalid end_date in tm_lz.lt_src_clinical_data',1,stepCt,'ERROR');
+		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_end_audit (jobId,'FAIL');
+		return 16;
+	end if;
+	
+	--	check if enroll_date is date
+
+	select count(*) into pExists
+	from tm_lz.lt_src_subj_enroll_date
+	where enroll_date is not null
+	  and cast(regexp_extract(enroll_date,regexp_date) as varchar(50)) != enroll_date;
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Check for invalid enroll_date',rowCount,stepCt,'Done');
+		  
+	if pExists > 0 then
+		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Invalid enroll_date in tm_lz.lt_src_subj_enroll_date',1,stepCt,'ERROR');
+		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_end_audit (jobId,'FAIL');
+		return 16;
 	end if;
 
 	--	delete any existing data from lz_src_clinical_data and load new data
 	
 	delete from tm_lz.lz_src_clinical_data
 	where study_id = TrialId;
-	
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Delete existing data from lz_src_clinical_data',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
-	
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing data from lz_src_clinical_data',rowCount,stepCt,'Done');
+
 	insert into tm_lz.lz_src_clinical_data
 	(study_id
 	,site_id
@@ -201,19 +235,19 @@ BEGIN
 		  ,date_ind
 		  ,obs_string
 		  ,valuetype_cd
-	from lt_src_clinical_data;
+	from tm_lz.lt_src_clinical_data;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert data into lz_src_clinical_data',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert data into lz_src_clinical_data',rowCount,stepCt,'Done');
+
 	
 	--	delete any existing data from lz_src_subj_enroll_date and add new
 	
 	delete from tm_lz.lz_src_subj_enroll_date
 	where study_id = TrialId;
-	
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Delete existing data from lz_src_subj_enroll_date',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing data from lz_src_subj_enroll_date',rowCount,stepCt,'Done');
 	
 	insert into tm_lz.lz_src_subj_enroll_date
 	(study_id
@@ -227,15 +261,15 @@ BEGIN
 		  ,enroll_date
 	from tm_lz.lt_src_subj_enroll_date;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert data into lz_src_subj_enroll_date',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	rowCount := ROW_COUNT;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert data into lz_src_subj_enroll_date',rowCount,stepCt,'Done');
 	
 	--	truncate wrk_clinical_data and load data 
 	
-	execute immediate('truncate table tm_wz.wrk_clinical_data');
+	execute immediate 'truncate table tm_wz.wrk_clinical_data' ;
 	
 	--	insert data from lt_src_clinical_data to wrk_clinical_data
-	
+
 	insert into tm_wz.wrk_clinical_data
 	(study_id
 	,site_id
@@ -273,68 +307,68 @@ BEGIN
 		  ,visit_date
 		  ,end_date
 		  ,date_ind
-		  ,replace(replace(category_cd,'_',' '),'+','\')
-		  ,REGEXP_REPLACE(TrialID || ':' || site_id || ':' || subject_id,'(::){1,}', ':')
+		  ,replace(replace(category_cd,'_',' '),'+',bslash)
+		  ,REGEXP_REPLACE(TrialID || ':' || coalesce(site_id,'') || ':' || subject_id,'(::){1,}', ':')
 		  ,link_type
 		  ,link_value
-		  ,trim(leading '\' from trim(trailing '\' from coalesce(visit_reference,visit_name)))
+		  ,trim(leading bslash from trim(trailing bslash from coalesce(visit_reference,visit_name)))
 		  ,obs_string
 		  ,valuetype_cd
-	from lt_src_clinical_data
+	from tm_lz.lt_src_clinical_data
 	where data_value is not null;
-	
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Load lt_src_clinical_data to work table',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;  	
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Load lt_src_clinical_data to work table',rowCount,stepCt,'Done');  	
 
 	-- Get study name from topNode
   
-	select parse_nth_value(topNode, topLevel, '\') into study_name from dual;	
+	--study_name := tm_cz.parse_nth_value(topNode, topLevel, bslash);	
+	study_name := replace(substr(topNode,instr(topNode,bslash,-2)+1),bslash,'');
 	
 	--	Replace all underscores with spaces in topNode except those in study name
 
-	topNode := replace(replace(topNode,'\'||study_name||'\',null),'_',' ') || '\' || study_name || '\';
+	topNode := replace(replace(topNode,bslash||study_name||bslash,''),'_',' ') || bslash || study_name || bslash;
 	
 	-- Get root_node from topNode
   
-	select parse_nth_value(topNode, 2, '\') into root_node from dual;
+  	root_node := replace(substr(topNode,1,instr(topNode,bslash,2)),bslash,'');
+	--root_node := tm_cz.parse_nth_value(topNode, 2, bslash);
 	
 	select count(*) into pExists
-	from table_access
+	from i2b2metadata.table_access
 	where c_name = root_node;
 	
 	select count(*) into pCount
-	from i2b2
+	from i2b2metadata.i2b2
 	where c_name = root_node;
 	
 	if pExists = 0 or pCount = 0 then
-		i2b2_add_root_node(root_node, jobId);
+		call tm_cz.i2b2_add_root_node(root_node, jobId);
 	end if;
 	
 	select c_hlevel into root_level
-	from table_access
+	from i2b2metadata.table_access
 	where c_name = root_node;
 	
 	--	Add any upper level nodes as needed
 	
-	tPath := REGEXP_REPLACE(replace(top_node,study_name,null),'(\\){2,}', '\');
-	select length(tPath) - length(replace(tPath,'\',null)) into pCount from dual;
+	tPath := REGEXP_REPLACE(replace(top_node,study_name,''),'(\\){2,}', bslash);
+	pCount := length(tPath) - length(replace(tPath,bslash,''));
 
 	if pCount > 2 then
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Adding upper-level nodes',0,stepCt,'Done');
-		i2b2_fill_in_tree(null, tPath, jobId);
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Adding upper-level nodes',0,stepCt,'Done');
+		call tm_cz.i2b2_fill_in_tree(null, tPath, jobId);
 	end if;
 
 	select count(*) into pExists
-	from i2b2
+	from i2b2metadata.i2b2
 	where c_fullname = topNode;
 	
 	--	add top node for study
 	
 	if pExists = 0 then
-		i2b2_add_node(TrialId, topNode, study_name, jobId);
+		call tm_cz.i2b2_add_node(TrialId, topNode, study_name, jobId);
 	end if;
 
 	--Remove invalid Parens in the data
@@ -345,40 +379,39 @@ BEGIN
 	where data_value like '%()%'
 	   or data_value like '%( )%'
 	   or (data_value like '%(%' and data_value NOT like '%)%');
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Remove empty parentheses 1',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Remove empty parentheses 1',rowCount,stepCt,'Done');
 	
 	update tm_wz.wrk_clinical_data
 	set data_value = replace(data_value,')', '')
 	where data_value like '%()%'
 	   or data_value like '%( )%'
 	   or (data_value like '%)%' and data_value NOT like '%(%');
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Remove empty parentheses 2',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Remove empty parentheses 2',rowCount,stepCt,'Done');
+
 	
 	--	set data_label to null when it duplicates the last part of the category_path
 	--	Remove data_label from last part of category_path when they are the same
 	
 	update tm_wz.wrk_clinical_data tpm
 	--set data_label = null
-	set category_path=substr(tpm.category_path,1,instr(tpm.category_path,'\',-2)-1)
+	set category_path=substr(tpm.category_path,1,instr(tpm.category_path,bslash,-2)-1)
 	   ,category_cd=substr(tpm.category_cd,1,instr(tpm.category_cd,'+',-2)-1)
 	where (tpm.category_cd, tpm.data_label) in
 		  (select distinct t.category_cd
 				 ,t.data_label
 		   from tm_wz.wrk_clinical_data t
-		   where upper(substr(t.category_path,instr(t.category_path,'\',-1)+1,length(t.category_path)-instr(t.category_path,'\',-1))) 
+		   where upper(substr(t.category_path,instr(t.category_path,bslash,-1)+1,length(t.category_path)-instr(t.category_path,bslash,-1))) 
 			     = upper(t.data_label)
 		     and t.data_label is not null)
 	  and tpm.data_label is not null;
-
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Set data_label to null when found in category_path',SQL%ROWCOUNT,stepCt,'Done');
-		
-	commit;
-	
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Set data_label to null when found in category_path',rowCount,stepCt,'Done');
+
 	--	change any % to Pct and & and + to ' and ' and _ to space in data_label only
 	
 	update tm_wz.wrk_clinical_data
@@ -386,51 +419,26 @@ BEGIN
 	   ,data_value=replace(replace(replace(data_value,'%',' Pct'),'&',' and '),'+',' and ')
 	   ,category_cd=replace(replace(category_cd,'%',' Pct'),'&',' and ')
 	   ,category_path=replace(replace(category_path,'%',' Pct'),'&',' and ');
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Remove percent/plus',rowCount,stepCt,'Done');
 
   --Trim trailing and leadling spaces as well as remove any double spaces, remove space from before comma, remove trailing comma
 
 	update tm_wz.wrk_clinical_data
 	set data_label  = trim(trailing ',' from trim(replace(replace(data_label,'  ', ' '),' ,',','))),
 		data_value  = trim(trailing ',' from trim(replace(replace(data_value,'  ', ' '),' ,',','))),
---		sample_type = trim(trailing ',' from trim(replace(replace(sample_type,'  ', ' '),' ,',','))),
 		visit_name  = trim(trailing ',' from trim(replace(replace(visit_name,'  ', ' '),' ,',',')));
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Remove leading, trailing, double spaces',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;
-
-	--	check if visit_date is date
-	
-	select count(*) into pExists
-	from tm_wz.wrk_clinical_data
-	where visit_date is not null
-	  and is_date(visit_date,'YYYY-MM-DD HH24:mi') = 1;
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Check for invalid visit_date',SQL%ROWCOUNT,stepCt,'Done');
-		  
-	if pExists > 0 then
-		raise invalid_visit_date;
-	end if;
-
-	--	check if end_date is date
-	
-	select count(*) into pExists
-	from tm_wz.wrk_clinical_data
-	where end_date is not null
-	  and is_date(visit_date,'YYYY-MM-DD HH24:mi') = 1;
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Check for invalid end_date',SQL%ROWCOUNT,stepCt,'Done');
-		  
-	if pExists > 0 then
-		raise invalid_end_date;
-	end if;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Remove leading, trailing, double spaces',rowCount,stepCt,'Done');
 
 	--	determine numeric data types, force D (dates) to be non-numeric so mixed data types gets set correctly
 	--	this deals with valid date of 20130101.1230 (D) and valid number of 2013 (T) not getting tagged as numeric
 
-	execute immediate('truncate table tm_wz.wt_num_data_types');
+	execute immediate 'truncate table tm_wz.wt_num_data_types' ;
   
-	insert into wt_num_data_types
+	insert into tm_wz.wt_num_data_types
 	(category_cd
 	,data_label
 	,visit_name
@@ -443,10 +451,13 @@ BEGIN
     group by category_cd
 	        ,data_label
             ,visit_name
-      having sum(case when data_type = 'D' then 1 else is_number(data_value) end) = 0;
+      having sum(case when data_type = 'D' then 1 
+	          		   else case when cast(regexp_extract(data_value,'^[0-9]+(\.[0-9]+)?$') as varchar(50)) is null
+			  				then 1 else 0 end 
+				 end ) = 0;
+	rowCount := ROW_COUNT;	
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert numeric data into WZ wt_num_data_types',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert numeric data into WZ wt_num_data_types',rowCount,stepCt,'Done');
 	
 	--	set mixed dates to data_type = T
 	
@@ -457,39 +468,41 @@ BEGIN
 		   from tm_wz.wrk_clinical_data
 		   group by category_cd, data_label, visit_name
 		   having count(distinct data_type) > 1);
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Reset mixed date/text data_types to T',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Reset mixed date/text data_types to T',rowCount,stepCt,'Done');
 		
 	--	only update T data_types, leave D as is
 	
 	update tm_wz.wrk_clinical_data t
 	set data_type='N'
 	where exists
-	     (select 1 from wt_num_data_types x
-	      where nvl(t.category_cd,'@') = nvl(x.category_cd,'@')
-			and nvl(t.data_label,'**NULL**') = nvl(x.data_label,'**NULL**')
-			and nvl(t.visit_name,'**NULL**') = nvl(x.visit_name,'**NULL**')
+	     (select 1 from tm_wz.wt_num_data_types x
+	      where coalesce(t.category_cd,'@') = coalesce(x.category_cd,'@')
+			and coalesce(t.data_label,'**NULL**') = coalesce(x.data_label,'**NULL**')
+			and coalesce(t.visit_name,'**NULL**') = coalesce(x.visit_name,'**NULL**')
 		  )
 	  and t.data_type = 'T';
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Updated data_type flag for numeric data_types',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated data_type flag for numeric data_types',rowCount,stepCt,'Done');
 	
 	--	set visit_date to date if D data_type and visit_date is null
 	
 	update tm_wz.wrk_clinical_data t
-	set visit_date=to_char(to_date(substr(data_value,1,8) || substr(data_value,10,4),'YYYYMMDD.HH24mi'),'YYYY-MM-DD HH24:mi')
+	set visit_date=to_char(to_timestamp(substr(data_value,1,8) || substr(data_value,10,4),'YYYYMMDD.HH24mi'),'YYYY-MM-DD HH24:mi')
 	where t.data_type = 'D'
 	  and t.visit_date is null
-	  and is_date(substr(data_value,1,8) || substr(data_value,10,4),'YYYYMMDDHH24mi') = 0;
+	  and cast(regexp_extract(t.visit_date,'^[0-9]+(\.[0-9]+)?$') as varchar(50)) is not null;
+	-- and tm_cz.is_date(substr(data_value,1,8) || substr(data_value,10,4),'YYYYMMDDHH24mi') = 0;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Updated visit_date for date data_types',SQL%ROWCOUNT,stepCt,'Done');
-	commit;	  
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated visit_date for date data_types',rowCount,stepCt,'Done');
+  
 
 	-- Build all needed leaf nodes in one pass for both numeric and text nodes
  
-	execute immediate('truncate table tm_wz.wt_trial_nodes');
+	execute immediate 'truncate table tm_wz.wt_trial_nodes' ;
 	
 	insert into tm_wz.wt_trial_nodes
 	(leaf_node
@@ -506,19 +519,19 @@ BEGIN
 	,obs_string
 	,valuetype_cd
 	)
-    select 	REGEXP_REPLACE(Case 
+    select 	substr(REGEXP_REPLACE(Case 
 				--	Text data_type (default node)
 				When a.data_type = 'T'
 				then case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
-						  then topNode || replace(replace(replace(a.category_path,'DATALABEL',a.data_label),'VISITNAME',a.visit_name),'OBSERVATION',null) || '\' || a.data_value || '\'
-						  else topNode || a.category_path || '\'  || a.data_label || '\' || a.data_value || '\' || a.visit_name || '\'
+						  then topNode || replace(replace(replace(coalesce(a.category_path,''),'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION','') || bslash || a.data_value || bslash
+						  else topNode || coalesce(a.category_path,'') || bslash  || coalesce(a.data_label,'') || bslash || coalesce(a.data_value,'') || bslash || coalesce(a.visit_name,'') || bslash
 					 end
 				--	else is numeric or date data_type and default_node
 				else case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
-						  then topNode || replace(replace(replace(a.category_path,'DATALABEL',a.data_label),'VISITNAME',a.visit_name),'OBSERVATION',a.obs_string) || '\'
-						  else topNode || a.category_path || '\'  || a.data_label || '\' || a.visit_name || '\'               
+						  then topNode || replace(replace(replace(coalesce(a.category_path,''),'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION',coalesce(a.obs_string,'')) || bslash
+						  else topNode || coalesce(a.category_path,'') || bslash  || coalesce(a.data_label,'') || bslash || coalesce(a.visit_name,'') || bslash               
 						end
-				end ,'(\\){2,}', '\') as leaf_node
+				end ,'(\\){2,}', bslash),1,2000) as leaf_node
 			,a.category_cd
 			,a.visit_name
 			,a.data_label
@@ -531,19 +544,19 @@ BEGIN
 			,a.obs_string
 			,max(a.valuetype_cd)
 	from  tm_wz.wrk_clinical_data a
-	group by REGEXP_REPLACE(Case 
+	group by substr(REGEXP_REPLACE(Case 
 				--	Text data_type (default node)
 				When a.data_type = 'T'
 				then case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
-						  then topNode || replace(replace(replace(a.category_path,'DATALABEL',a.data_label),'VISITNAME',a.visit_name),'OBSERVATION',null) || '\' || a.data_value || '\'
-						  else topNode || a.category_path || '\'  || a.data_label || '\' || a.data_value || '\' || a.visit_name || '\'
+						  then topNode || replace(replace(replace(coalesce(a.category_path,''),'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION','') || bslash || a.data_value || bslash
+						  else topNode || coalesce(a.category_path,'') || bslash  || coalesce(a.data_label,'') || bslash || coalesce(a.data_value,'') || bslash || coalesce(a.visit_name,'') || bslash
 					 end
 				--	else is numeric or date data_type and default_node
 				else case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
-						  then topNode || replace(replace(replace(a.category_path,'DATALABEL',a.data_label),'VISITNAME',a.visit_name),'OBSERVATION',a.obs_string) || '\'
-						  else topNode || a.category_path || '\'  || a.data_label || '\' || a.visit_name || '\'               
+						  then topNode || replace(replace(replace(coalesce(a.category_path,''),'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION',coalesce(a.obs_string,'')) || bslash
+						  else topNode || coalesce(a.category_path,'') || bslash  || coalesce(a.data_label,'') || bslash || coalesce(a.visit_name,'') || bslash               
 						end
-				end ,'(\\){2,}', '\') 
+				end ,'(\\){2,}', bslash),1,2000)
 			,a.category_cd
 			,a.visit_name
 			,a.data_label
@@ -554,17 +567,17 @@ BEGIN
 			,a.data_label_components
 			,a.link_type
 			,a.obs_string;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Create leaf nodes for trial',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create leaf nodes for trial',rowCount,stepCt,'Done');
 	
 	--	set node_name
 	
-	update wt_trial_nodes
-	set node_name=parse_nth_value(leaf_node,length(leaf_node)-length(replace(leaf_node,'\',null)),'\');
+	update tm_wz.wt_trial_nodes a
+	set node_name=replace(substr(leaf_node,instr(leaf_node,bslash,-2)+1),bslash,'');
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Updated node name for leaf nodes',SQL%ROWCOUNT,stepCt,'Done');
-	commit;	
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated node name for leaf nodes',rowCount,stepCt,'Done');	
 	
 	--	check if any node is a parent of another, all nodes must be children
 	
@@ -573,252 +586,132 @@ BEGIN
 		,tm_wz.wt_trial_nodes c
 	where c.leaf_node like p.leaf_node || '%'
 	  and c.leaf_node != p.leaf_node;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Check if node is parent of another node',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Check if node is parent of another node',rowCount,stepCt,'Done');
 
 	if pExists > 0 then
-		raise parent_node_exists;
+		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Leaf node in tm_wz.wt_trial_nodes is a parent of another node',1,stepCt,'ERROR');
+		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_end_audit (jobId,'FAIL');
+		return 16;
 	end if;
-		
-	-- execute immediate('analyze table tm_wz.wt_trial_nodes compute statistics');
 	
 	--	value vocab
 	
-	execute immediate('truncate table tm_wz.wt_vocab_nodes');
-	
-	select distinct leaf_node
-		  ,coalesce(data_value_ctrl_vocab_code, data_label_ctrl_vocab_code) as data_value_ctrl_vocab_code
-		  ,null as label_components
-		  ,null as data_label
-	bulk collect into vocab_array
-	from wt_trial_nodes
-	where replace(replace(data_value_ctrl_vocab_code,';',null),'null',null)	is not null;
-	
-	if SQL%ROWCOUNT > 0 then
-		vCount := 0;
-		
-		for i in vocab_array.first .. vocab_array.last
+	execute immediate 'truncate table tm_wz.wt_vocab_nodes';
+
+	for vocab_rec in 
+		select distinct leaf_node
+			,coalesce(data_value_ctrl_vocab_code, data_label_ctrl_vocab_code) as data_value_ctrl_vocab_code
+			,null as label_components
+			,null as data_label
+		from tm_wz.wt_trial_nodes
+		where replace(replace(data_value_ctrl_vocab_code,';',''),'null','')	!= ''
+	loop	
+		dcount := length(vocab_rec.data_value_ctrl_vocab_code)-length(replace(vocab_rec.data_value_ctrl_vocab_code,';',''))+1;		
+		while dcount > 0
 		loop
-			
-			select length(vocab_array(i).vocab_codes) -
-				   length(replace(vocab_array(i).vocab_codes,';',null))+1
-			into dcount from dual;
-			
-			while dcount > 0
-			loop
-				select parse_nth_value(vocab_array(i).vocab_codes,dcount,';') into tmp_vocab from dual;
-				
-				tmp_vocab := trim(tmp_vocab);
-				insert into tm_wz.wt_vocab_nodes
-				(leaf_node, modifier_cd, label_node)
-				select vocab_array(i).vocab_leaf, tmp_vocab, vocab_array(i).vocab_leaf
-				from dual
-				where not exists
-					 (select 1 from tm_wz.wt_vocab_nodes x
-					  where x.leaf_node = vocab_array(i).vocab_leaf
-					    and x.modifier_cd = tmp_vocab
-						and x.label_node = vocab_array(i).vocab_leaf);
-				
-				dcount := dcount - 1;
-				vCount := vCount + 1;
-			end loop;
+			tmp_vocab := tm_cz.parse_nth_value(vocab_rec.data_value_ctrl_vocab_code,dcount,';');
+			tmp_vocab := trim(tmp_vocab);
+			insert into tm_wz.wt_vocab_nodes
+			(leaf_node, modifier_cd, label_node)
+			select vocab_rec.leaf_node, tmp_vocab, vocab_rec.leaf_node
+			where not exists
+				 (select 1 from tm_wz.wt_vocab_nodes x
+				  where x.leaf_node = vocab_rec.leaf_node
+				    and x.modifier_cd = tmp_vocab
+					and x.label_node = vocab_rec.leaf_node);
+			dcount := dcount - 1;
+			vCount := vCount + 1;
 		end loop;
-		commit;
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Create modifiers for data_values',vCount,stepCt,'Done');
-	end if;	
-	
+	end loop;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create modifiers for data_values',vCount,stepCt,'Done');	
+
 	--	update instance number for value modifiers
 	
-	merge into tm_wz.wt_vocab_nodes a
-    using (select t.leaf_node
+	update tm_wz.wt_vocab_nodes a
+	set a.value_instance=x.instance_num
+	from (select t.leaf_node
                  ,t.modifier_cd
                  ,row_number() over (partition by leaf_node order by modifier_cd) as instance_num
            from tm_wz.wt_vocab_nodes t
-           where t.leaf_node = t.label_node) upd
-    on (a.leaf_node = upd.leaf_node and a.modifier_cd = upd.modifier_cd)
-    when matched then
-    update set a.value_instance=upd.instance_num;
-	commit;
+           where t.leaf_node = t.label_node) x
+	where a.leaf_node = x.leaf_node
+	  and a.modifier_cd = x.modifier_cd;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Update value_instance in wt_vocab_nodes',SQL%ROWCOUNT,stepCt,'Done');
-	
-/*
-	--	modifiers for data_labels
-	
-	select distinct leaf_node
-		  ,data_label_ctrl_vocab_code
-		  ,data_label_components
-		  ,trim('\' from data_label)
-	bulk collect into vocab_array
-	from wt_trial_nodes
-	where replace(replace(data_label_ctrl_vocab_code,'|',null),'null',null) is not null;
-	
-	if SQL%ROWCOUNT > 0 then
-	
-		--execute immediate('truncate table tm_wz.wt_vocab_nodes');
-		vCount := 0;
-		
-		for i in vocab_array.first .. vocab_array.last
-		loop
-			tmp_leaf := vocab_array(i).vocab_leaf;
-			
-			if vocab_array(i).label_components is null then
-				tmp_label := vocab_array(i).data_label;
-				select length(vocab_array(i).vocab_codes) - length(replace(vocab_array(i).vocab_codes,';',null))+1 into dcount from dual;
-				while dcount > 0
-				loop
-					select parse_nth_value(vocab_array(i).vocab_codes,dcount,';') into tmp_vocab from dual;
-					tmp_vocab := trim(tmp_vocab);
-					tmp_label_node := substr(tmp_leaf,1,instr(tmp_leaf,'\'||tmp_label||'\')+length('\'||tmp_label||'\')-1);
-					insert into tm_wz.wt_vocab_nodes
-					(leaf_node, label_node, modifier_cd)
-					select tmp_leaf
-						  ,tmp_label_node
-						  ,tmp_vocab
-					from dual
-					where not exists
-						 (select 1 from tm_wz.wt_vocab_nodes x
-						  where x.leaf_node = tmp_leaf
-						    and x.label_node = tmp_label_node
-							and x.modifier_cd = tmp_vocab);
-					dcount := dcount - 1;
-					vCount := vCount + 1;
-				end loop;		
-			else
-				tmp_vocab_codes := trim('|' from vocab_array(i).vocab_codes);
-				tmp_components := trim('|' from vocab_array(i).label_components);
-				select length(tmp_vocab_codes)-length(replace(tmp_vocab_codes,'|',null))+1 into dcount from dual;
-
-				while dcount > 0
-				loop
-					select parse_nth_value(tmp_vocab_codes,dcount,'|') into tmp_vocab from dual;
-					select parse_nth_value(tmp_components,dcount,'|') into tmp_label from dual;
-					if tmp_components <> '\' then 
-						select length(tmp_vocab)-length(replace(tmp_vocab,';',null))+1 into pCount from dual;
-						while pCount > 0
-						loop
-							select parse_nth_value(tmp_vocab,pcount,';') into tmp_label_vocab from dual;
-							tmp_label_vocab := trim(tmp_label_vocab);
-							tmp_label_node := substr(tmp_leaf,1,instr(tmp_leaf,'\'||tmp_label||'\')+length('\'||tmp_label||'\')-1);
-							if coalesce(tmp_label_vocab,'null') <> 'null' then
-								insert into tm_wz.wt_vocab_nodes
-								(leaf_node, label_node, modifier_cd)
-								select tmp_leaf
-									  ,tmp_label_node
-									  ,tmp_label_vocab
-								from dual
-								where not exists
-									 (select 1 from tm_wz.wt_vocab_nodes x
-									  where x.leaf_node = tmp_leaf
-										and x.label_node = tmp_label_node
-										and x.modifier_cd = tmp_vocab);
-								vCount := vCount + 1;
-							end if;
-							pCount := pCount - 1;			
-						end loop;
-					end if;
-					dCount := dCount - 1;
-				end loop;
-			end if;
-		end loop;
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Create modifiers for data_labels',vCount,stepCt,'Done');	
-		commit;
-	end if;		
-*/
-	--	update instance number for label modifiers
-	
-	merge into tm_wz.wt_vocab_nodes a
-    using (select x.label_node, x.modifier_cd
-          ,row_number() over (partition by x.label_node order by x.modifier_cd) as instance_num
-          from (select distinct label_node, modifier_cd
-              from tm_wz.wt_vocab_nodes
-              where leaf_node != label_node) x) upd
-    on (a.label_node = upd.label_node
-       and a.modifier_cd = upd.modifier_cd)
-    when matched then
-    update set a.label_instance=upd.instance_num;
-	commit;
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Update label_instance in wt_vocab_nodes',SQL%ROWCOUNT,stepCt,'Done');
-
-				
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update value_instance in wt_vocab_nodes',rowCount,stepCt,'Done');
+					
 	--	insert subjects into patient_dimension if needed
 	
-	execute immediate('truncate table tmp_subject_info');
+	execute immediate 'truncate table tm_wz.wt_subject_info' ;
 
-	insert into tmp_subject_info
+	insert into tm_wz.wt_subject_info
 	(usubjid,
      age_in_years_num,
      sex_cd,
      race_cd
     )
 	select a.usubjid,
-	      nvl(max(case when upper(a.data_label) = 'AGE'
-					   then case when is_number(a.data_value) = 1 then 0 else to_number(a.data_value) end
+	      cast(coalesce(max(case when upper(a.data_label) = 'AGE'
+					   then case when cast(regexp_extract(a.data_value,'^[0-9]+(\.[0-9]+)?$') as varchar(50)) is null then '0' else a.data_value end
 		               when upper(a.data_label) like '%(AGE)' 
-					   then case when is_number(a.data_value) = 1 then 0 else to_number(a.data_value) end
-					   else null end),0) as age,
-		  --nvl(max(decode(upper(a.data_label),'AGE',data_value,null)),0) as age,
-		  nvl(max(case when upper(a.data_label) = 'SEX' then a.data_value
+					   then case when cast(regexp_extract(a.data_value,'^[0-9]+(\.[0-9]+)?$') as varchar(50)) is null then '0' else a.data_value end
+					   else null end),'0') as numeric) as age,
+		  coalesce(max(case when upper(a.data_label) = 'SEX' then a.data_value
 		           when upper(a.data_label) like '%(SEX)' then a.data_value
 				   when upper(a.data_label) = 'GENDER' then a.data_value
 				   else null end),'Unknown') as sex,
-		  --max(decode(upper(a.data_label),'SEX',data_value,'GENDER',data_value,null)) as sex,
 		  max(case when upper(a.data_label) = 'RACE' then a.data_value
 		           when upper(a.data_label) like '%(RACE)' then a.data_value
 				   else null end) as race
-		  --max(decode(upper(a.data_label),'RACE',data_value,null)) as race
 	from tm_wz.wrk_clinical_data a
-	--where upper(a.data_label) in ('AGE','RACE','SEX','GENDER')
 	group by a.usubjid;
-		  
+	rowCount := ROW_COUNT;	  
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert subject information into temp table',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert subject information into temp table',rowCount,stepCt,'Done');
 	
 	--	Delete dropped subjects from patient_dimension if they do not exist in de_subject_sample_mapping
 	
-	delete patient_dimension
+	delete from i2b2demodata.patient_dimension
 	where sourcesystem_cd in
-		 (select distinct pd.sourcesystem_cd from patient_dimension pd
+		 (select distinct pd.sourcesystem_cd from i2b2demodata.patient_dimension pd
 		  where pd.sourcesystem_cd like TrialId || ':%'
 		  minus 
 		  select distinct cd.usubjid from tm_wz.wrk_clinical_data cd)
 	  and patient_num not in
-		  (select distinct sm.patient_id from de_subject_sample_mapping sm);
-		  
+		  (select distinct sm.patient_id from deapp.de_subject_sample_mapping sm);
+	rowCount := ROW_COUNT;	  
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Delete dropped subjects from patient_dimension',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;	
-	
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete dropped subjects from patient_dimension',rowCount,stepCt,'Done');
+
 	--	update patients with changed information
 
-    merge into patient_dimension a
-    using (select t.usubjid as sourcesystem_cd
+    update i2b2demodata.patient_dimension a
+	set sex_cd=x.sex_cd
+	   ,race_cd=x.race_cd
+	   ,age_in_years_num=x.age_in_years_num
+	   ,update_date=etlDate
+	from (select t.usubjid as sourcesystem_cd
                  ,t.sex_cd
                  ,t.race_cd
                  ,t.age_in_years_num
-           from tmp_subject_info t
-			   ,patient_dimension pd
+           from tm_wz.wt_subject_info t
+			   ,i2b2demodata.patient_dimension pd
            where pd.sourcesystem_cd = t.usubjid
 			and t.sex_cd != pd.sex_cd
 			and t.age_in_years_num != pd.age_in_years_num
-			and t.race_cd != pd.race_cd) upd
-    on (a.sourcesystem_cd = upd.sourcesystem_cd)
-    when matched then
-    update set a.sex_cd=upd.sex_cd, a.race_cd=upd.race_cd,a.age_in_years_num=upd.age_in_years_num,update_date=etlDate;		  
+			and t.race_cd != pd.race_cd) x
+	where a.sourcesystem_cd = x.sourcesystem_cd;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Update subjects with changed demographics in patient_dimension',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;	
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update subjects with changed demographics in patient_dimension',rowCount,stepCt,'Done');
 
 	--	insert new subjects into patient_dimension
 	
-	insert into patient_dimension
+	insert into i2b2demodata.patient_dimension
     (patient_num,
      sex_cd,
      age_in_years_num,
@@ -828,7 +721,7 @@ BEGIN
      import_date,
      sourcesystem_cd
     )
-    select seq_patient_num.nextval,
+    select next value for i2b2demodata.seq_patient_num,
 		   t.sex_cd,
 		   t.age_in_years_num,
 		   t.race_cd,
@@ -836,100 +729,95 @@ BEGIN
 		   etlDate,
 		   etlDate,
 		   t.usubjid
-    from tmp_subject_info t
+    from tm_wz.wt_subject_info t
 	where t.usubjid in 
-		 (select distinct cd.usubjid from tmp_subject_info cd
+		 (select distinct cd.usubjid from tm_wz.wt_subject_info cd
 		  minus
-		  select distinct pd.sourcesystem_cd from patient_dimension pd
+		  select distinct pd.sourcesystem_cd from i2b2demodata.patient_dimension pd
 		  where pd.sourcesystem_cd like TrialId || ':%');
-		  
+	rowCount := ROW_COUNT;	  
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert new subjects into patient_dimension',SQL%ROWCOUNT,stepCt,'Done');
-	
-	commit;
-		
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert new subjects into patient_dimension',rowCount,stepCt,'Done');
+
+/*	will get handled by deletion of hidden nodes	
 	--	new bulk delete of unused nodes
 	
-	execute immediate('truncate table tm_wz.wt_del_nodes');
+	execute immediate 'truncate table tm_wz.wt_del_nodes' );
 	stepCt := stepCt + 1;	
-	czx_write_audit(jobId,databaseName,procedureName,'Truncate table tm_wz.wt_del_nodes',0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Truncate table tm_wz.wt_del_nodes',0,stepCt,'Done');
 	
 	insert into tm_wz.wt_del_nodes
 	select l.c_fullname
 		  ,l.c_basecode
-	from i2b2 l
+	from i2b2demodata.i2b2 l
 	where l.c_visualattributes like 'L%'
 	  and l.c_fullname like topNode || '%'
 	  and l.c_fullname not in
 		 (select t.leaf_node 
-		  from wt_trial_nodes t
+		  from tm_wz.wt_trial_nodes t
 		  union
 		  select m.c_fullname
-		  from de_subject_sample_mapping sm
-			  ,i2b2 m
+		  from deapp.de_subject_sample_mapping sm
+			  ,i2b2demodata.i2b2 m
 		  where sm.trial_name = TrialId
 		    and sm.concept_code = m.c_basecode
 			and m.c_visualattributes like 'L%');
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;	
-	czx_write_audit(jobId,databaseName,procedureName,'Insert nodes into tm_wz.wt_del_nodes',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert nodes into tm_wz.wt_del_nodes',rowCount,stepCt,'Done');
 	
-	select count(*) into pExists
-	from tm_wz.wt_del_nodes;
-	
-	if pExists > 0 then 
+	if rowCount > 0 then
 	
 		--	delete i2b2 unused nodes
-		
 		delete from i2b2metadata.i2b2 f
 		where f.c_fullname in (select distinct x.c_fullname from tm_wz.wt_del_nodes x);
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;	
-		czx_write_audit(jobId,databaseName,procedureName,'Bulk delete nodes from i2b2',SQL%ROWCOUNT,stepCt,'Done');
-		commit;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Bulk delete nodes from i2b2',rowCount,stepCt,'Done');
 		
 		--	delete concept_dimension unused nodes
 		
 		delete from i2b2demodata.concept_dimension f
 		where f.concept_cd in (select distinct x.c_basecode as concept_cd from tm_wz.wt_del_nodes x);
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;	
-		czx_write_audit(jobId,databaseName,procedureName,'Bulk delete nodes from concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
-		commit;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Bulk delete nodes from concept_dimension',rowCount,stepCt,'Done');
 		
 		--	delete observation_fact unused nodes
 		
 		delete from i2b2demodata.observation_fact f
 		where f.concept_cd in (select distinct x.c_basecode as concept_cd from tm_wz.wt_del_nodes x);
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;	
-		czx_write_audit(jobId,databaseName,procedureName,'Bulk delete nodes from observation_fact',SQL%ROWCOUNT,stepCt,'Done');
-		commit;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Bulk delete nodes from observation_fact',rowCount,stepCt,'Done');
 		
 		--	delete de_concept_visit unused nodes
 		
 		delete from deapp.de_concept_visit f
 		where f.concept_cd in (select distinct x.c_basecode as concept_cd from tm_wz.wt_del_nodes x);
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;	
-		czx_write_audit(jobId,databaseName,procedureName,'Bulk delete nodes from de_concept_visit',SQL%ROWCOUNT,stepCt,'Done');
-		commit;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Bulk delete nodes from de_concept_visit',rowCount,stepCt,'Done');
 		
 	end if;
+*/
 
 	--	bulk insert leaf nodes
 
-	merge into concept_dimension a
-    using (select t.leaf_node as concept_path
+	update i2b2demodata.concept_dimension a
+	set name_char=x.node_name
+	from (select t.leaf_node as concept_path
                  ,t.node_name
-           from wt_trial_nodes t
-			   ,concept_dimension c
+           from tm_wz.wt_trial_nodes t
+			   ,i2b2demodata.concept_dimension c
            where t.leaf_node = c.concept_path
-              and t.node_name != c.name_char) upd
-    on (a.concept_path = upd.concept_path)
-    when matched then
-    update set a.name_char=upd.node_name;	  
+              and t.node_name != c.name_char) x
+	where a.concept_path = x.concept_path;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Update name_char in concept_dimension for changed names',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update name_char in concept_dimension for changed names',rowCount,stepCt,'Done');
 	
-	insert into concept_dimension
+	insert into i2b2demodata.concept_dimension
     (concept_cd
 	,concept_path
 	,name_char
@@ -938,7 +826,7 @@ BEGIN
 	,import_date
 	,sourcesystem_cd
 	)
-    select concept_id.nextval
+    select next value for i2b2demodata.concept_id
 	     ,x.leaf_node
 		 ,x.node_name
 		 ,etlDate
@@ -946,45 +834,42 @@ BEGIN
 		 ,etlDate
 		 ,TrialId
 	from (select distinct c.leaf_node
-				,to_char(c.node_name) as node_name
-		  from wt_trial_nodes c
+				,c.node_name
+		  from tm_wz.wt_trial_nodes c
 		  where not exists
-			(select 1 from concept_dimension x
+			(select 1 from i2b2demodata.concept_dimension x
 			where c.leaf_node = x.concept_path)
 		 ) x;
-	
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Inserted new leaf nodes into I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
-    commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted new leaf nodes into I2B2DEMODATA concept_dimension',rowCount,stepCt,'Done');
 
 	--	convert D data_type to T for i2b2
 	
-	merge into i2b2 a
-    using (select distinct t.leaf_node as c_fullname
+	update i2b2metadata.i2b2 a
+	set c_name=upd.node_name
+	   ,c_visualattributes=case when upd.data_type = 'D' then 'LAD' else 'LA' end
+	   ,c_metadataxml=case when upd.data_type = 'T'
+								then null
+							when upd.data_type = 'D' 
+								then date_metadataxml
+							else num_metadataxml end
+	from (select distinct t.leaf_node as c_fullname
                  ,t.data_type  --t.data_type
                  ,t.node_name
 				 ,t.valuetype_cd
-           from wt_trial_nodes t
-              ,i2b2 c
-           where t.leaf_node = c.c_fullname
-              and (t.node_name != c.c_name or
+           from tm_wz.wt_trial_nodes t
+              ,i2b2metadata.i2b2 c
+           where t.leaf_node = c.c_fullname 
+             and (t.node_name != c.c_name or
 			       c.c_columndatatype != t.data_type or
 				  (c.c_metadataxml is not null and t.data_type = 'T'))) upd
-    on (a.c_fullname = upd.c_fullname)
-    when matched then
-    update set a.c_name=upd.node_name
-		  ,a.c_visualattributes=case when upd.data_type = 'D' then 'LAD' else 'LA' end
-          ,a.c_metadataxml=case when upd.data_type = 'T'
-								then null
-								when upd.data_type = 'D' 
-								then '<?xml version="1.0"?><ValueMetadata><Version>3.02</Version><CreationDateTime>08/14/2008 01:22:59</CreationDateTime><TestID></TestID><TestName></TestName><DataType>PosFloat</DataType><CodeType></CodeType><Loinc></Loinc><Flagstouse></Flagstouse><Oktousevalues>Y</Oktousevalues><MaxStringLength></MaxStringLength><LowofLowValue>0</LowofLowValue><HighofLowValue>0</HighofLowValue><LowofHighValue>100</LowofHighValue>100<HighofHighValue>100</HighofHighValue><LowofToxicValue></LowofToxicValue><HighofToxicValue></HighofToxicValue><EnumValues></EnumValues><CommentsDeterminingExclusion><Com></Com></CommentsDeterminingExclusion><UnitValues><NormalUnits>ratio</NormalUnits><EqualUnits></EqualUnits><ExcludingUnits></ExcludingUnits><ConvertingUnits><Units></Units><MultiplyingFactor></MultiplyingFactor></ConvertingUnits></UnitValues><Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>'
-								else '<?xml version="1.0"?><ValueMetadata><Version>3.02</Version><CreationDateTime>08/14/2008 01:22:59</CreationDateTime><TestID></TestID><TestName></TestName><DataType>PosFloat</DataType><CodeType></CodeType><Loinc></Loinc><Flagstouse>LNH</Flagstouse><Oktousevalues>Y</Oktousevalues><MaxStringLength></MaxStringLength><LowofLowValue>0</LowofLowValue><HighofLowValue>0</HighofLowValue><LowofHighValue>100</LowofHighValue>100<HighofHighValue>100</HighofHighValue><LowofToxicValue></LowofToxicValue><HighofToxicValue></HighofToxicValue><EnumValues></EnumValues><CommentsDeterminingExclusion><Com></Com></CommentsDeterminingExclusion><UnitValues><NormalUnits>ratio</NormalUnits><EqualUnits></EqualUnits><ExcludingUnits></ExcludingUnits><ConvertingUnits><Units></Units><MultiplyingFactor></MultiplyingFactor></ConvertingUnits></UnitValues><Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>'
-						   end;	
+    where a.c_fullname = upd.c_fullname;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Updated name and data type in i2b2 if changed',SQL%ROWCOUNT,stepCt,'Done');
-    commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated name and data type in i2b2 if changed',rowCount,stepCt,'Done');
 			   
-	insert into i2b2
+	insert into i2b2metadata.i2b2
     (c_hlevel
 	,c_fullname
 	,c_name
@@ -1003,7 +888,7 @@ BEGIN
 	,c_operator
 	,c_columndatatype
 	,c_comment
-	,i2b2_id
+	,m_applied_path
 	,c_metadataxml
 	)
     select x.c_hlevel
@@ -1024,81 +909,63 @@ BEGIN
 		  ,'LIKE'
 		  ,'T'
 		  ,'trial:' || TrialId
-		  ,i2b2metadata.i2b2_id_seq.nextval
+		  ,'@'
 		  ,x.c_metadataxml
-	from (select distinct (length(c.concept_path) - nvl(length(replace(c.concept_path, '\')),0)) / length('\') - 2 + root_level as c_hlevel
+	from (select distinct (length(c.concept_path) - coalesce(length(replace(c.concept_path, bslash,'')),0)) / length(bslash) - 2 + root_level as c_hlevel
 		  ,c.concept_path
 		  ,c.concept_cd
 		  ,c.name_char
 		  ,case when t.data_type = 'T' then null
-		        when t.data_type = 'D' then '<?xml version="1.0"?><ValueMetadata><Version>3.02</Version><CreationDateTime>08/14/2008 01:22:59</CreationDateTime><TestID></TestID><TestName></TestName><DataType>PosFloat</DataType><CodeType></CodeType><Loinc></Loinc><Flagstouse></Flagstouse><Oktousevalues>Y</Oktousevalues><MaxStringLength></MaxStringLength><LowofLowValue>0</LowofLowValue><HighofLowValue>0</HighofLowValue><LowofHighValue>100</LowofHighValue>100<HighofHighValue>100</HighofHighValue><LowofToxicValue></LowofToxicValue><HighofToxicValue></HighofToxicValue><EnumValues></EnumValues><CommentsDeterminingExclusion><Com></Com></CommentsDeterminingExclusion><UnitValues><NormalUnits>ratio</NormalUnits><EqualUnits></EqualUnits><ExcludingUnits></ExcludingUnits><ConvertingUnits><Units></Units><MultiplyingFactor></MultiplyingFactor></ConvertingUnits></UnitValues><Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>'
-		   else '<?xml version="1.0"?><ValueMetadata><Version>3.02</Version><CreationDateTime>08/14/2008 01:22:59</CreationDateTime><TestID></TestID><TestName></TestName><DataType>PosFloat</DataType><CodeType></CodeType><Loinc></Loinc><Flagstouse>LNH</Flagstouse><Oktousevalues>Y</Oktousevalues><MaxStringLength></MaxStringLength><LowofLowValue>0</LowofLowValue><HighofLowValue>0</HighofLowValue><LowofHighValue>100</LowofHighValue>100<HighofHighValue>100</HighofHighValue><LowofToxicValue></LowofToxicValue><HighofToxicValue></HighofToxicValue><EnumValues></EnumValues><CommentsDeterminingExclusion><Com></Com></CommentsDeterminingExclusion><UnitValues><NormalUnits>ratio</NormalUnits><EqualUnits></EqualUnits><ExcludingUnits></ExcludingUnits><ConvertingUnits><Units></Units><MultiplyingFactor></MultiplyingFactor></ConvertingUnits></UnitValues><Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>'
+		        when t.data_type = 'D' then date_metadataxml
+		   else num_metadataxml
 		   end as c_metadataxml
 		  ,t.data_type
-		 from concept_dimension c
-			 ,wt_trial_nodes t
+		 from i2b2demodata.concept_dimension c
+			 ,tm_wz.wt_trial_nodes t
 		 where c.concept_path = t.leaf_node
 		  and not exists
-			 (select 1 from i2b2 x
+			 (select 1 from i2b2metadata.i2b2 x
 			  where c.concept_path = x.c_fullname)
 		) x;
-		  
+	rowCount := ROW_COUNT;	  
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Inserted leaf nodes into I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
-    COMMIT;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted leaf nodes into I2B2METADATA i2b2',rowCount,stepCt,'Done');
 
-	--	delete from observation_fact all concept_cds for trial that are clinical data, exclude concept_cds from biomarker data
+	--	delete all facts for clinical data
 	
-	i2b2_table_index_maint('DROP','OBSERVATION_FACT',jobId);
-	-- i2b2_table_index_maint('DROP','VISIT_DIMENSION',jobId);
-	
-	delete from observation_fact f
+	delete from i2b2demodata.observation_fact f
 	where (f.modifier_cd = TrialId or f.sourcesystem_cd = TrialId)
 	  and f.concept_cd not in
-		 (select distinct concept_code as concept_cd from de_subject_sample_mapping
+		 (select distinct concept_code as concept_cd from deapp.de_subject_sample_mapping
 		  where trial_name = TrialId
 		    and concept_code is not null
 		  union
-		  select distinct concept_cd as concept_cd from de_subject_snp_dataset
+		  select distinct concept_cd as concept_cd from deapp.de_subject_snp_dataset
 		  where trial_name = TrialId
 		    and concept_cd is not null);
-		  
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Delete clinical data for study from observation_fact',SQL%ROWCOUNT,stepCt,'Done');
-    COMMIT;		  
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete clinical data for study from observation_fact',rowCount,stepCt,'Done');
 
-	/*
-	--	delete any data from visit_dimension	
-			
-	delete from visit_dimension
-	where sourcesystem_cd = TrialId;
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Delete study from  I2B2DEMODATA visit_dimension',SQL%ROWCOUNT,stepCt,'Done');	
-	commit;	
-*/
-	
 	--	create encounter_num for each link type/value 
 
 	delete from deapp.de_encounter_type
 	where study_id = TrialId;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Delete study from deapp.de_encounter_type',SQL%ROWCOUNT,stepCt,'Done');	
-	commit;
-	
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete study from deapp.de_encounter_type',rowCount,stepCt,'Done');	
 	
 	insert into deapp.de_encounter_type
 	select TrialId
 		  ,x.link_type
 		  ,x.link_value
-		  ,i2b2demodata.seq_encounter_num.nextval
+		  ,next value for i2b2demodata.seq_encounter_num
 	from (select distinct link_type, link_value from tm_wz.wrk_clinical_data) x;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Add study to deapp.de_encounter_type',SQL%ROWCOUNT,stepCt,'Done');	
-	commit;
-	execute immediate('alter session enable parallel dml');
-	execute immediate('alter trigger i2b2demodata.trg_encounter_num disable');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Add study to deapp.de_encounter_type',rowCount,stepCt,'Done');	
 
-	insert into /*+ append parallel(6) */ observation_fact
+	insert into i2b2demodata.observation_fact
 	(encounter_num
 	,patient_num
     ,concept_cd
@@ -1136,8 +1003,8 @@ BEGIN
 		--  ,1
 		 ,coalesce(vv.value_instance,1)
 		 --,row_number() over (partition by enc.encounter_num, i.c_basecode order by coalesce(vv.modifier_cd,'@')) as instance_num
-		 ,case when a.visit_date is null then null else to_date(a.visit_date,'YYYY-MM-DD HH24:mi') end
-		 ,case when a.end_date is null then null else to_date(a.end_date,'YYYY-MM-DD HH24:mi') end
+		 ,case when a.visit_date is null then null else to_timestamp(a.visit_date,'YYYY-MM-DD HH24:mi') end
+		 ,case when a.end_date is null then null else to_timestamp(a.end_date,'YYYY-MM-DD HH24:mi') end
 	from tm_wz.wrk_clinical_data a
 		 inner join deapp.de_encounter_type enc
 			   on  a.link_type = enc.link_type
@@ -1156,74 +1023,15 @@ BEGIN
 		 left outer join tm_wz.wt_vocab_nodes vv
 			 on t.leaf_node = vv.label_node
 	where not exists		-- don't insert if lower level node exists
-		 (select 1 from wt_trial_nodes x
+		 (select 1 from tm_wz.wt_trial_nodes x
 		  where x.leaf_node like t.leaf_node || '%_');  
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert trial into I2B2DEMODATA observation_fact',SQL%ROWCOUNT,stepCt,'Done');	
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial into I2B2DEMODATA observation_fact',rowCount,stepCt,'Done');	
 			
 	-- fill in folder nodes 
   
-	i2b2_fill_in_tree(TrialId, topNode, jobID);
-	
-/*
-	--	insert label modifiers, study-level modifer and modifier for each patient at study-level
-	
-	select count(*) into pExists
-	from tm_wz.wt_vocab_nodes;
-	
-	if pExists > 0 then
-	
-	   --Insert modifiers into observation_fact for label nodes
-		
-		insert into  observation_fact  - add parallel if needed
-		(encounter_num,
-		 patient_num,
-		 concept_cd,
-		 modifier_cd,
-		 valtype_cd,
-		 tval_char,
-		 nval_num,
-		 sourcesystem_cd,
-		 import_date,
-		 valueflag_cd,
-		 provider_id,
-		 location_cd,
-		 instance_num
-		)
-		select distinct obs.encounter_num
-			  ,obs.patient_num
-			  ,p.c_basecode
-			  ,vv.modifier_cd
-			  ,'T'
-			  ,'E'
-			  ,null
-			  ,TrialId
-			  ,etlDate
-			  ,'@'
-			  ,'@'
-			  ,'@'
-			  ,coalesce(vv.label_instance,1) as instance_num
-		from tm_wz.wt_vocab_nodes vv
-		inner join i2b2metadata.i2b2 c
-			  on vv.leaf_node = c.c_fullname
-		inner join i2b2metadata.i2b2 p
-			  on vv.label_node = p.c_fullname
-		inner join i2b2demodata.observation_fact obs
-			  on c.c_basecode = obs.concept_cd
-		where vv.leaf_node != vv.label_node
-		  and not exists
-			 (select 1 from i2b2demodata.observation_fact  x
-			  where obs.encounter_num = x.encounter_num
-			    and obs.concept_cd = x.concept_cd
-				and obs.patient_num = x.patient_num
-				and vv.modifier_cd = x.modifier_cd); 
- 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Insert label modifiers into I2B2DEMODATA observation_fact',SQL%ROWCOUNT,stepCt,'Done');	
-		commit;
-		
-	end if;
-*/
+	call tm_cz.i2b2_fill_in_tree(TrialId, topNode, jobID);
 		
 	--	insert study-level modifer and modifier for each patient at study-level
 	
@@ -1231,14 +1039,13 @@ BEGIN
 	from tm_wz.wt_vocab_nodes;
 		
 	if pExists > 0 then
-		
-		select count(*) into pExists
+		select count(*) into pCount
 		from i2b2demodata.modifier_dimension
-		where modifier_path = '\Study\';
+		where modifier_path = bslash || 'Study' || bslash;
 			
 		--	insert top_level \Study\ modifier if not found
-			
-		if pExists = 0 then 
+
+		if pCount = 0 then 
 			insert into i2b2demodata.modifier_dimension
 			(modifier_path
 			,modifier_cd
@@ -1246,24 +1053,23 @@ BEGIN
 			,modifier_level
 			,modifier_node_type
 			)
-			select '\Study\'
+			select bslash || 'Study' || bslash
 			,'CSTUDY' 
 			,'Study'
 			,0
-			,'F'	
-			from dual;
+			,'F';
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
-			czx_write_audit(jobId,databaseName,procedureName,'Insert \Study\ modifier into modifier_dimension',SQL%ROWCOUNT,stepCt,'Done');	
-			commit;			
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert Study modifier into modifier_dimension',rowCount,stepCt,'Done');	;			
 		end if;
 		
-		select count(*) into pExists
+		select count(*) into pCount
 		from i2b2demodata.modifier_metadata
 		where modifier_cd = 'CSTUDY';
 		
 		--	insert top_level \Study\ metadata if not found
-			
-		if pExists = 0 then 
+
+		if pCount = 0 then 
 			insert into i2b2demodata.modifier_metadata
 			(modifier_cd
 			,valtype_cd
@@ -1273,20 +1079,19 @@ BEGIN
 			select 'CSTUDY' 
 			,'T'
 			,null
-			,'N'
-			from dual;
+			,'N';
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
-			czx_write_audit(jobId,databaseName,procedureName,'Insert \Study\ modifier metadata into modifier_metadata',SQL%ROWCOUNT,stepCt,'Done');	
-			commit;			
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert \Study\ modifier metadata into modifier_metadata',rowCount,stepCt,'Done');				
 		end if;
 
 		--	insert study into modifier_dimension
 			
-		select count(*) into pExists
+		select count(*) into pCount
 		from i2b2demodata.modifier_dimension
 		where modifier_cd = 'STUDY:' || TrialId;
-		
-		if pExists = 0 then
+
+		if pCount = 0 then
 			insert into i2b2demodata.modifier_dimension
 			(modifier_path
 			,modifier_cd
@@ -1295,28 +1100,28 @@ BEGIN
 			,modifier_node_type
 			,sourcesystem_cd
 			)
-			select '\Study\' || i.c_name || '\'
+			select bslash || 'Study' || bslash || i.c_name || bslash
 			,'STUDY:' || TrialId
 			,i.c_name
 			,1
 			,'L'
 			,TrialId
-			from i2b2 i
+			from i2b2metadata.i2b2 i
 			where i.sourcesystem_cd = TrialId
-			  and i.c_hlevel = (select min(x.c_hlevel) from i2b2 x
+			  and i.c_hlevel = (select min(x.c_hlevel) from i2b2metadata.i2b2 x
 								where x.sourcesystem_cd = TrialId);
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
-			czx_write_audit(jobId,databaseName,procedureName,'Insert modifier for study into modifier_dimension',SQL%ROWCOUNT,stepCt,'Done');	
-			commit;	
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert modifier for study into modifier_dimension',rowCount,stepCt,'Done');	
 		end if;
 			
 		-- insert study into modifier_metadata
 			
-		select count(*) into pExists
+		select count(*) into pCount
 		from i2b2demodata.modifier_metadata
 		where modifier_cd = 'STUDY:' || TrialId;
-			
-		if pExists = 0 then			
+
+		if pCount = 0 then			
 			insert into i2b2demodata.modifier_metadata
 			(modifier_cd
 			,valtype_cd
@@ -1325,19 +1130,15 @@ BEGIN
 			select 'STUDY:' || TrialId
 			,'T'
 			,null
-			,'N'
-			from dual
-			where not exists
-				 (select 1 from i2b2demodata.modifier_metadata x
-				  where x.modifier_cd = 'STUDY:' || TrialId);
+			,'N';
+			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
-			czx_write_audit(jobId,databaseName,procedureName,'Insert modifier for study into modifier_metadata',SQL%ROWCOUNT,stepCt,'Done');	
-			commit;	
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert modifier for study into modifier_metadata',rowCount,stepCt,'Done');	
 		end if;
 		
 		--	insert observation_fact for each patient at study-level
 		
-		insert into observation_fact
+		insert into i2b2demodata.observation_fact
 		(encounter_num,
 		 patient_num,
 		 concept_cd,
@@ -1354,9 +1155,9 @@ BEGIN
 		)
 		select c.patient_num*-1,
 			   c.patient_num,
-			   (select i.c_basecode from i2b2 i
+			   (select i.c_basecode from i2b2metadata.i2b2 i
 				where i.sourcesystem_cd = TrialId
-				  and i.c_hlevel = (select min(x.c_hlevel) from i2b2 x
+				  and i.c_hlevel = (select min(x.c_hlevel) from i2b2metadata.i2b2 x
 									where x.sourcesystem_cd = TrialId)) as concept_cd,
 			   'STUDY:' || TrialId,
 			   'T',
@@ -1368,108 +1169,28 @@ BEGIN
 			   '@',
 			   '@',
 				1
-		from patient_dimension c
+		from i2b2demodata.patient_dimension c
 		where c.sourcesystem_cd like TrialId || ':%';
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Insert study-level modifiers into observation_fact',SQL%ROWCOUNT,stepCt,'Done');	
-		commit;		
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert study-level modifiers into observation_fact',rowCount,stepCt,'Done');		
 	else
 		--	no modifiers for study, remove study-level modifier from modifier_dimension and modifier_metadata
 		
 		delete from i2b2demodata.modifier_dimension
 		where modifier_cd = 'STUDY:' || TrialId;
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Delete study-level modifiers from modifier_dimension',SQL%ROWCOUNT,stepCt,'Done');	
-		commit;	
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete study-level modifiers from modifier_dimension',rowCount,stepCt,'Done');		
 		
 		delete from i2b2demodata.modifier_metadata
 		where modifier_cd = 'STUDY:' || TrialId;
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Delete study-level modifiers from modifier_metadata',SQL%ROWCOUNT,stepCt,'Done');	
-		commit;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete study-level modifiers from modifier_metadata',rowCount,stepCt,'Done');	
 		
 	end if;
-	execute immediate('alter trigger i2b2demodata.trg_encounter_num enable');
-	
-	i2b2_table_index_maint('ADD','OBSERVATION_FACT',jobId);
-	
-/*
-	--	insert records into visit_dimension where visit_name is not null
-	
-	select count(*) into pExists
-	from tm_wz.wrk_clinical_data
-	where visit_reference is not null;
-	
-	if pExists > 0 then
-		
-		--	insert first visit
-		
-		insert into visit_dimension  -- need to add parallel if this goes back in
-		(encounter_num
-		,patient_num
-		,inout_cd
-		,import_date
-		,sourcesystem_cd
-		,start_date
-		,end_date
-		)
-		select distinct enc.encounter_num
-			  ,f.patient_num
-			  ,case when instr(t.visit_reference,'\') > 0 
-					then substr(t.visit_reference,1,instr(t.visit_reference,'\')-1)
-					else t.visit_reference
-			   end as inout_cd
-			  ,etlDate
-			  ,TrialId
-			  ,case when t.visit_date is null then null else to_date(t.visit_date,'YYYY-MM-DD HH24:mi') end
-			  ,case when t.end_date is null then null else to_date(t.end_date,'YYYY-MM-DD HH24:mi') end
-		from tm_wz.wrk_clinical_data t
-			,deapp.de_encounter_type enc
-			,i2b2demodata.observation_fact f
-		 where t.visit_reference is not null
-		   and t.link_type = enc.link_type
-           and t.link_value = enc.link_value
-           and t.study_id = enc.study_id
-           and enc.encounter_num = f.encounter_num;
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Insert visit into I2B2DEMODATA visit_dimension',SQL%ROWCOUNT,stepCt,'Done');	
-		commit;
-		
-		--	insert rest of visit
-		
-		insert into visit_dimension  -- need to add parallel if this goes back in
-		(encounter_num 
-		,patient_num
-		,inout_cd
-		,import_date
-		,sourcesystem_cd
-		,start_date
-		,end_date
-		)
-		select distinct enc.encounter_num
-			  ,f.patient_num
-			  ,substr(t.visit_reference,instr(t.visit_reference,'\')+1) as inout_cd
-			  ,etlDate
-			  ,TrialId
-			  ,case when t.visit_date is null then null else to_date(t.visit_date,'YYYY-MM-DD HH24:mi') end
-			  ,case when t.end_date is null then null else to_date(t.end_date,'YYYY-MM-DD HH24:mi') end
-		from tm_wz.wrk_clinical_data t
-			,deapp.de_encounter_type enc
-			,i2b2demodata.observation_fact f
-		 where t.visit_reference is not null
-		   and t.link_type = enc.link_type
-           and t.link_value = enc.link_value
-           and t.study_id = enc.study_id
-           and enc.encounter_num = f.encounter_num
-		   and instr(t.visit_reference,'\') > 0;
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Insert visit into I2B2DEMODATA visit_dimension',SQL%ROWCOUNT,stepCt,'Done');	
-		commit;
-	end if;
-	
-	i2b2_table_index_maint('ADD','VISIT_DIMENSION',jobId);
-*/
-
+	raise notice 'after modifiers';
 	--	insert records to de_concept_visit if not exists
 	
 	insert into deapp.de_concept_visit
@@ -1490,17 +1211,17 @@ BEGIN
 		   where cd.concept_cd = x.concept_cd
 		     and t.visit_name = x.visit_name
 			 and x.sourcesystem_cd = TrialId);
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert data into de_concept_visit',SQL%ROWCOUNT,stepCt,'Done');	
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert data into de_concept_visit',rowCount,stepCt,'Done');	
 	
 	--	populate deapp.de_encounter_level with highest level of same encounter type
 	
 	delete from deapp.de_encounter_level
 	where study_id = TrialId;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Delete study from deapp.de_encounter_level',SQL%ROWCOUNT,stepCt,'Done');	
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete study from deapp.de_encounter_level',rowCount,stepCt,'Done');	
 	
 	insert into deapp.de_encounter_level 
 	(study_id
@@ -1522,9 +1243,9 @@ BEGIN
 		   and c.c_fullname like p.c_fullname || '%'
 		   and p.sourcesystem_cd = TrialId
 		 group by p.c_basecode) x;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert study into deapp.de_encounter_level',SQL%ROWCOUNT,stepCt,'Done');	
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert study into deapp.de_encounter_level',rowCount,stepCt,'Done');	
 	
 	select count(*) into pExists
 	from tm_lz.lt_src_subj_enroll_date
@@ -1536,9 +1257,9 @@ BEGIN
 		
 		delete from deapp.de_obs_enroll_days
 		where study_id = TrialId;
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Delete existing data from deapp.de_obs_enroll_days',SQL%ROWCOUNT,stepCt,'Done');
-		commit;	
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing data from deapp.de_obs_enroll_days',rowCount,stepCt,'Done');	
 		
 		insert into deapp.de_obs_enroll_days
 		(encounter_num
@@ -1546,79 +1267,71 @@ BEGIN
 		,study_id
 		,visit_date)
 		select distinct enc.encounter_num
-			  ,round(enc.start_date-to_date(enr.enroll_date,'YYYY-MM-DD HH24:mi:ss'),5) "MIDy"
+			  ,round((minutes_between(enc.start_date,to_timestamp(enr.enroll_date,'YYYY-MM-DD'))::numeric)/(24*60),5)
 			  ,TrialId
 			  ,enc.start_date
 		from i2b2demodata.observation_fact enc
-		inner join patient_dimension pd
+		inner join i2b2demodata.patient_dimension pd
 			  on  enc.patient_num = pd.patient_num
 		left outer join tm_lz.lt_src_subj_enroll_date enr
-			  on REGEXP_REPLACE(TrialID || ':' || enr.site_id || ':' || enr.subject_id,'(::){1,}', ':') = pd.sourcesystem_cd
+			  on REGEXP_REPLACE(TrialID || ':' || coalesce(enr.site_id,'') || ':' || enr.subject_id,'(::){1,}', ':') = pd.sourcesystem_cd
 		where enc.sourcesystem_cd = TrialId
 		  and enc.start_date is not null
 		  and enc.encounter_num is not null
+		  and enr.ENROLL_DATE is not null
 		  and enc.concept_cd != 'SECURITY';
-		  
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Insert data in deapp.de_obs_enroll_days',SQL%ROWCOUNT,stepCt,'Done');
-		commit;	
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert data in deapp.de_obs_enroll_days',rowCount,stepCt,'Done');	
 	end if;
 	
 	--	update c_visualattributes for all nodes in study, done to pick up node that changed from leaf/numeric to folder/text
 	
-	update i2b2 a
-	set c_visualattributes=(
-		with upd as (select p.c_fullname, count(*) as nbr_children 
-				 from i2b2 p
-					 ,i2b2 c
+	update i2b2metadata.i2b2 a
+	set c_visualattributes=case when upd.nbr_children = 1 
+								then 'L' || substr(a.c_visualattributes,2,2)
+								else 'F' || substr(a.c_visualattributes,2,1) ||
+								case when upd.c_fullname = topNode -- and highlight_study = 'Y'
+									then 'S' else substr(a.c_visualattributes,3,1) end
+						   end
+	from (select p.c_fullname, count(*) as nbr_children 
+				 from i2b2metadata.i2b2 p
+					 ,i2b2metadata.i2b2 c
 				 where p.c_fullname like topNode || '%'
 				   and c.c_fullname like p.c_fullname || '%'
-				 group by p.c_fullname)
-		select case when u.nbr_children = 1 
-					then 'L' || substr(a.c_visualattributes,2,2)
-	                else 'F' || substr(a.c_visualattributes,2,1) ||
-						 case when u.c_fullname = topNode -- and highlight_study = 'Y'
-							  then 'S' else substr(a.c_visualattributes,3,1) end
-			   end
-		from upd u
-		where a.c_fullname = u.c_fullname)
-	where a.c_fullname in
-		(select x.c_fullname from i2b2 x
-		 where x.c_fullname like topNode || '%');
-
+				 group by p.c_fullname) upd
+	where a.c_fullname = upd.c_fullname;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Update c_visualattributes for study',SQL%ROWCOUNT,stepCt,'Done');
-
-	commit;
-	
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update c_visualattributes for study',rowCount,stepCt,'Done');
+    
 	--	set sourcesystem_cd, c_comment to null if any added upper-level nodes
 		
-	update i2b2 b
+	update i2b2metadata.i2b2 b
 	set sourcesystem_cd=null,c_comment=null
 	where b.sourcesystem_cd = TrialId
 	  and length(b.c_fullname) < length(topNode);
-	  
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Set sourcesystem_cd to null for added upper-level nodes',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Set sourcesystem_cd to null for added upper-level nodes',rowCount,stepCt,'Done');
 	
-	i2b2_create_concept_counts(topNode, jobID);
+	call tm_cz.i2b2_create_concept_counts(topNode, jobID);
 	
 		--	new bulk delete of unused nodes
 	
-	execute immediate('truncate table tm_wz.wt_del_nodes');
+	execute immediate 'truncate table tm_wz.wt_del_nodes' ;
 	stepCt := stepCt + 1;	
-	czx_write_audit(jobId,databaseName,procedureName,'Truncate table tm_wz.wt_del_nodes for hidden nodes',0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Truncate table tm_wz.wt_del_nodes for hidden nodes',0,stepCt,'Done');
 	
 	insert into tm_wz.wt_del_nodes
 	select l.c_fullname
 		  ,l.c_basecode
-	from i2b2 l
+	from i2b2metadata.i2b2 l
 	where l.c_visualattributes like '%H%'
 	  and l.c_fullname like topNode || '%';
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;	
-	czx_write_audit(jobId,databaseName,procedureName,'Insert hidden nodes into tm_wz.wt_del_nodes',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert hidden nodes into tm_wz.wt_del_nodes',rowCount,stepCt,'Done');
 	
 	select count(*) into pExists
 	from tm_wz.wt_del_nodes;
@@ -1627,22 +1340,23 @@ BEGIN
 	
 		--	delete i2b2 unused nodes
 		
-		delete from i2b2 f
+		delete from i2b2metadata.i2b2 f
 		where f.c_fullname in (select distinct x.c_fullname from tm_wz.wt_del_nodes x);
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;	
-		czx_write_audit(jobId,databaseName,procedureName,'Bulk delete hidden nodes from i2b2',SQL%ROWCOUNT,stepCt,'Done');
-		commit;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Bulk delete hidden nodes from i2b2',rowCount,stepCt,'Done');
 		
 		--	delete concept_dimension unused nodes
 		
-		delete from concept_dimension f
+		delete from i2b2demodata.concept_dimension f
 		where f.concept_cd in (select distinct x.c_basecode as concept_cd from tm_wz.wt_del_nodes x);
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;	
-		czx_write_audit(jobId,databaseName,procedureName,'Bulk delete hidden nodes from concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
-		commit;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Bulk delete hidden nodes from concept_dimension',rowCount,stepCt,'Done');
 		
 	end if;
-	
+
+/*	
 	--	create entries to support FMAPP
 	
 	select count(*) into pExists
@@ -1655,11 +1369,10 @@ BEGIN
 		(title, accession, etl_id)
 		select 'Metadata not available'
 			  ,TrialId
-			  ,'METADATA:' || TrialId
-		from dual;
+			  ,'METADATA:' || TrialId;
+		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into biomart.bio_experiment',SQL%ROWCOUNT,stepCt,'Done');
-		commit;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into biomart.bio_experiment',rowCount,stepCt,'Done');
 	end if;
 	
 	select bio_experiment_id into v_bio_experiment_id
@@ -1668,135 +1381,91 @@ BEGIN
 	
 	--	insert study into biomart.bio_data_uid
 	
-	insert into biomart.bio_data_uid
-	(bio_data_id
-	,unique_id 
-	,bio_data_type
-	)
-	select v_bio_experiment_id
-		  ,'EXP:' || TrialId
-		  ,'Experiment'
-	from dual
-	where not exists
-		 (select 1 from biomart.bio_data_uid x
-		  where x.bio_data_id = v_bio_experiment_id);
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into biomart.bio_data_uid',SQL%ROWCOUNT,stepCt,'Done');
-	commit;	
+	select count(*) into pExists
+	from biomart.bio_data_uid
+	where bio_data_id = v_bio_experiment_id;
 	
-	--	insert study into fmapp.fm_folder
+	if pexists = 0 then
+		insert into biomart.bio_data_uid
+		(bio_data_id
+		,unique_id 
+		,bio_data_type
+		)
+		select v_bio_experiment_id
+			  ,'EXP:' || TrialId
+			  ,'Experiment';
+		rowCount := ROW_COUNT;
+		stepCt := stepCt + 1;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into biomart.bio_data_uid',rowCount,stepCt,'Done');
+	end if;
 	
-	insert into fmapp.fm_folder
-	(folder_name 
-	,folder_level      
-	,folder_type
-	,active_ind
-	)
-	select TrialId
-		  ,1
-		  ,'STUDY'
-		  ,'1'
-	from dual
-	where not exists
-		  (select 1 from fmapp.fm_folder x
-		   where x.folder_name = TrialId);
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into fmapp.fm_folder',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	select count(*) into pExists
+	from fmapp.fm_folder
+	where folder_name = TrialId;
 	
-	--	insert 
+	if pExists = 0 then
+		--	insert study into fmapp.fm_folder
+		insert into fmapp.fm_folder
+		(folder_name 
+		,folder_level      
+		,folder_type
+		,active_ind
+		)
+		select TrialId
+			  ,1
+			  ,'STUDY'
+			  ,'1';
+		rowCount := ROW_COUNT;
+		stepCt := stepCt + 1;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into fmapp.fm_folder',rowCount,stepCt,'Done');
+	end if;
 	
-	insert into fmapp.fm_folder_association
-	(folder_id
-	,object_uid
-	,object_type
-	)
-	select ff.folder_id
-		  ,'EXP:' || TrialId
-		  ,'bio.Experiment'
-	from fmapp.fm_folder ff
-	where folder_name = TrialId
-	  and not exists
-	     (select 1 from fmapp.fm_folder_association x
-		  where ff.folder_id = x.folder_id);
-	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into fmapp.fm_folder_asociation',SQL%ROWCOUNT,stepCt,'Done');
-	commit;	  
+	--	insert study into folder association
+	
+	select count(*) into pExists
+	from fmapp.fm_folder_association
+	where object_uid = 'EXP:' || TrialId;
+	
+	if pExists = 0 then 
+		insert into fmapp.fm_folder_association
+		(folder_id
+		,object_uid
+		,object_type
+		)
+		select ff.folder_id
+			  ,'EXP:' || TrialId
+			  ,'bio.Experiment'
+		from fmapp.fm_folder ff
+		where folder_name = TrialId;
+		rowCount := ROW_COUNT;
+		stepCt := stepCt + 1;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial/study into fmapp.fm_folder_asociation',rowCount,stepCt,'Done');
+	end if;  
+*/
 
-	i2b2_create_security_for_trial(TrialId, secureStudy, jobID);
-	i2b2_load_security_data(jobID);
+	call tm_cz.i2b2_create_security_for_trial(TrialId, secureStudy, jobID);
+	call tm_cz.i2b2_load_security_data(jobID);
 	
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'End i2b2_load_clinical_data',0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'End i2b2_load_clinical_data',0,stepCt,'Done');
 	
     ---Cleanup OVERALL JOB if this proc is being run standalone
 	if newJobFlag = 1
 	then
-		czx_end_audit (jobID, 'SUCCESS');
+		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	end if;
 
-	rtnCode := 0;
+	return 0;
   
-	exception
-	when duplicate_values then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Duplicate values found in key columns',0,stepCt,'Done');	
-		czx_error_handler (jobID, procedureName);
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;		
-	when invalid_topNode then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Path specified in top_node must contain at least 2 nodes',0,stepCt,'Done');	
-		czx_error_handler (jobID, procedureName);
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;	
-	when multiple_visit_names then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Multiple visit_names exist for category/label/value',0,stepCt,'Done');	
-		czx_error_handler (jobID, procedureName);
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;
-	when invalid_visit_date then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Invalid visit_date in tm_lz.lt_src_clinical_data',pExists,stepCt,'Done');	
-		czx_error_handler (jobID, procedureName);
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;
-	when invalid_end_date then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Invalid end_date in tm_lz.lt_src_clinical_data',pExists,stepCt,'Done');	
-		czx_error_handler (jobID, procedureName);
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;
-	when invalid_enroll_date then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Invalid enroll_date in tm_lz.lt_src_subj_enroll_date',0,stepCt,'Done');	
-		czx_error_handler (jobID, procedureName);
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;
-	when duplicate_visit_dates then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Multiple records with same visit_date',0,stepCt,'Done');	
-		czx_error_handler (jobID, procedureName);
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;
-	when no_study_data then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'No records exist in lt_src_clinical_data for study',0,stepCt,'Done');	
-		czx_error_handler (jobID, procedureName);
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;
-	when parent_node_exists then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Leaf node in tm_wz.wt_trial_nodes is a parent of another node',0,stepCt,'Done');	
-		czx_error_handler (jobID, procedureName);
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;
+	exception	
 	when others then
+	raise notice 'error: %', SQLERRM;
     --Handle errors.
-		czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName);
     --End Proc
-		czx_end_audit (jobID, 'FAIL');
-		rtnCode := 16;
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
+		return 16;
 	
 end;
+END_PROC;
+

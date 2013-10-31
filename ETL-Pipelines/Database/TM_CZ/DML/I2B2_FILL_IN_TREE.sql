@@ -31,6 +31,7 @@ Declare
 	procedureName VARCHAR(100);
 	jobID numeric(18,0);
 	stepCt numeric(18,0);
+	rowCount		numeric(18,0);
   
 	auditText 	varchar(4000);
 	etlDate		timestamp;
@@ -62,7 +63,7 @@ BEGIN
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		--select czx_start_audit (procedureName, databaseName) into jobId;
+		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
 	END IF;
   
   	curr_node := tm_cz.parse_nth_value(input_path, 2, bslash);
@@ -117,11 +118,12 @@ BEGIN
 	from (select distinct folder_path, folder_name from tm_wz.wt_folder_nodes
 		  where not exists
 			   (select 1 from i2b2demodata.concept_dimension cd where folder_path = cd.concept_path)) y ;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	--call czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted concept for path into I2B2DEMODATA concept_dimension',rowCount,stepCt,'Done');
     
 	--	bulk insert the i2b2 records
-	raise notice 'before i2b2';
+
 	insert into i2b2metadata.i2b2
 	(c_hlevel
 	,c_fullname
@@ -166,22 +168,23 @@ BEGIN
 	  and not exists
 		  (select 1 from i2b2metadata.i2b2 x
 		   where cd.concept_path = x.c_fullname);
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	--call czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted path into I2B2METADATA i2b2',rowCount,stepCt,'Done');
 
       ---Cleanup OVERALL JOB if this proc is being run standalone
 	IF newJobFlag = 1
 	THEN
-		--call czx_end_audit (jobID, 'SUCCESS');
+		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
 
 	EXCEPTION
 	WHEN OTHERS THEN
 		raise notice 'error: %', SQLERRM;
 		--Handle errors.
-		--call czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName);
 		--End Proc
-		--call czx_end_audit (jobID, 'FAIL');
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
 	
 END;
 END_PROC;
