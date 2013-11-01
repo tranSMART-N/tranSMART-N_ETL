@@ -63,252 +63,45 @@
   <created_user>-</created_user>
   <created_date>2013&#47;06&#47;28 11:58:16.910</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;08&#47;23 15:27:41.213</modified_date>
+  <modified_date>2013&#47;11&#47;01 12:04:47.859</modified_date>
   </info>
   <notepads>
+    <notepad>
+      <note>&#47;*************************************************************************
+* Copyright 2008-2012 Janssen Research &amp; Development, LLC.
+*
+* Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http:&#47;&#47;www.apache.org&#47;licenses&#47;LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+******************************************************************&#47;</note>
+      <xloc>34</xloc>
+      <yloc>706</yloc>
+      <width>445</width>
+      <heigth>200</heigth>
+      <fontname>Arial</fontname>
+      <fontsize>8</fontsize>
+      <fontbold>N</fontbold>
+      <fontitalic>N</fontitalic>
+      <fontcolorred>0</fontcolorred>
+      <fontcolorgreen>0</fontcolorgreen>
+      <fontcolorblue>0</fontcolorblue>
+      <backgroundcolorred>255</backgroundcolorred>
+      <backgroundcolorgreen>165</backgroundcolorgreen>
+      <backgroundcolorblue>0</backgroundcolorblue>
+      <bordercolorred>100</bordercolorred>
+      <bordercolorgreen>100</bordercolorgreen>
+      <bordercolorblue>100</bordercolorblue>
+      <drawshadow>Y</drawshadow>
+    </notepad>
   </notepads>
-  <connection>
-    <name>BIOMART</name>
-    <server>${BIOMART_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${BIOMART_DB_NAME}</database>
-    <port>${BIOMART_DB_PORT}</port>
-    <username>${BIOMART_DB_USER}</username>
-    <password>${BIOMART_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${BIOMART_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>BIOMART_STAGE</name>
-    <server>${BIOMART_STAGE_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${BIOMART_STAGE_DB_NAME}</database>
-    <port>${BIOMART_STAGE_DB_PORT}</port>
-    <username>${BIOMART_STAGE_DB_USER}</username>
-    <password>${BIOMART_STAGE_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${BIOMART_STAGE_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>DEAPP</name>
-    <server>${DEAPP_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${DEAPP_DB_NAME}</database>
-    <port>${DEAPP_DB_PORT}</port>
-    <username>${DEAPP_DB_USER}</username>
-    <password>${DEAPP_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${DEAPP_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>I2B2DEMODATA</name>
-    <server>${I2B2DEMODATA_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${I2B2DEMODATA_DB_NAME}</database>
-    <port>${I2B2DEMODATA_DB_PORT}</port>
-    <username>${I2B2DEMODATA_DB_USER}</username>
-    <password>${I2B2DEMODATA_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${I2B2DEMODATA_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>I2B2METADATA</name>
-    <server>${I2B2METADATA_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${I2B2METADATA_DB_NAME}</database>
-    <port>${I2B2METADATA_DB_PORT}</port>
-    <username>${I2B2METADATA_DB_USER}</username>
-    <password>${I2B2METADATA_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${I2B2METADATA_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>PROD_CZ</name>
-    <server>${PROD_CZ_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${PROD_CZ_DB_NAME}</database>
-    <port>${PROD_CZ_DB_PORT}</port>
-    <username>${PROD_CZ_DB_USER}</username>
-    <password>${PROD_CZ_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${PROD_CZ_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>PROD_STAGE</name>
-    <server>${PROD_STAGE_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${PROD_STAGE_DB_NAME}</database>
-    <port>${PROD_STAGE_DB_PORT}</port>
-    <username>${PROD_STAGE_DB_USER}</username>
-    <password>${PROD_STAGE_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${PROD_STAGE_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>TM_CZ</name>
-    <server>${TM_CZ_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${TM_CZ_DB_NAME}</database>
-    <port>${TM_CZ_DB_PORT}</port>
-    <username>${TM_CZ_DB_USER}</username>
-    <password>${TM_CZ_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${TM_CZ_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>TM_LZ</name>
-    <server>${TM_LZ_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${TM_LZ_DB_NAME}</database>
-    <port>${TM_LZ_DB_PORT}</port>
-    <username>${TM_LZ_DB_USER}</username>
-    <password>${TM_LZ_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${TM_LZ_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>TM_STAGE</name>
-    <server>${TM_STAGE_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${TM_STAGE_DB_NAME}</database>
-    <port>${TM_STAGE_DB_PORT}</port>
-    <username>${TM_STAGE_DB_USER}</username>
-    <password>${TM_STAGE_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${TM_STAGE_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>TM_WZ</name>
-    <server>${TM_WZ_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${TM_WZ_DB_NAME}</database>
-    <port>${TM_WZ_DB_PORT}</port>
-    <username>${TM_WZ_DB_USER}</username>
-    <password>${TM_WZ_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${TM_WZ_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
   <hop> <from>Check null date&#47;day</from><to>Convert study_day to number</to><enabled>Y</enabled> </hop>  <hop> <from>Check null date&#47;day</from><to>Missing values</to><enabled>Y</enabled> </hop>  <hop> <from>Convert study_day to number</from><to>Invalid study_day or date</to><enabled>Y</enabled> </hop>  <hop> <from>Convert study_day to number</from><to>Calculate enroll_date</to><enabled>Y</enabled> </hop>  <hop> <from>Got enroll_date</from><to>Check null date&#47;day</to><enabled>Y</enabled> </hop>  <hop> <from>Get study_id</from><to>Add study_id</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate enroll_date</from><to>Sort calc rows</to><enabled>Y</enabled> </hop>  <hop> <from>Get min calc enroll_date</from><to>Set rec_ind to 1</to><enabled>Y</enabled> </hop>  <hop> <from>Get min enroll_date</from><to>Set rec_ind to 0</to><enabled>Y</enabled> </hop>  <hop> <from>Set rec_ind to 0</from><to>Append streams</to><enabled>Y</enabled> </hop>  <hop> <from>Set rec_ind to 1</from><to>Append streams</to><enabled>Y</enabled> </hop>  <hop> <from>Add study_id</from><to>Write wrk_enroll_date</to><enabled>Y</enabled> </hop>  <hop> <from>Read special columns file</from><to>Got enroll_date</to><enabled>Y</enabled> </hop>  <hop> <from>Get first date for site&#47;subject</from><to>Add study_id</to><enabled>Y</enabled> </hop>  <hop> <from>Append streams</from><to>Null date</to><enabled>Y</enabled> </hop>  <hop> <from>Null date</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Sort calc rows</from><to>Merge calc rows</to><enabled>Y</enabled> </hop>  <hop> <from>Merge calc rows</from><to>Get min calc enroll_date</to><enabled>Y</enabled> </hop>  <hop> <from>Got enroll_date</from><to>Start enroll sort</to><enabled>Y</enabled> </hop>  <hop> <from>Start enroll sort</from><to>Sort enroll rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort enroll rows</from><to>Merge enroll</to><enabled>Y</enabled> </hop>  <hop> <from>Merge enroll</from><to>Get min enroll_date</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Sorted Merge</from><to>Get first date for site&#47;subject</to><enabled>Y</enabled> </hop>  <hop> <from>Null date</from><to>Sort by ind, earliest date</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by ind, earliest date</from><to>Sort rows</to><enabled>Y</enabled> </hop>  </order>
   <step>
@@ -748,6 +541,70 @@ Alert(dateAdd(d1, &quot;wd&quot;, 5));</jsScript_script>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>630</xloc>
       <yloc>170</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge calc rows</name>
+    <type>SortedMerge</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>site_id</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>subject_id</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>enroll_date</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>810</xloc>
+      <yloc>233</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge enroll</name>
+    <type>SortedMerge</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>site_id</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>subject_id</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>enroll_date</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>316</xloc>
+      <yloc>281</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1378,6 +1235,24 @@ Alert(dateAdd(d1, &quot;wd&quot;, 5));</jsScript_script>
     </step>
 
   <step>
+    <name>Sort by ind, earliest date</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>551</xloc>
+      <yloc>543</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Sort calc rows</name>
     <type>SortRows</type>
     <description/>
@@ -1509,6 +1384,60 @@ Alert(dateAdd(d1, &quot;wd&quot;, 5));</jsScript_script>
     </step>
 
   <step>
+    <name>Sorted Merge</name>
+    <type>SortedMerge</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>site_id</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>subject_id</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>rec_ind</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>min_enroll_date</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>654</xloc>
+      <yloc>607</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Start enroll sort</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>310</xloc>
+      <yloc>159</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Write wrk_enroll_date</name>
     <type>TextFileOutput</type>
     <description/>
@@ -1615,142 +1544,6 @@ Alert(dateAdd(d1, &quot;wd&quot;, 5));</jsScript_script>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>935</xloc>
       <yloc>676</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Merge calc rows</name>
-    <type>SortedMerge</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>site_id</name>
-        <ascending>Y</ascending>
-        </field>
-      <field>
-        <name>subject_id</name>
-        <ascending>Y</ascending>
-        </field>
-      <field>
-        <name>enroll_date</name>
-        <ascending>Y</ascending>
-        </field>
-      </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>810</xloc>
-      <yloc>233</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Start enroll sort</name>
-    <type>Dummy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>310</xloc>
-      <yloc>159</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Merge enroll</name>
-    <type>SortedMerge</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>site_id</name>
-        <ascending>Y</ascending>
-        </field>
-      <field>
-        <name>subject_id</name>
-        <ascending>Y</ascending>
-        </field>
-      <field>
-        <name>enroll_date</name>
-        <ascending>Y</ascending>
-        </field>
-      </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>316</xloc>
-      <yloc>281</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Sorted Merge</name>
-    <type>SortedMerge</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>site_id</name>
-        <ascending>Y</ascending>
-        </field>
-      <field>
-        <name>subject_id</name>
-        <ascending>Y</ascending>
-        </field>
-      <field>
-        <name>rec_ind</name>
-        <ascending>Y</ascending>
-        </field>
-      <field>
-        <name>min_enroll_date</name>
-        <ascending>Y</ascending>
-        </field>
-      </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>654</xloc>
-      <yloc>607</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Sort by ind, earliest date</name>
-    <type>Dummy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>551</xloc>
-      <yloc>543</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

@@ -1,5 +1,5 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_LOAD_ANNOTATION_DEAPP(NUMERIC(18,0))
-RETURNS CHARACTER VARYING(ANY)
+RETURNS int4
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -30,6 +30,7 @@ Declare
 	rowCount	numeric(18,0);
 	
 	gplId	varchar(100);
+	v_sqlerrm	varchar(1000);
 	
 
 BEGIN
@@ -74,9 +75,8 @@ BEGIN
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing data from de_mrna_annotation',rowCount,stepCt,'Done');
 	
-raise notice 'after del2';
 	--	update organism for existing probesets in probeset_deapp
-	raise notice 'before probeset update';
+
 	update tm_cz.probeset_deapp p
 	set organism=t.organism 
 	from (select distinct gpl_id, probe_id, organism from tm_lz.LT_SRC_DEAPP_ANNOT) t
@@ -87,7 +87,7 @@ raise notice 'after del2';
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update organism in probeset_deapp',ROW_COUNT,stepCt,'Done');
 
 	--	insert any new probesets into probeset_deapp
-	raise notice 'before probeset insert';
+
 	insert into tm_cz.probeset_deapp
 	(probeset_id
 	,probeset
@@ -112,7 +112,7 @@ raise notice 'after del2';
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert new probesets into probeset_deapp',rowCount,stepCt,'Done');
 
 	--	insert data into annotation_deapp
-	raise notice 'before annotation-deapp';
+
 	insert into tm_cz.annotation_deapp
 	(gpl_id
 	,probe_id
@@ -136,7 +136,7 @@ raise notice 'after del2';
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Load annotation data into REFERENCE annotation_deapp',rowCount,stepCt,'Done');
 	
 	--	insert data into deapp.de_mrna_annotation
-	raise notice 'before de_mrna_annotation';
+
 	insert into deapp.de_mrna_annotation
 	(gpl_id
 	,probe_id
@@ -159,42 +159,40 @@ raise notice 'after del2';
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Load annotation data into DEAPP de_mrna_annotation',rowCount,stepCt,'Done');
 
-/*	--	update gene_id if null
+	--	update gene_id if null
 	
 	update deapp.de_mrna_annotation t
-	set gene_id=(select to_number(min(b.primary_external_id)) as gene_id
+	set gene_id=upd.gene_id
+	from (select b.bio_marker_name as gene_symbol
+			     ,min(b.primary_external_id) as gene_id
+				 ,b.organism
 				 from biomart.bio_marker b
-				 where t.gene_symbol = b.bio_marker_name
-				   and upper(b.organism) = upper(t.organism)
-				   and upper(b.bio_marker_type) = 'GENE')
-	where t.gpl_id = gplId
+				 where upper(b.bio_marker_type) = 'GENE'
+				 group by b.bio_marker_name, b.organism) upd
+	where t.gene_symbol = upd.gene_symbol
+	  and t.organism = upd.organism
+	  and t.gpl_id = gplId
 	  and t.gene_id is null
-	  and t.gene_symbol is not null
-	  and exists
-		 (select 1 from biomart.bio_marker x
-		  where t.gene_symbol = x.bio_marker_name
-			and upper(x.organism) = upper(t.organism)
-			and upper(x.bio_marker_type) = 'GENE');		
+	  and t.gene_symbol is not null;		
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated missing gene_id in de_mrna_annotation',rowCount,stepCt,'Done');
 	
 	--	update gene_symbol based on gene_id.  This is done to correct any mislabeling of the gene symbol from the annotation file
 	
-	update de_mrna_annotation t
-	set gene_symbol=(select min(b.bio_marker_name) as gene_symbol
+	update deapp.de_mrna_annotation t
+	set gene_symbol=upd.gene_symbol
+	from (select b.primary_external_id as gene_id
+			     ,min(b.bio_marker_name) as gene_symbol
+				 ,b.organism
 				 from biomart.bio_marker b
-				 where to_char(t.gene_id) = b.primary_external_id
-				   and upper(b.organism) = upper(t.organism)
-				   and upper(b.bio_marker_type) = 'GENE')
-	where t.gpl_id = gplId
-	  --and t.gene_symbol is null
-	  and t.gene_id is not null
-	  and exists
-		 (select 1 from biomart.bio_marker x
-		  where to_char(t.gene_id) = x.primary_external_id
-			and upper(x.organism) = upper(t.organism)
-			and upper(x.bio_marker_type) = 'GENE');	
+				 where upper(b.bio_marker_type) = 'GENE'
+				 group by b.primary_external_id, b.organism) upd
+	where t.gene_id = upd.gene_id
+	  and t.organism = upd.organism
+	  and t.gpl_id = gplId
+	  and t.gene_id is null
+	  and t.gene_symbol is not null;
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated gene_symbol in de_mrna_annotation',rowCount,stepCt,'Done');
@@ -202,10 +200,14 @@ raise notice 'after del2';
 	--	insert probesets into biomart.bio_assay_feature_group
 	
 	insert into biomart.bio_assay_feature_group
-	(feature_group_name
+	(bio_assay_feature_group_id
+	,feature_group_name
 	,feature_group_type)
-	select distinct t.probe_id, 'PROBESET'
-	from tm_lz.lt_src_deapp_annot t
+	select next value for biomart.seq_bio_data_id
+		  ,t.probe_id
+		  ,'PROBESET'
+	from (select distinct probe_id
+		  from tm_lz.lt_src_deapp_annot) t
 	where not exists
 		 (select 1 from biomart.bio_assay_feature_group x
 		  where t.probe_id = x.feature_group_name);	
@@ -221,25 +223,24 @@ raise notice 'after del2';
 	select distinct fg.bio_assay_feature_group_id
 		  ,coalesce(bgs.bio_marker_id,bgi.bio_marker_id)
 	from tm_lz.lt_src_deapp_annot t
-		,biomart.bio_assay_feature_group fg
-		,biomart.bio_marker bgs
-		,biomart.bio_marker bgi
+		 inner join biomart.bio_assay_feature_group fg
+		 	   on t.probe_id = fg.feature_group_name
+		 left outer join biomart.bio_marker bgs
+		 	   on t.gene_symbol = bgs.bio_marker_name
+		 left outer join biomart.bio_marker bgi
+		  	   on t.gene_id = bgi.primary_external_id
 	where (t.gene_symbol is not null or t.gene_id is not null)
-	  and t.probe_id = fg.feature_group_name
-	  and t.gene_symbol = bgs.bio_marker_name(+)
-	  and upper(coalesce(t.organism,'Homo sapiens')) = upper(bgs.organism)
-	  and to_char(t.gene_id) = bgi.primary_external_id(+)
-	  and upper(coalesce(t.organism,'Homo sapiens')) = upper(bgi.organism)
+	  and upper(coalesce(t.organism,'Homo sapiens')) = upper(coalesce(bgs.organism,'Homo sapiens'))
+	  and upper(coalesce(t.organism,'Homo sapiens')) = upper(coalesce(bgi.organism,'Homo sapiens'))
 	  and coalesce(bgs.bio_marker_id,bgi.bio_marker_id,-1) > 0
 	  and not exists
 		 (select 1 from biomart.bio_assay_data_annotation x
 		  where fg.bio_assay_feature_group_id = x.bio_assay_feature_group_id
-		    and coalesce(bgs.bio_marker_id,bgi.bio_marker_id,-1) = x.bio_marker_id);	
+		    and coalesce(bgs.bio_marker_id,bgi.bio_marker_id,-1) = x.bio_marker_id);
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Link feature_group to bio_marker in biomart.bio_assay_data_annotation',rowCount,stepCt,'Done');
 
-*/	
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'End i2b2_load_annotation_deapp',0,stepCt,'Done');
 	
@@ -248,15 +249,18 @@ raise notice 'after del2';
 	THEN
 		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
+	
+	return 0;
 
 	EXCEPTION
 	WHEN OTHERS THEN
-		raise notice 'error: %', SQLERRM;
+		v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-		--call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		--End Proc
-		--call tm_cz.czx_end_audit (jobID, 'FAIL');
-
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
+		return 16;
 END;
 END_PROC;
 

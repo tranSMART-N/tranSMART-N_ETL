@@ -1,5 +1,5 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_LOAD_CLINICAL_DATA(CHARACTER VARYING(50), CHARACTER VARYING(2000), CHARACTER VARYING(4), CHARACTER VARYING(4), BIGINT)
-RETURNS CHARACTER VARYING(ANY)
+RETURNS int4
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -54,6 +54,7 @@ Declare
   regexp_numeric	varchar(500);
   date_metadataxml	varchar(1000);
   num_metadataxml	varchar(1000);
+  v_sqlerrm			varchar(1000);
 
 	vocab_rec	record;
 	del_nodes	record;
@@ -214,7 +215,7 @@ BEGIN
 	,obs_string
 	,valuetype_cd
 	)
-	select study_id
+	select upper(study_id)
 		  ,site_id
 		  ,subject_id
 		  ,visit_name
@@ -255,7 +256,7 @@ BEGIN
 	,subject_id
 	,enroll_date
 	)
-	select study_id
+	select upper(study_id)
 		  ,site_id
 		  ,subject_id
 		  ,enroll_date
@@ -293,7 +294,7 @@ BEGIN
 	,obs_string
 	,valuetype_cd
 	)
-	select study_id
+	select upper(study_id)
 		  ,site_id
 		  ,subject_id
 		  ,visit_name
@@ -584,7 +585,7 @@ BEGIN
 	select count(*) into pExists
 	from tm_wz.wt_trial_nodes p
 		,tm_wz.wt_trial_nodes c
-	where c.leaf_node like p.leaf_node || '%'
+	where c.leaf_node like p.leaf_node || '%' escape ''
 	  and c.leaf_node != p.leaf_node;
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
@@ -678,7 +679,7 @@ BEGIN
 	delete from i2b2demodata.patient_dimension
 	where sourcesystem_cd in
 		 (select distinct pd.sourcesystem_cd from i2b2demodata.patient_dimension pd
-		  where pd.sourcesystem_cd like TrialId || ':%'
+		  where pd.sourcesystem_cd like TrialId || ':%' 
 		  minus 
 		  select distinct cd.usubjid from tm_wz.wrk_clinical_data cd)
 	  and patient_num not in
@@ -738,27 +739,26 @@ BEGIN
 	rowCount := ROW_COUNT;	  
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert new subjects into patient_dimension',rowCount,stepCt,'Done');
-
-/*	will get handled by deletion of hidden nodes	
+	
 	--	new bulk delete of unused nodes
 	
-	execute immediate 'truncate table tm_wz.wt_del_nodes' );
+	execute immediate 'truncate table tm_wz.wt_del_nodes';
 	stepCt := stepCt + 1;	
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Truncate table tm_wz.wt_del_nodes',0,stepCt,'Done');
 	
 	insert into tm_wz.wt_del_nodes
 	select l.c_fullname
 		  ,l.c_basecode
-	from i2b2demodata.i2b2 l
+	from i2b2metadata.i2b2 l
 	where l.c_visualattributes like 'L%'
-	  and l.c_fullname like topNode || '%'
+	  and l.c_fullname like topNode || '%' escape ''
 	  and l.c_fullname not in
 		 (select t.leaf_node 
 		  from tm_wz.wt_trial_nodes t
 		  union
 		  select m.c_fullname
 		  from deapp.de_subject_sample_mapping sm
-			  ,i2b2demodata.i2b2 m
+			  ,i2b2metadata.i2b2 m
 		  where sm.trial_name = TrialId
 		    and sm.concept_code = m.c_basecode
 			and m.c_visualattributes like 'L%');
@@ -800,7 +800,6 @@ BEGIN
 		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Bulk delete nodes from de_concept_visit',rowCount,stepCt,'Done');
 		
 	end if;
-*/
 
 	--	bulk insert leaf nodes
 
@@ -1240,7 +1239,7 @@ BEGIN
 			 ,i2b2metadata.i2b2 p
 			 ,i2b2metadata.i2b2 c
 		 where t.leaf_node = c.c_fullname
-		   and c.c_fullname like p.c_fullname || '%'
+		   and c.c_fullname like p.c_fullname || '%' escape ''
 		   and p.sourcesystem_cd = TrialId
 		 group by p.c_basecode) x;
 	rowCount := ROW_COUNT;
@@ -1297,8 +1296,8 @@ BEGIN
 	from (select p.c_fullname, count(*) as nbr_children 
 				 from i2b2metadata.i2b2 p
 					 ,i2b2metadata.i2b2 c
-				 where p.c_fullname like topNode || '%'
-				   and c.c_fullname like p.c_fullname || '%'
+				 where p.c_fullname like topNode || '%' escape ''
+				   and c.c_fullname like p.c_fullname || '%' escape ''
 				 group by p.c_fullname) upd
 	where a.c_fullname = upd.c_fullname;
 	rowCount := ROW_COUNT;
@@ -1328,7 +1327,7 @@ BEGIN
 		  ,l.c_basecode
 	from i2b2metadata.i2b2 l
 	where l.c_visualattributes like '%H%'
-	  and l.c_fullname like topNode || '%';
+	  and l.c_fullname like topNode || '%' escape '';
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;	
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert hidden nodes into tm_wz.wt_del_nodes',rowCount,stepCt,'Done');
@@ -1459,10 +1458,11 @@ BEGIN
   
 	exception	
 	when others then
-	raise notice 'error: %', SQLERRM;
-    --Handle errors.
-		call tm_cz.czx_error_handler (jobID, procedureName);
-    --End Proc
+	v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
+		--Handle errors.
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
+		--End Proc
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
 		return 16;
 	

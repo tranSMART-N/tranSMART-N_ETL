@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_RENAME_NODE(VARCHAR(ANY), VARCHAR(ANY), VARCHAR(ANY), INTEGER)
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_RENAME_NODE(VARCHAR(ANY), VARCHAR(ANY), VARCHAR(ANY), BIGINT)
 RETURNS INTEGER
 EXECUTE AS OWNER
 LANGUAGE NZPLSQL AS
@@ -9,11 +9,11 @@ DECLARE
 	NEW_NODE ALIAS FOR $3;
 	CURRENTJOBID ALIAS FOR $4;
 	
-	newJobFlag INTEGER(1);
+	newJobFlag INTEGER;
   	databaseName VARCHAR(100);
   	procedureName VARCHAR(100);
-  	jobID number(18,0);
-  	stepCt number(18,0);
+  	jobID BIGINT;
+  	stepCt INT;
 	
 BEGIN
 	
@@ -24,7 +24,7 @@ BEGIN
 --	SELECT sys_context('USERENV', 'CURRENT_SCHEMA') INTO databaseName FROM dual;
 --	procedureName := $$PLSQL_UNIT;
 	select CURRENT_CATALOG into databaseName;
-	select I2B2_SECURE_STUDY into procedureName;
+	select 'I2B2_RENAME_NODE' into procedureName;
 	
 
   --Audit JOB Initialization
@@ -55,9 +55,9 @@ BEGIN
               and cd.concept_path like '%' || old_node || '%');
 	stepCt := stepCt + 1;
 	
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update concept_counts with new path',1 /*SQL%ROWCOUNT*/,stepCt,'Done'); 
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update concept_counts with new path',1 /*row_count*/,stepCt,'Done'); 
 
-    COMMIT;
+    --COMMIT;
 	
     --Update path in i2b2_tags
     update i2b2metadata.i2b2_tags t
@@ -68,9 +68,9 @@ BEGIN
               and cd.concept_path like '%\' || old_node || '\%');
 	
 	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update i2b2_tags with new path',1/*SQL%ROWCOUNT*/,stepCt,'Done'); 
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update i2b2_tags with new path',1/*row_count*/,stepCt,'Done'); 
 
-    COMMIT;
+    --COMMIT;
 	
     --Update specific name
     --update concept_dimension
@@ -87,9 +87,9 @@ BEGIN
         and concept_path like '%\' || old_node || '\%';
 	stepCt := stepCt + 1;
 	
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update concept_dimension with new path',1 /*SQL%ROWCOUNT*/,stepCt,'Done'); 
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update concept_dimension with new path',1 /*row_count*/,stepCt,'Done'); 
 
-    COMMIT;
+    --COMMIT;
 
 
 
@@ -110,9 +110,9 @@ BEGIN
         and c_fullname like '%\' || old_node || '\%';
 	
 	stepCt := stepCt + 1;
-	cal tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update i2b2 with new path',SQL%ROWCOUNT,stepCt,'Done'); 
+	cal tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update i2b2 with new path',row_count,stepCt,'Done'); 
 
-    COMMIT;
+    --COMMIT;
 
 	--Update i2b2_secure to match i2b2
     --update i2b2_secure
@@ -133,6 +133,7 @@ BEGIN
 	THEN
 		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
+	return 0;
 
 	EXCEPTION
 	WHEN OTHERS THEN

@@ -1,5 +1,5 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_CREATE_CONCEPT_COUNTS(CHARACTER VARYING(2000), BIGINT)
-RETURNS CHARACTER VARYING(ANY)
+RETURNS INTEGER
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -31,6 +31,7 @@ Declare
 	rowCount	numeric(18,0);
   
 	bslash char(1);
+	v_sqlerrm	varchar(1000);
   
 BEGIN
      
@@ -72,9 +73,9 @@ BEGIN
 	    ,i2b2metadata.i2b2 la
 		,i2b2demodata.observation_fact tpm
 		,i2b2demodata.patient_dimension p
-	where fa.c_fullname like input_path || '%'
+	where fa.c_fullname like input_path || '%' escape ''
 	  and substr(fa.c_visualattributes,2,1) != 'H'
-	  and la.c_fullname like fa.c_fullname || '%'
+	  and la.c_fullname like fa.c_fullname || '%' escape ''
 	  and la.c_visualattributes like 'L%'
 	  and tpm.patient_num = p.patient_num
 	  and la.c_basecode = tpm.concept_cd
@@ -86,16 +87,20 @@ BEGIN
 	
 	--SET ANY NODE WITH MISSING OR ZERO COUNTS TO HIDDEN
 
-	update i2b2metadata.i2b2
-	set c_visualattributes = substr(c_visualattributes,1,1) || 'H' || substr(c_visualattributes,3,1)
-	where c_fullname like input_path || '%' 
-	  and not exists
-			 (select 1 from i2b2demodata.concept_counts nc
-				  where c_fullname = nc.concept_path)
-	  and not exists
-			 (select 1 from i2b2demodata.concept_counts zc
-			  where c_fullname = zc.concept_path
-			  and zc.patient_count = 0)
+	update i2b2metadata.i2b2 a
+	set c_visualattributes = substr(a.c_visualattributes,1,1) || 'H' || substr(a.c_visualattributes,3,1)
+	from (select b.c_fullname
+	      from i2b2metadata.i2b2 b
+		  where b.c_fullname like input_path || '%' escape ''
+		    and not exists
+			   (select 1 from i2b2demodata.concept_counts nc
+			    where b.c_fullname = nc.concept_path)
+		  union
+		  select zc.concept_path as c_fullname
+		  from i2b2demodata.concept_counts zc
+		  where zc.concept_path like input_path || '%' escape ''
+		    and zc.patient_count = 0) upd
+	where a.c_fullname = upd.c_fullname
 		and c_name != 'SECURITY';
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
@@ -104,18 +109,20 @@ BEGIN
     ---Cleanup OVERALL JOB if this proc is being run standalone
 	IF newJobFlag = 1
 	THEN
-		-- call tm_cz.czx_end_audit (jobID, 'SUCCESS');
+		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
+	
+	return 0;
 
 	EXCEPTION
 	WHEN OTHERS THEN
-		raise notice 'error: %', SQLERRM;
+		v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		--End Proc
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
-	
+		return 16;
 END;
 END_PROC;
-
 

@@ -63,252 +63,45 @@
   <created_user>-</created_user>
   <created_date>2013&#47;07&#47;03 07:29:28.694</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;08&#47;26 08:52:54.415</modified_date>
+  <modified_date>2013&#47;11&#47;01 12:04:03.933</modified_date>
   </info>
   <notepads>
+    <notepad>
+      <note>&#47;*************************************************************************
+* Copyright 2008-2012 Janssen Research &amp; Development, LLC.
+*
+* Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http:&#47;&#47;www.apache.org&#47;licenses&#47;LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+******************************************************************&#47;</note>
+      <xloc>1580</xloc>
+      <yloc>1084</yloc>
+      <width>524</width>
+      <heigth>234</heigth>
+      <fontname>Arial</fontname>
+      <fontsize>10</fontsize>
+      <fontbold>N</fontbold>
+      <fontitalic>N</fontitalic>
+      <fontcolorred>0</fontcolorred>
+      <fontcolorgreen>0</fontcolorgreen>
+      <fontcolorblue>0</fontcolorblue>
+      <backgroundcolorred>255</backgroundcolorred>
+      <backgroundcolorgreen>165</backgroundcolorgreen>
+      <backgroundcolorblue>0</backgroundcolorblue>
+      <bordercolorred>100</bordercolorred>
+      <bordercolorgreen>100</bordercolorgreen>
+      <bordercolorblue>100</bordercolorblue>
+      <drawshadow>Y</drawshadow>
+    </notepad>
   </notepads>
-  <connection>
-    <name>BIOMART</name>
-    <server>${BIOMART_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${BIOMART_DB_NAME}</database>
-    <port>${BIOMART_DB_PORT}</port>
-    <username>${BIOMART_DB_USER}</username>
-    <password>${BIOMART_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${BIOMART_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>BIOMART_STAGE</name>
-    <server>${BIOMART_STAGE_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${BIOMART_STAGE_DB_NAME}</database>
-    <port>${BIOMART_STAGE_DB_PORT}</port>
-    <username>${BIOMART_STAGE_DB_USER}</username>
-    <password>${BIOMART_STAGE_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${BIOMART_STAGE_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>DEAPP</name>
-    <server>${DEAPP_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${DEAPP_DB_NAME}</database>
-    <port>${DEAPP_DB_PORT}</port>
-    <username>${DEAPP_DB_USER}</username>
-    <password>${DEAPP_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${DEAPP_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>I2B2DEMODATA</name>
-    <server>${I2B2DEMODATA_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${I2B2DEMODATA_DB_NAME}</database>
-    <port>${I2B2DEMODATA_DB_PORT}</port>
-    <username>${I2B2DEMODATA_DB_USER}</username>
-    <password>${I2B2DEMODATA_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${I2B2DEMODATA_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>I2B2METADATA</name>
-    <server>${I2B2METADATA_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${I2B2METADATA_DB_NAME}</database>
-    <port>${I2B2METADATA_DB_PORT}</port>
-    <username>${I2B2METADATA_DB_USER}</username>
-    <password>${I2B2METADATA_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${I2B2METADATA_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>PROD_CZ</name>
-    <server>${PROD_CZ_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${PROD_CZ_DB_NAME}</database>
-    <port>${PROD_CZ_DB_PORT}</port>
-    <username>${PROD_CZ_DB_USER}</username>
-    <password>${PROD_CZ_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${PROD_CZ_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>PROD_STAGE</name>
-    <server>${PROD_STAGE_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${PROD_STAGE_DB_NAME}</database>
-    <port>${PROD_STAGE_DB_PORT}</port>
-    <username>${PROD_STAGE_DB_USER}</username>
-    <password>${PROD_STAGE_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${PROD_STAGE_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>TM_CZ</name>
-    <server>${TM_CZ_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${TM_CZ_DB_NAME}</database>
-    <port>${TM_CZ_DB_PORT}</port>
-    <username>${TM_CZ_DB_USER}</username>
-    <password>${TM_CZ_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${TM_CZ_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>TM_LZ</name>
-    <server>${TM_LZ_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${TM_LZ_DB_NAME}</database>
-    <port>${TM_LZ_DB_PORT}</port>
-    <username>${TM_LZ_DB_USER}</username>
-    <password>${TM_LZ_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${TM_LZ_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>TM_STAGE</name>
-    <server>${TM_STAGE_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${TM_STAGE_DB_NAME}</database>
-    <port>${TM_STAGE_DB_PORT}</port>
-    <username>${TM_STAGE_DB_USER}</username>
-    <password>${TM_STAGE_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${TM_STAGE_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>TM_WZ</name>
-    <server>${TM_WZ_DB_SERVER}</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>${TM_WZ_DB_NAME}</database>
-    <port>${TM_WZ_DB_PORT}</port>
-    <username>${TM_WZ_DB_USER}</username>
-    <password>${TM_WZ_DB_PWD}</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${TM_WZ_DB_PORT}</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <order>
   <hop> <from>Alternate data_labels</from><to>Split alt_data_label</to><enabled>Y</enabled> </hop>  <hop> <from>Check data_label value</from><to>Skip columns</to><enabled>Y</enabled> </hop>  <hop> <from>Check data_label value</from><to>value vocab cd for label</to><enabled>Y</enabled> </hop>  <hop> <from>Check data_label value</from><to>value vocab cd present</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate alt_data_labels</from><to>Format new_data_label</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate alt_data_values</from><to>Format new_data_value</to><enabled>Y</enabled> </hop>  <hop> <from>Data_label source is file</from><to>Sort by col_num, data_value</to><enabled>Y</enabled> </hop>  <hop> <from>Merge alt_data_labels</from><to>Data_label source is file</to><enabled>Y</enabled> </hop>  <hop> <from>Merge alt_data_values</from><to>Sort alt value position (desc), seq (asc)</to><enabled>Y</enabled> </hop>  <hop> <from>Parse alt_data_label into number and position</from><to>Uppercase alt_data_label_pos</to><enabled>Y</enabled> </hop>  <hop> <from>Parse alt_data_value into number and position</from><to>Uppercase alt_data_value_pos</to><enabled>Y</enabled> </hop>  <hop> <from>Read mapped_data_file</from><to>Check data_label value</to><enabled>Y</enabled> </hop>  <hop> <from>Replace in string</from><to>Reformat output from alt labels</to><enabled>Y</enabled> </hop>  <hop> <from>Set alt data_label from column value</from><to>Sort alt data_label by rec_num, col</to><enabled>Y</enabled> </hop>  <hop> <from>Set alt data_value from column value</from><to>Sort alt data_value by rec_num, col</to><enabled>Y</enabled> </hop>  <hop> <from>Set value vocab to label vocab</from><to>Set alt data_value from column value</to><enabled>Y</enabled> </hop>  <hop> <from>Sort alt data_value by rec_num, col</from><to>Merge alt_data_values</to><enabled>Y</enabled> </hop>  <hop> <from>Sort alt value position (desc), seq (asc)</from><to>Concatenate alt_data_values</to><enabled>Y</enabled> </hop>  <hop> <from>Sort alt_data_value records</from><to>Merge alt_data_values</to><enabled>Y</enabled> </hop>  <hop> <from>Split alt_data_label</from><to>Parse alt_data_label into number and position</to><enabled>Y</enabled> </hop>  <hop> <from>Split alt_data_value</from><to>Parse alt_data_value into number and position</to><enabled>Y</enabled> </hop>  <hop> <from>Uppercase alt_data_label_pos</from><to>Sort data records</to><enabled>Y</enabled> </hop>  <hop> <from>Uppercase alt_data_value_pos</from><to>Sort alt_data_value records</to><enabled>Y</enabled> </hop>  <hop> <from>set label vocab to value vocab</from><to>Set alt data_label from column value</to><enabled>Y</enabled> </hop>  <hop> <from>value vocab cd for label</from><to>Set alt data_label from column value</to><enabled>Y</enabled> </hop>  <hop> <from>value vocab cd for label</from><to>set label vocab to value vocab</to><enabled>Y</enabled> </hop>  <hop> <from>value vocab cd present</from><to>Set alt data_value from column value</to><enabled>Y</enabled> </hop>  <hop> <from>value vocab cd present</from><to>Set value vocab to label vocab</to><enabled>Y</enabled> </hop>  <hop> <from>Alternate data_labels</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Reformat output from alt labels</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by col_num, data_value</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Sort on addl label col_num, map_value</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Data_label source is file</from><to>Dummy (do nothing) 2</to><enabled>Y</enabled> </hop>  <hop> <from>Dummy (do nothing) 2</from><to>Sort alt label position (desc), seq (asc)</to><enabled>Y</enabled> </hop>  <hop> <from>Read addl_data_label file</from><to>Sort on addl label col_num, map_value</to><enabled>Y</enabled> </hop>  <hop> <from>Read special columns file</from><to>Reorder for merge joins</to><enabled>Y</enabled> </hop>  <hop> <from>Dummy (do nothing)</from><to>Alternate data values</to><enabled>Y</enabled> </hop>  <hop> <from>Alternate data values</from><to>Split alt_data_value</to><enabled>Y</enabled> </hop>  <hop> <from>Alternate data values</from><to>No alt label</to><enabled>Y</enabled> </hop>  <hop> <from>Format new_data_label</from><to>Replace in string</to><enabled>Y</enabled> </hop>  <hop> <from>Format new_data_value</from><to>Reformat output from alt data values</to><enabled>Y</enabled> </hop>  <hop> <from>Reformat output from alt data values</from><to>No alt label</to><enabled>Y</enabled> </hop>  <hop> <from>Check data_label value</from><to>Set alt data_value from column value 2</to><enabled>Y</enabled> </hop>  <hop> <from>Reorder for merge joins</from><to>Alternate data_labels</to><enabled>Y</enabled> </hop>  <hop> <from>No alt label</from><to>Add value_flag</to><enabled>Y</enabled> </hop>  <hop> <from>Add value_flag</from><to>value_flag_col present</to><enabled>Y</enabled> </hop>  <hop> <from>Merge value_flag data</from><to>Set value_flag</to><enabled>Y</enabled> </hop>  <hop> <from>value_flag_col present</from><to>No value_flag</to><enabled>Y</enabled> </hop>  <hop> <from>No value_flag</from><to>Write merged output file</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Dummy (do nothing) 2</to><enabled>Y</enabled> </hop>  <hop> <from>Reformat output from value_flag</from><to>No value_flag</to><enabled>Y</enabled> </hop>  <hop> <from>Set alt data_value from column value 2</from><to>Sort value flag by rec,col</to><enabled>Y</enabled> </hop>  <hop> <from>Set value_flag</from><to>Reformat output from value_flag</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data records</from><to>Merge data records</to><enabled>Y</enabled> </hop>  <hop> <from>Merge data records</from><to>Merge alt_data_labels</to><enabled>Y</enabled> </hop>  <hop> <from>Sort alt data_label by rec_num, col</from><to>Merge alt data label</to><enabled>Y</enabled> </hop>  <hop> <from>Merge alt data label</from><to>Merge alt_data_labels</to><enabled>Y</enabled> </hop>  <hop> <from>Sort alt label position (desc), seq (asc)</from><to>Concatenate alt_data_labels</to><enabled>Y</enabled> </hop>  <hop> <from>Sort value flag records</from><to>Merge value_flag_col</to><enabled>Y</enabled> </hop>  <hop> <from>Merge value_flag_col</from><to>Merge value_flag data</to><enabled>Y</enabled> </hop>  <hop> <from>value_flag_col present</from><to>Start value_flag</to><enabled>Y</enabled> </hop>  <hop> <from>Start value_flag</from><to>Sort value flag records</to><enabled>Y</enabled> </hop>  <hop> <from>Sort value flag by rec,col</from><to>Merge value_flag</to><enabled>Y</enabled> </hop>  <hop> <from>Merge value_flag</from><to>Merge value_flag data</to><enabled>Y</enabled> </hop>  </order>
   <step>
@@ -1217,6 +1010,62 @@ Alert(&quot;Hello World!&quot;);</jsScript_script>
     </step>
 
   <step>
+    <name>Merge data records</name>
+    <type>SortedMerge</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>rec_num</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>data_label_col</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>725</xloc>
+      <yloc>251</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge value_flag</name>
+    <type>SortedMerge</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>rec_num</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>data_value_col</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>817</xloc>
+      <yloc>935</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Merge value_flag data</name>
     <type>MergeJoin</type>
     <description/>
@@ -1246,7 +1095,7 @@ Alert(&quot;Hello World!&quot;);</jsScript_script>
     </step>
 
   <step>
-    <name>Merge data records</name>
+    <name>Merge value_flag_col</name>
     <type>SortedMerge</type>
     <description/>
     <distribute>Y</distribute>
@@ -1261,14 +1110,14 @@ Alert(&quot;Hello World!&quot;);</jsScript_script>
         <ascending>Y</ascending>
         </field>
       <field>
-        <name>data_label_col</name>
+        <name>value_flag_col</name>
         <ascending>Y</ascending>
         </field>
       </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>725</xloc>
-      <yloc>251</yloc>
+      <xloc>521</xloc>
+      <yloc>932</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2837,6 +2686,141 @@ else
     </step>
 
   <step>
+    <name>Reformat output from value_flag</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>rec_num</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>col_num</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>col_rec_num</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>alt_data_label</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>alt_data_value</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>value_flag_col</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>data_value</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>site_id</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>subject_id</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>visit_name</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>data_label</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>category_cd</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>label_ctrl_vocab_code</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>seq_col</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>aggregate_type</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>seq_col_label</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>preserve_nulls</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>data_filename</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>value_ctrl_vocab_cd</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>units_cd</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>visit_date</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>link_type</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>link_value</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>end_date</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>visit_reference</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>operation</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>date_format</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>data_label_components</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>value_flag</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>        <select_unspecified>N</select_unspecified>
+    </fields>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>333</xloc>
+      <yloc>1021</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Reorder for merge joins</name>
     <type>SelectValues</type>
     <description/>
@@ -3161,141 +3145,6 @@ else
     </step>
 
   <step>
-    <name>Reformat output from value_flag</name>
-    <type>SelectValues</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>      <field>        <name>rec_num</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>col_num</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>col_rec_num</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>alt_data_label</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>alt_data_value</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>value_flag_col</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>data_value</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>site_id</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>subject_id</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>visit_name</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>data_label</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>category_cd</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>label_ctrl_vocab_code</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>seq_col</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>aggregate_type</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>seq_col_label</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>preserve_nulls</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>data_filename</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>value_ctrl_vocab_cd</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>units_cd</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>visit_date</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>link_type</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>link_value</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>end_date</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>visit_reference</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>operation</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>date_format</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>data_label_components</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>value_flag</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>        <select_unspecified>N</select_unspecified>
-    </fields>     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>333</xloc>
-      <yloc>1021</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Set alt data_label from column value</name>
     <type>SelectValues</type>
     <description/>
@@ -3397,30 +3246,6 @@ else
     </step>
 
   <step>
-    <name>Set value_flag</name>
-    <type>SetValueField</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>value_flag</name>
-        <replaceby>value_flag_from_column</replaceby>
-        </field>
-      </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>657</xloc>
-      <yloc>1026</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Set value vocab to label vocab</name>
     <type>SetValueField</type>
     <description/>
@@ -3440,6 +3265,30 @@ else
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>1153</xloc>
       <yloc>605</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Set value_flag</name>
+    <type>SetValueField</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>value_flag</name>
+        <replaceby>value_flag_from_column</replaceby>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>657</xloc>
+      <yloc>1026</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -3908,6 +3757,24 @@ else
     </step>
 
   <step>
+    <name>Start value_flag</name>
+    <type>Dummy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>275</xloc>
+      <yloc>934</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Uppercase alt_data_label_pos</name>
     <type>StringOperations</type>
     <description/>
@@ -3969,34 +3836,6 @@ else
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>662</xloc>
       <yloc>636</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>value_flag_col present</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-<send_true_to>Start value_flag</send_true_to>
-<send_false_to>No value_flag</send_false_to>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue>value_flag_col</leftvalue>
- <function>IS NOT NULL</function>
- <rightvalue/>
- </condition>
-    </compare>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>157</xloc>
-      <yloc>938</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -4445,8 +4284,8 @@ else
     </step>
 
   <step>
-    <name>Merge value_flag_col</name>
-    <type>SortedMerge</type>
+    <name>value_flag_col present</name>
+    <type>FilterRows</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -4454,66 +4293,20 @@ else
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <fields>
-      <field>
-        <name>rec_num</name>
-        <ascending>Y</ascending>
-        </field>
-      <field>
-        <name>value_flag_col</name>
-        <ascending>Y</ascending>
-        </field>
-      </fields>
+<send_true_to>Start value_flag</send_true_to>
+<send_false_to>No value_flag</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>value_flag_col</leftvalue>
+ <function>IS NOT NULL</function>
+ <rightvalue/>
+ </condition>
+    </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>521</xloc>
-      <yloc>932</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Start value_flag</name>
-    <type>Dummy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>275</xloc>
-      <yloc>934</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Merge value_flag</name>
-    <type>SortedMerge</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>rec_num</name>
-        <ascending>Y</ascending>
-        </field>
-      <field>
-        <name>data_value_col</name>
-        <ascending>Y</ascending>
-        </field>
-      </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>817</xloc>
-      <yloc>935</yloc>
+      <xloc>157</xloc>
+      <yloc>938</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

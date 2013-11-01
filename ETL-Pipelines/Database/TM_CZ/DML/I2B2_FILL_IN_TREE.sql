@@ -1,5 +1,5 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_FILL_IN_TREE(CHARACTER VARYING(50), CHARACTER VARYING(500), BIGINT)
-RETURNS CHARACTER VARYING(ANY)
+RETURNS int4
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -41,6 +41,7 @@ Declare
 	v_count		int8;
 	bslash		char(1);
 	v_concept_id	bigint;
+	v_sqlerrm		varchar(1000);
 	
 	r_cNodes	record;
   
@@ -80,7 +81,7 @@ BEGIN
 	FOR r_cNodes in	
 		select distinct substr(c_fullname, 1,instr(c_fullname,bslash,-2,1)) as c_fullname
 		from i2b2metadata.i2b2 
-		where c_fullname like input_path || '%'
+		where c_fullname like input_path || '%' escape ''
 		union
 		--	add input_path if filling in upper-level nodes only
 		select input_path as c_fullname
@@ -177,15 +178,18 @@ BEGIN
 	THEN
 		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
+	
+	return 0;
 
 	EXCEPTION
 	WHEN OTHERS THEN
-		raise notice 'error: %', SQLERRM;
+		v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		--End Proc
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
-	
+		return 16;
 END;
 END_PROC;
 

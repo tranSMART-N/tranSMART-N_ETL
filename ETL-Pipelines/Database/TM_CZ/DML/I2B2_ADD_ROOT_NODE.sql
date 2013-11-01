@@ -1,7 +1,5 @@
-create or replace PROCEDURE TM_CZ.I2B2_ADD_ROOT_NODE
-(varchar(2000)
-,bigint
-) RETURNS CHARACTER VARYING(ANY)
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_ADD_ROOT_NODE(CHARACTER VARYING(2000), BIGINT)
+RETURNS CHARACTER VARYING(ANY)
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -169,3 +167,4 @@ Begin
 	
 END;
 END_PROC;
+

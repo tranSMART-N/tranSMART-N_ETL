@@ -1,5 +1,5 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_ADD_NODE(CHARACTER VARYING(50), CHARACTER VARYING(2000), CHARACTER VARYING(500), BIGINT)
-RETURNS CHARACTER VARYING(ANY)
+RETURNS int4
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -30,6 +30,7 @@ Declare
 	bslash		char(1);
 	v_concept_id	bigint;
 	pExists		int4;
+	v_sqlerrm	varchar(1000);
   
   
   --Audit variables
@@ -162,14 +163,17 @@ BEGIN
 		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	end if;
 	
-	--return null;
+	return 0;
+
 	exception
 	when others then
-		raise notice 'error: %', SQLERRM;
+		v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		--End Proc
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
+		return 16;
 
 END;
 END_PROC;

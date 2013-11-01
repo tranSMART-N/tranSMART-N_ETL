@@ -1,5 +1,5 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_LOAD_SECURITY_DATA(NUMERIC(18,0))
-RETURNS NUMERIC
+RETURNS int4
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -32,6 +32,7 @@ Declare
   secNodeExists		int4;
   etlDate			timestamp;
   bslash			char(1);
+  v_sqlerrm			varchar(1000);
 
 BEGIN
 
@@ -206,13 +207,17 @@ BEGIN
 		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
 
+	return 0;
+	
 	EXCEPTION
 	WHEN OTHERS THEN
-		raise notice 'error: %', SQLERRM;
+		v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		--End Proc
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
+		return 16;
 
 end;
 END_PROC;

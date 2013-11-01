@@ -1,5 +1,5 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_LOAD_STUDY_METADATA(BIGINT)
-RETURNS CHARACTER VARYING(ANY)
+RETURNS INT4
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -44,53 +44,12 @@ Declare
 	
 	regexp_date			varchar(2000);
 	regexp_numeric		varchar(1000);
+	v_sqlerrm			varchar(1000);
 	
 	study_compound_rec	record;
-/*
-	Type study_compound_rec is record
-	(study_id	varchar2(200)
-	,compound	varchar2(500)
-	);
-  
-	Type study_compound_tab is table of study_compound_rec;
-  
-	study_compound_array study_compound_tab;
-*/
 	study_disease_rec	record;
-/*
-	Type study_disease_rec is record
-	(study_id	varchar2(200)
-	,disease	varchar2(500)
-	);
-  
-	Type study_disease_tab is table of study_disease_rec;
-  
-	study_disease_array study_disease_tab;
- */
 	study_taxonomy_rec	record;
-/*
-	Type study_taxonomy_rec is record
-	(study_id	varchar2(200)
-	,organism	varchar2(500)
-	);
-  
-	Type study_taxonomy_tab is table of study_taxonomy_rec;
-  
-	study_taxonomy_array study_taxonomy_tab;
- */
 	study_link_rec		record;
-/*
-	Type study_link_rec is record
-	(study_id		varchar2(200)
-	,ad_hoc_link	varchar2(4000)
-	,ad_hoc_property varchar2(200)
-	,ad_hoc_property_id	number
-	);
-  
-	Type study_link_tab is table of study_link_rec;
-  
-	study_link_array study_link_tab;
-*/
 
 BEGIN
     
@@ -678,7 +637,7 @@ BEGIN
 					where bcr.repository_type = link_repo
 					  and not exists
 						 (select 1 from biomart.bio_content x
-						  where x.etl_id_c like '%' || tmp_study || '%'
+						  where x.etl_id_c like '%' || tmp_study || '%' escape ''
 							and x.file_type = tmp_property
 							and x.location = link_value);
 					rowCount := ROW_COUNT;
@@ -777,7 +736,7 @@ BEGIN
 					where bcr.repository_type = link_repo
 					  and not exists
 						 (select 1 from biomart.bio_content x
-						  where x.etl_id_c like '%' || tmp_study || '%'
+						  where x.etl_id_c like '%' || tmp_study || '%' escape ''
 							and x.file_type = tmp_property
 							and x.location = link_value);
 					rowCount := ROW_COUNT;
@@ -822,15 +781,18 @@ BEGIN
 	THEN
 		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
+	
+	return 0;
 
 	EXCEPTION
 	WHEN OTHERS THEN
-		raise notice 'error: %', SQLERRM;
+		v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		--End Proc
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
-	
+		return 16;
 END;
 END_PROC;
 

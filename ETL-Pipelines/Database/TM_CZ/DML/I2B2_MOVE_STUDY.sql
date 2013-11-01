@@ -1,5 +1,5 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_MOVE_STUDY (CHARACTER VARYING(ANY), CHARACTER VARYING(ANY), INTEGER)
-RETURNS INTEGER
+RETURNS int4
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 DECLARE
@@ -16,7 +16,8 @@ DECLARE
   newPath			varchar(2000);
   new_study_name	varchar(200);
   old_study_name	varchar(200);
-  pExists		int;
+  pExists			int;
+  v_sqlerrm			varchar(1000);
   
   --	new variables
   bslash char(1);
@@ -41,12 +42,9 @@ Begin
 	newJobFlag := 0; -- False (Default)
 	jobID := currentJobID;
 
---	SELECT sys_context('USERENV', 'CURRENT_SCHEMA') INTO databaseName FROM dual;
---	procedureName := $$PLSQL_UNIT;
-	databaseName := CURRENT_CATALOG;
+	databaseName := 'TM_CZ';
 	procedureName := 'I2B2_MOVE_STUDY';
-	--select CURRENT_CATALOG into databaseName;
-	--select I2B2_SECURE_STUDY into procedureName;  	
+  	
 	
 	--Audit JOB Initialization
 	--If Job ID does not exist, then this is a single procedure run and we need to create it
@@ -54,7 +52,6 @@ Begin
 	THEN
 		newJobFlag := 1; -- True
 		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
-		--call tm_cz.czx_start_audit (procedureName, databaseName, jobID);  syntax doesnt work
 	END IF;
 
 	stepCt := stepCt + 1;
@@ -448,14 +445,17 @@ Begin
 		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
 
+	return 0;
+	
 	EXCEPTION
 	WHEN OTHERS THEN
-		raise notice 'error: %', SQLERRM;
+		v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		--End Proc
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
-  
+		return 16;
 END;
 END_PROC;
 

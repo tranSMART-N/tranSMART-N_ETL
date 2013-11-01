@@ -1,5 +1,5 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_PROCESS_MRNA_DATA(CHARACTER VARYING(50), CHARACTER VARYING(500), CHARACTER VARYING(10), CHARACTER VARYING(50), NUMERIC(4,0), CHARACTER VARYING(50), BIGINT)
-RETURNS NUMERIC
+RETURNS int4
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -61,6 +61,7 @@ Declare
 	v_bio_experiment_id	numeric(18,0);
 	runDate		timestamp;
 	bslash		char(1);
+	v_sqlerrm	varchar(1000);
 	
 	--	records
 	r_Nodes	record;
@@ -216,14 +217,6 @@ BEGIN
 	if pCount > 2 then
 		call tm_cz.i2b2_fill_in_tree(null, tPath, jobId);
 	end if;
-
-	--	uppercase study_id in lt_src_mrna_subj_samp_map in case curator forgot
-	
-	--update tm_lz.lt_src_mrna_subj_samp_map
-	--set trial_name=upper(trial_name);
-	
-	--stepCt := stepCt + 1;
-	--call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Uppercase trial_name in lt_src_mrna_subj_samp_map',rowCount,stepCt,'Done');	
 	
 	--	create records in patient_dimension for subject_ids if they do not exist
 	--	format of sourcesystem_cd:  trial:[site:]subject_cd
@@ -243,7 +236,7 @@ BEGIN
 	from tm_lz.lt_src_mrna_subj_samp_map s
 	     ,deapp.de_gpl_info g
 	 where s.subject_id is not null
-	   and s.trial_name = TrialID
+	   and upper(s.trial_name) = TrialID
 	   and s.source_cd = sourceCD
 	   and s.platform = g.platform
 	   and upper(g.marker_type) = 'GENE EXPRESSION'
@@ -515,17 +508,6 @@ BEGIN
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Set sourcesystem_cd to null for added upper level nodes',rowCount,stepCt,'Done');
 		
 	--	update concept_cd for nodes, this is done to make the next insert easier
-/*
-	update tm_wz.wt_mrna_nodes t
-	set concept_cd=(select c.concept_cd from i2b2demodata.concept_dimension c
-	                where c.concept_path = t.leaf_node
-				   )
-    where exists
-         (select 1 from i2b2demodata.concept_dimension x
-	                where x.concept_path = t.leaf_node
-				   )
-	  and t.concept_cd is null;
-*/
 
 	update tm_wz.wt_mrna_nodes t
 	set concept_cd=cd.concept_cd
@@ -838,7 +820,7 @@ BEGIN
 	FOR r_Nodes in 
 		  select distinct c_fullname 
 		  from  i2b2metadata.i2b2
-		  where c_fullname like topNode || '%'
+		  where c_fullname like topNode || '%' escape ''
 			and substr(c_visualattributes,2,1) = 'H'
 	Loop
 		--	deletes hidden nodes for a trial one at a time
@@ -914,7 +896,7 @@ BEGIN
 		select probeset_id
 			  ,assay_id
 			  ,patient_id
-			  ,trial_name
+			  ,TrialId
 			  ,case when intensity_value < -2.5
 			        then -2.5
 					when intensity_value > 2.5
@@ -948,7 +930,7 @@ BEGIN
 				  ,assay_id 
 				  ,intensity_value
 				  ,patient_id
-				  ,trial_name
+				  ,TrialId
 			from tm_wz.wt_subject_mrna_probeset
 			where trial_name = TrialId;
 			rowCount := ROW_COUNT;
@@ -966,7 +948,7 @@ BEGIN
 				  ,assay_id 
 				  ,log(intensity_value)/log(2)
 				  ,patient_id
-				  ,trial_name
+				  ,TrialId
 			from tm_wz.wt_subject_mrna_probeset
 			where trial_name = TrialId;
 			rowCount := ROW_COUNT;
@@ -983,7 +965,7 @@ BEGIN
 		,median_intensity
 		,stddev_intensity
 		)
-		select d.trial_name 
+		select TrialId
 			  ,d.probeset_id
 			  ,avg(log_intensity)
 			  ,percentile_cont(0.5) within group (order by log_intensity)
@@ -1018,7 +1000,7 @@ BEGIN
 			  ,c.median_intensity 
 			  ,CASE WHEN stddev_intensity=0 THEN 0 ELSE (log_intensity - median_intensity ) / stddev_intensity END
 			  ,d.patient_id
-			  ,d.trial_name
+			  ,TrialId
 		from tm_wz.wt_subject_microarray_logs d 
 			,tm_wz.wt_subject_microarray_calcs c 
 		where d.probeset_id = c.probeset_id
@@ -1078,9 +1060,10 @@ BEGIN
 
 	EXCEPTION
 	WHEN OTHERS THEN
-		raise notice 'error: %', SQLERRM;
+		v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		--End Proc
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
 		return 16;
