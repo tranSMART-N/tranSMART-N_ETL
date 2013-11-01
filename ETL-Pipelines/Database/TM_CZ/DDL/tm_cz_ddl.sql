@@ -619,8 +619,9 @@ CREATE TABLE tm_cz.cz_person (
 	work_phone varchar(20)
 );
 
-   create sequenct tm_cz.cz_form_layout_seq;
-     CREATE TABLE "TM_CZ"."CZ_FORM_LAYOUT" 
+CREATE SEQUENCE tm_cz.cz_form_layout_seq;
+   
+CREATE TABLE "TM_CZ"."CZ_FORM_LAYOUT" 
    (	"FORM_LAYOUT_ID" numeric(22,0), 
 	"FORM_KEY" varchar(50), 
 	"FORM_COLUMN" varchar(50), 
