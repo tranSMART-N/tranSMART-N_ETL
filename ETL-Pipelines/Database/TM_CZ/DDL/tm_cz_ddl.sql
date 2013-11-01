@@ -619,5 +619,15 @@ CREATE TABLE tm_cz.cz_person (
 	work_phone varchar(20)
 );
 
+   create sequenct tm_cz.cz_form_layout_seq;
+     CREATE TABLE "TM_CZ"."CZ_FORM_LAYOUT" 
+   (	"FORM_LAYOUT_ID" numeric(22,0), 
+	"FORM_KEY" varchar(50), 
+	"FORM_COLUMN" varchar(50), 
+	"DISPLAY_NAME" varchar(50), 
+	"DATA_TYPE" varchar(50), 
+	"SEQUENCE" numeric(22,0)
+   );
+   
 ALTER TABLE tm_cz.cz_person ADD CONSTRAINT cz_person_pk PRIMARY KEY (person_id);
 ALTER TABLE tm_cz.cz_test ADD CONSTRAINT cz_test_cz_test_category_fk1 FOREIGN KEY (test_category_id) REFERENCES tm_cz.cz_test_category (test_category_id);
