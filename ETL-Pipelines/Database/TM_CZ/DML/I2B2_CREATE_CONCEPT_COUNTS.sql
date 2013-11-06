@@ -54,7 +54,7 @@ BEGIN
 	bslash := '\\';
   
 	delete from i2b2demodata.concept_counts
-	where concept_path like input_path || '%';
+	where concept_path like input_path || '%' escape '';
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete counts for trial from I2B2DEMODATA concept_counts',rowCount,stepCt,'Done');
@@ -83,7 +83,7 @@ BEGIN
 			,ltrim(SUBSTR(fa.c_fullname, 1,instr(fa.c_fullname, bslash,-1,2)));	
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	-- call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert counts for trial into I2B2DEMODATA concept_counts',rowCount,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert counts for trial into I2B2DEMODATA concept_counts',rowCount,stepCt,'Done');
 	
 	--SET ANY NODE WITH MISSING OR ZERO COUNTS TO HIDDEN
 

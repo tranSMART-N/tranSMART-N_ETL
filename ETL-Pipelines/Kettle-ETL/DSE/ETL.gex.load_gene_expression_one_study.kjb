@@ -8,7 +8,7 @@
   <created_user>-</created_user>
   <created_date>2011&#47;11&#47;28 14:14:46.493</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;10&#47;29 08:40:42.795</modified_date>
+  <modified_date>2013&#47;11&#47;05 09:22:28.308</modified_date>
     <parameters>
     </parameters>
     <slaveservers>
@@ -50,8 +50,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>184</xloc>
-      <yloc>119</yloc>
+      <xloc>144</xloc>
+      <yloc>43</yloc>
       </entry>
     <entry>
       <name>Set gene expression filename as variable</name>
@@ -83,8 +83,8 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>347</xloc>
-      <yloc>118</yloc>
+      <xloc>344</xloc>
+      <yloc>42</yloc>
       </entry>
     <entry>
       <name>Load gene expression data to lz</name>
@@ -116,8 +116,8 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>524</xloc>
-      <yloc>353</yloc>
+      <xloc>549</xloc>
+      <yloc>210</yloc>
       </entry>
     <entry>
       <name>Delete file</name>
@@ -128,8 +128,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>817</xloc>
-      <yloc>468</yloc>
+      <xloc>775</xloc>
+      <yloc>396</yloc>
       </entry>
     <entry>
       <name>Run FilePivot</name>
@@ -151,8 +151,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>351</xloc>
-      <yloc>353</yloc>
+      <xloc>364</xloc>
+      <yloc>322</yloc>
       </entry>
     <entry>
       <name>Validate gene expression header has same nbr columns as data</name>
@@ -184,8 +184,8 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>348</xloc>
-      <yloc>234</yloc>
+      <xloc>197</xloc>
+      <yloc>210</yloc>
       </entry>
     <entry>
       <name>Check LOAD_TYPE = F</name>
@@ -206,8 +206,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>717</xloc>
-      <yloc>351</yloc>
+      <xloc>760</xloc>
+      <yloc>214</yloc>
       </entry>
     <entry>
       <name>Write gene expression audit</name>
@@ -239,8 +239,30 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>887</xloc>
-      <yloc>352</yloc>
+      <xloc>944</xloc>
+      <yloc>249</yloc>
+      </entry>
+    <entry>
+      <name>Pivoted Files</name>
+      <description/>
+      <type>SIMPLE_EVAL</type>
+      <valuetype>variable</valuetype>
+      <fieldname/>
+      <variablename>${PIVOTED_FILES}</variablename>
+      <fieldtype>string</fieldtype>
+      <mask/>
+      <comparevalue>Y</comparevalue>
+      <minvalue/>
+      <maxvalue/>
+      <successcondition>equal</successcondition>
+      <successnumbercondition>equal</successnumbercondition>
+      <successbooleancondition>false</successbooleancondition>
+      <successwhenvarset>N</successwhenvarset>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>344</xloc>
+      <yloc>121</yloc>
       </entry>
   </entries>
   <hops>
@@ -263,15 +285,6 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Set gene expression filename as variable</from>
-      <to>Validate gene expression header has same nbr columns as data</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
       <from>Validate gene expression header has same nbr columns as data</from>
       <to>Run FilePivot</to>
       <from_nr>0</from_nr>
@@ -285,7 +298,7 @@
       <to>Check LOAD_TYPE = F</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
-      <enabled>N</enabled>
+      <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
     </hop>
@@ -294,7 +307,7 @@
       <to>Delete file</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
-      <enabled>N</enabled>
+      <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
     </hop>
@@ -303,7 +316,7 @@
       <to>Write gene expression audit</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
-      <enabled>N</enabled>
+      <enabled>Y</enabled>
       <evaluation>N</evaluation>
       <unconditional>N</unconditional>
     </hop>
@@ -312,7 +325,34 @@
       <to>Delete file</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
-      <enabled>N</enabled>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Set gene expression filename as variable</from>
+      <to>Pivoted Files</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Pivoted Files</from>
+      <to>Validate gene expression header has same nbr columns as data</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Pivoted Files</from>
+      <to>Load gene expression data to lz</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
     </hop>

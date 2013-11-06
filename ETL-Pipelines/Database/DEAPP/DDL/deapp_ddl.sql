@@ -383,13 +383,13 @@ ALTER TABLE deapp.de_snp_probe ADD CONSTRAINT u_snp_probe_name UNIQUE (probe_nam
 
 ALTER TABLE deapp.de_chromosomal_region ADD CONSTRAINT de_chromosomal_region_gpl_id_fkey FOREIGN KEY (gpl_id) REFERENCES deapp.de_gpl_info(platform);
 
-ALTER TABLE deapp.de_subject_acgh_data ADD CONSTRAINT de_subject_acgh_data_region_id_fkey FOREIGN KEY (region_id) REFERENCES deapp.de_chromosomal_region(region_id);
+--ALTER TABLE deapp.de_subject_acgh_data ADD CONSTRAINT de_subject_acgh_data_region_id_fkey FOREIGN KEY (region_id) REFERENCES deapp.de_chromosomal_region(region_id);
 
-ALTER TABLE deapp.de_snp_gene_map ADD CONSTRAINT fk_snp_gene_map_snp_id FOREIGN KEY (snp_id) REFERENCES deapp.de_snp_info(snp_info_id);
+--ALTER TABLE deapp.de_snp_gene_map ADD CONSTRAINT fk_snp_gene_map_snp_id FOREIGN KEY (snp_id) REFERENCES deapp.de_snp_info(snp_info_id);
 
-ALTER TABLE deapp.de_snp_data_dataset_loc ADD CONSTRAINT fk_snp_loc_dataset_id FOREIGN KEY (snp_dataset_id) REFERENCES deapp.de_subject_snp_dataset(subject_snp_dataset_id);
+--ALTER TABLE deapp.de_snp_data_dataset_loc ADD CONSTRAINT fk_snp_loc_dataset_id FOREIGN KEY (snp_dataset_id) REFERENCES deapp.de_subject_snp_dataset(subject_snp_dataset_id);
 
-ALTER TABLE deapp.de_snp_probe ADD CONSTRAINT fk_snp_probe_snp_id FOREIGN KEY (snp_id) REFERENCES deapp.de_snp_info(snp_info_id);
+--ALTER TABLE deapp.de_snp_probe ADD CONSTRAINT fk_snp_probe_snp_id FOREIGN KEY (snp_id) REFERENCES deapp.de_snp_info(snp_info_id);
 
 /*
 

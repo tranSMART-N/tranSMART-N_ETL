@@ -191,7 +191,7 @@ BEGIN
 		
 	-- Get root_node from topNode
   
-	rootNode := tm_cz.parse_nth_value(topNode, 2, bslash);
+	rootNode := replace(substr(topNode,1,instr(topNode,bslash,2)),bslash,'');
 	
 	select count(*) into pExists
 	from i2b2metadata.table_access
@@ -207,7 +207,7 @@ BEGIN
 	
 	-- Get study name from topNode
   
-	study_name := tm_cz.parse_nth_value(topNode, topLevel, bslash);
+	study_name := replace(substr(topNode,instr(topNode,bslash,-2)+1),bslash,'');
 	
 	--	Add any upper level nodes as needed
 	
@@ -216,6 +216,16 @@ BEGIN
 
 	if pCount > 2 then
 		call tm_cz.i2b2_fill_in_tree(null, tPath, jobId);
+	end if;
+	
+	select count(*) into pExists
+	from i2b2metadata.i2b2
+	where c_fullname = topNode;
+	
+	--	add top node for study
+	
+	if pExists = 0 then
+		call tm_cz.i2b2_add_node(TrialId, topNode, study_name, jobId);
 	end if;
 	
 	--	create records in patient_dimension for subject_ids if they do not exist

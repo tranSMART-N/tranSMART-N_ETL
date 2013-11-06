@@ -38,6 +38,7 @@ Declare
 	root_level	int4;
 	curr_node	varchar(700);
 	node_name	varchar(700);
+	topNode		varchar(2000);
 	v_count		int8;
 	bslash		char(1);
 	v_concept_id	bigint;
@@ -72,6 +73,10 @@ BEGIN
 	select c_hlevel into root_level
 	from i2b2metadata.table_access
 	where c_name = curr_node;
+	
+	if TrialId is not null then
+		select min(c_fullname) from i2b2metadata.i2b2 into topNode where sourcesystem_cd = Trialid;
+	end if;
 	
 	--start node with the first slash
 	
@@ -115,7 +120,7 @@ BEGIN
 		  ,etlDate
 		  ,etlDate
 		  ,etlDate
-		  ,TrialID
+		  ,case when folder_path < topNode then null else TrialID end
 	from (select distinct folder_path, folder_name from tm_wz.wt_folder_nodes
 		  where not exists
 			   (select 1 from i2b2demodata.concept_dimension cd where folder_path = cd.concept_path)) y ;
@@ -162,7 +167,7 @@ BEGIN
 		  ,concept_cd
 		  ,'LIKE'
 		  ,'T'
-		  ,case when TrialID is null then null else 'trial:' || TrialID end
+		  ,case when concept_path < topNode then null else 'trial:' || TrialID end
 		  ,'@'
     from i2b2demodata.concept_dimension cd
     where cd.concept_path in (select distinct folder_path from tm_wz.wt_folder_nodes)

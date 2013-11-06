@@ -1,97 +1,33 @@
 <job>
-  <name>ETL.gex.load_gene_expression_data</name>
+  <name>ETL.snpAnalysis.load_analysis_from_lz_to_staging</name>
     <description/>
     <extended_description/>
     <job_version/>
     <job_status>0</job_status>
-  <directory>&#47;DSE</directory>
+  <directory>&#47;Search</directory>
   <created_user>-</created_user>
-  <created_date>2011&#47;11&#47;15 09:44:30.810</created_date>
+  <created_date>2012&#47;09&#47;04 13:29:49.916</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;05 08:36:31.962</modified_date>
+  <modified_date>2013&#47;10&#47;14 10:03:42.684</modified_date>
     <parameters>
         <parameter>
-            <name>DATA_FILE_PREFIX</name>
-            <default_value>x</default_value>
-            <description>gene expression data file prefix, usually STUDY_somechars used to search for all gene expression data files</description>
+            <name>ARCHIVE_DIR</name>
+            <default_value>&#47;home&#47;transmart&#47;ETL&#47;archive</default_value>
+            <description>directory where analysis files are zipped and stored after loading</description>
         </parameter>
         <parameter>
-            <name>DATA_LOCATION</name>
-            <default_value>x</default_value>
-            <description>directory where gene expression data file and subject-sample map file are located</description>
-        </parameter>
-        <parameter>
-            <name>DATA_TYPE</name>
-            <default_value>L</default_value>
-            <description>R - data is raw intensity, L - data has been log-transformed, T- data is fully transformed</description>
-        </parameter>
-        <parameter>
-            <name>FilePivot_LOCATION</name>
-            <default_value>C:\Users\javitabile\Documents\tranSMART_GPL\Pivoter</default_value>
-            <description>fully-qualified path to FilePivot.jar file</description>
-        </parameter>
-        <parameter>
-            <name>JAVA_LOCATION</name>
-            <default_value>C:\Program Files\Java\jdk1.7.0_13\bin\</default_value>
-            <description>location of java.exe WITH TRAILING DELIMITER</description>
-        </parameter>
-        <parameter>
-            <name>LOAD_TYPE</name>
-            <default_value>I</default_value>
-            <description> I=Insert data to lt_src_mrna_data and run i2b2_process_mrna_data, F=File only, i2b2_process_mrna_data will not be run</description>
-        </parameter>
-        <parameter>
-            <name>LOG_BASE</name>
-            <default_value>2</default_value>
-            <description>base of log-transformed data</description>
-        </parameter>
-        <parameter>
-            <name>MAP_FILENAME</name>
-            <default_value>x</default_value>
-            <description>subject-sample map filename</description>
-        </parameter>
-        <parameter>
-            <name>PIVOTED_FILES</name>
-            <default_value>N</default_value>
-            <description>specifies if the gex data files are in probe, sample, intensity (pivoted) format or not</description>
-        </parameter>
-        <parameter>
-            <name>SAMPLE_REMAP_FILENAME</name>
-            <default_value>NOSAMPLEREMAP</default_value>
-            <description>File containing list of sample_cd&apos;s in gene expression data to be remapped, also used if sample_cd&apos;s are to be removed from dataset</description>
-        </parameter>
-        <parameter>
-            <name>SAMPLE_SUFFIX</name>
+            <name>ETL_ID</name>
             <default_value/>
-            <description>Identified a string to be removed from the sample_cd&apos;s in the column headers</description>
-        </parameter>
-        <parameter>
-            <name>SECURITY_REQUIRED</name>
-            <default_value>N</default_value>
-            <description>is study secured</description>
+            <description/>
         </parameter>
         <parameter>
             <name>SORT_DIR</name>
-            <default_value>%%java.io.tmpdir%%</default_value>
-            <description>change if more space needed</description>
-        </parameter>
-        <parameter>
-            <name>SOURCE_CD</name>
-            <default_value>STD</default_value>
-            <description>unique code to identify multiple sets of gene expression data for a study, default is STD</description>
-        </parameter>
-        <parameter>
-            <name>STUDY_ID</name>
-            <default_value/>
-            <description>study id </description>
-        </parameter>
-        <parameter>
-            <name>TOP_NODE</name>
-            <default_value/>
-            <description>top node of the study including leading, trailing backslash \</description>
+            <default_value>&#47;home&#47;transmart&#47;ETL&#47;Kettle-tmp</default_value>
+            <description/>
         </parameter>
     </parameters>
     <slaveservers>
+         <slaveserver><name>fdatower</name><hostname>fdatower</hostname><port/><webAppName/><username/><password>Encrypted </password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>Y</master></slaveserver>
     </slaveservers>
 <job-log-table><connection/>
 <schema/>
@@ -130,184 +66,19 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>45</xloc>
-      <yloc>20</yloc>
+      <xloc>107</xloc>
+      <yloc>46</yloc>
       </entry>
     <entry>
-      <name>Load All Gene Expression data for study</name>
-      <description/>
-      <type>JOB</type>
-      <specification_method>rep_name</specification_method>
-      <job_object_id/>
-      <filename/>
-      <jobname>ETL.gex.load_all_gene_expression_files_for_study</jobname>
-      <directory>&#47;DSE</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <params_from_previous>N</params_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Nothing</loglevel>
-      <slave_server_name/>
-      <wait_until_finished>Y</wait_until_finished>
-      <follow_abort_remote>N</follow_abort_remote>
-      <create_parent_folder>N</create_parent_folder>
-      <pass_export>N</pass_export>
-      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
-      </parameters>      <set_append_logfile>N</set_append_logfile>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>877</xloc>
-      <yloc>95</yloc>
-      </entry>
-    <entry>
-      <name>No gene expression data file</name>
-      <description/>
-      <type>ABORT</type>
-      <message>FILE NOT FOUND: ${DATA_LOCATION}&#47;${DATA_FILE_PREFIX}</message>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>351</xloc>
-      <yloc>289</yloc>
-      </entry>
-    <entry>
-      <name>Check if subject-sample map file exists</name>
-      <description/>
-      <type>FILE_EXISTS</type>
-      <filename>${DATA_LOCATION}&#47;${MAP_FILENAME}</filename>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>586</xloc>
-      <yloc>94</yloc>
-      </entry>
-    <entry>
-      <name>No subject-sample map file</name>
-      <description/>
-      <type>ABORT</type>
-      <message>FILE NOT FOUND: ${DATA_LOCATION}&#47;${MAP_FILENAME}</message>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>586</xloc>
-      <yloc>285</yloc>
-      </entry>
-    <entry>
-      <name>run i2b2_process_mrna_data</name>
-      <description/>
-      <type>TRANS</type>
-      <specification_method>rep_name</specification_method>
-      <trans_object_id/>
-      <filename/>
-      <transname>ETL.gex.run_i2b2_process_mrna_data</transname>
-      <directory>&#47;DSE</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <params_from_previous>N</params_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>N</clear_rows>
-      <clear_files>N</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Basic</loglevel>
-      <cluster>N</cluster>
-      <slave_server_name/>
-      <set_append_logfile>N</set_append_logfile>
-      <wait_until_finished>Y</wait_until_finished>
-      <follow_abort_remote>N</follow_abort_remote>
-      <create_parent_folder>N</create_parent_folder>
-      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
-      </parameters>      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>1214</xloc>
-      <yloc>92</yloc>
-      </entry>
-    <entry>
-      <name>Check number of gene expression data files</name>
-      <description/>
-      <type>TRANS</type>
-      <specification_method>rep_name</specification_method>
-      <trans_object_id/>
-      <filename/>
-      <transname>ETL.gex.check_gene_expression_filenames</transname>
-      <directory>&#47;DSE</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <params_from_previous>N</params_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>N</clear_rows>
-      <clear_files>N</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Basic</loglevel>
-      <cluster>N</cluster>
-      <slave_server_name/>
-      <set_append_logfile>N</set_append_logfile>
-      <wait_until_finished>Y</wait_until_finished>
-      <follow_abort_remote>N</follow_abort_remote>
-      <create_parent_folder>N</create_parent_folder>
-      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
-      </parameters>      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>348</xloc>
-      <yloc>92</yloc>
-      </entry>
-    <entry>
-      <name>Fail if number of files = 0</name>
+      <name>GWAS Data</name>
       <description/>
       <type>SIMPLE_EVAL</type>
       <valuetype>variable</valuetype>
       <fieldname/>
-      <variablename>TOTAL_FILES</variablename>
+      <variablename>${DATA_TYPE}</variablename>
       <fieldtype>string</fieldtype>
       <mask/>
-      <comparevalue>0</comparevalue>
-      <minvalue/>
-      <maxvalue/>
-      <successcondition>equal</successcondition>
-      <successnumbercondition>greater</successnumbercondition>
-      <successbooleancondition>false</successbooleancondition>
-      <successwhenvarset>N</successwhenvarset>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>350</xloc>
-      <yloc>199</yloc>
-      </entry>
-    <entry>
-      <name>Write To Log</name>
-      <description/>
-      <type>WRITE_TO_LOG</type>
-      <logmessage>This is the top level of the study and the LOAD_TYPE parameter</logmessage>
-      <loglevel>Basic</loglevel>
-      <logsubject>${TOP_NODE}  &#47; LOAD_TYPE: ${LOAD_TYPE}</logsubject>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>189</xloc>
-      <yloc>93</yloc>
-      </entry>
-    <entry>
-      <name>Check for File Only load</name>
-      <description/>
-      <type>SIMPLE_EVAL</type>
-      <valuetype>variable</valuetype>
-      <fieldname/>
-      <variablename>${LOAD_TYPE}</variablename>
-      <fieldtype>string</fieldtype>
-      <mask/>
-      <comparevalue>F</comparevalue>
+      <comparevalue>GWAS</comparevalue>
       <minvalue/>
       <maxvalue/>
       <successcondition>equal</successcondition>
@@ -317,51 +88,30 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>1045</xloc>
-      <yloc>94</yloc>
+      <xloc>618</xloc>
+      <yloc>96</yloc>
       </entry>
     <entry>
-      <name>Success</name>
+      <name>eQTL Data</name>
       <description/>
-      <type>SUCCESS</type>
+      <type>SIMPLE_EVAL</type>
+      <valuetype>variable</valuetype>
+      <fieldname/>
+      <variablename>${DATA_TYPE}</variablename>
+      <fieldtype>string</fieldtype>
+      <mask/>
+      <comparevalue>EQTL</comparevalue>
+      <minvalue/>
+      <maxvalue/>
+      <successcondition>equal</successcondition>
+      <successnumbercondition>equal</successnumbercondition>
+      <successbooleancondition>false</successbooleancondition>
+      <successwhenvarset>N</successwhenvarset>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>1045</xloc>
-      <yloc>207</yloc>
-      </entry>
-    <entry>
-      <name>Validate parameters</name>
-      <description/>
-      <type>TRANS</type>
-      <specification_method>rep_name</specification_method>
-      <trans_object_id/>
-      <filename/>
-      <transname>ETL.gex.validate_gene_expression_params</transname>
-      <directory>&#47;DSE</directory>
-      <arg_from_previous>N</arg_from_previous>
-      <params_from_previous>N</params_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <clear_rows>N</clear_rows>
-      <clear_files>N</clear_files>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <loglevel>Basic</loglevel>
-      <cluster>N</cluster>
-      <slave_server_name/>
-      <set_append_logfile>N</set_append_logfile>
-      <wait_until_finished>Y</wait_until_finished>
-      <follow_abort_remote>N</follow_abort_remote>
-      <create_parent_folder>N</create_parent_folder>
-      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
-      </parameters>      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>51</xloc>
-      <yloc>95</yloc>
+      <xloc>626</xloc>
+      <yloc>346</yloc>
       </entry>
     <entry>
       <name>End Audit</name>
@@ -393,8 +143,8 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>1215</xloc>
-      <yloc>200</yloc>
+      <xloc>931</xloc>
+      <yloc>354</yloc>
       </entry>
     <entry>
       <name>Start Audit</name>
@@ -426,23 +176,334 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>724</xloc>
-      <yloc>82</yloc>
+      <xloc>112</xloc>
+      <yloc>243</yloc>
+      </entry>
+    <entry>
+      <name>Set variables for ETL_ID</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>rep_name</specification_method>
+      <trans_object_id/>
+      <filename/>
+      <transname>ETL.snpAnalysis.set_ETL_ID_variables</transname>
+      <directory>&#47;Search</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>110</xloc>
+      <yloc>142</yloc>
+      </entry>
+    <entry>
+      <name>Load eQTL file to staging</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>rep_name</specification_method>
+      <trans_object_id/>
+      <filename/>
+      <transname>ETL.snpAnalysis.Load_EQTL_file_to_staging</transname>
+      <directory>&#47;Search</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>901</xloc>
+      <yloc>441</yloc>
+      </entry>
+    <entry>
+      <name>Load metadata to biomart</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>rep_name</specification_method>
+      <trans_object_id/>
+      <filename/>
+      <transname>ETL.snpAnalysis.load_analysis_metadata_lz_to_biomart</transname>
+      <directory>&#47;Search</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>418</xloc>
+      <yloc>240</yloc>
+      </entry>
+    <entry>
+      <name>Start analysis audit</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>rep_name</specification_method>
+      <trans_object_id/>
+      <filename/>
+      <transname>ETL.snpAnalysis.write_analysis_audit</transname>
+      <directory>&#47;Search</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>265</xloc>
+      <yloc>242</yloc>
+      </entry>
+    <entry>
+      <name>Set FAILED status</name>
+      <description/>
+      <type>SET_VARIABLES</type>
+      <replacevars>Y</replacevars>
+      <filename/>
+      <file_variable_type>CURRENT_JOB</file_variable_type>
+      <fields>
+        <field>
+          <variable_name>JOB_STATUS</variable_name>
+          <variable_value>FAILED</variable_value>
+          <variable_type>CURRENT_JOB</variable_type>
+        </field>
+        <field>
+          <variable_name>ANALYSIS_STATUS</variable_name>
+          <variable_value>ERROR</variable_value>
+          <variable_type>CURRENT_JOB</variable_type>
+        </field>
+      </fields>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>754</xloc>
+      <yloc>275</yloc>
+      </entry>
+    <entry>
+      <name>Set SUCCESS status</name>
+      <description/>
+      <type>SET_VARIABLES</type>
+      <replacevars>Y</replacevars>
+      <filename/>
+      <file_variable_type>JVM</file_variable_type>
+      <fields>
+        <field>
+          <variable_name>JOB_STATUS</variable_name>
+          <variable_value>SUCCESS</variable_value>
+          <variable_type>CURRENT_JOB</variable_type>
+        </field>
+        <field>
+          <variable_name>ANALYSIS_STATUS</variable_name>
+          <variable_value>STAGED</variable_value>
+          <variable_type>CURRENT_JOB</variable_type>
+        </field>
+      </fields>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>1196</xloc>
+      <yloc>271</yloc>
+      </entry>
+    <entry>
+      <name>Metabolic GWAS</name>
+      <description/>
+      <type>SIMPLE_EVAL</type>
+      <valuetype>variable</valuetype>
+      <fieldname/>
+      <variablename>${DATA_TYPE}</variablename>
+      <fieldtype>string</fieldtype>
+      <mask/>
+      <comparevalue>Metabolic GWAS</comparevalue>
+      <minvalue/>
+      <maxvalue/>
+      <successcondition>equal</successcondition>
+      <successnumbercondition>equal</successnumbercondition>
+      <successbooleancondition>false</successbooleancondition>
+      <successwhenvarset>N</successwhenvarset>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>620</xloc>
+      <yloc>194</yloc>
+      </entry>
+    <entry>
+      <name>Write To Log</name>
+      <description/>
+      <type>WRITE_TO_LOG</type>
+      <logmessage>***** ERROR ERROR ERROR *****
+***** ERROR ERROR ERROR *****
+***** ERROR ERROR ERROR *****
+***** ERROR ERROR ERROR *****
+***** ERROR ERROR ERROR *****
+***** ERROR ERROR ERROR *****
+</logmessage>
+      <loglevel>Basic</loglevel>
+      <logsubject>**** Invalid DATA_TYPE ${DATA_TYPE}  *****</logsubject>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>632</xloc>
+      <yloc>475</yloc>
+      </entry>
+    <entry>
+      <name>Zip and archive file</name>
+      <description/>
+      <type>JOB</type>
+      <specification_method>rep_name</specification_method>
+      <job_object_id/>
+      <filename/>
+      <jobname>ETL.snpAnalysis.zip_analysis_data_file</jobname>
+      <directory>&#47;Search</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Nothing</loglevel>
+      <slave_server_name/>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <pass_export>N</pass_export>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <set_append_logfile>N</set_append_logfile>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>1067</xloc>
+      <yloc>272</yloc>
+      </entry>
+    <entry>
+      <name>Update analysis status</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>rep_name</specification_method>
+      <trans_object_id/>
+      <filename/>
+      <transname>ETL.snpAnalysis.update_analysis_status</transname>
+      <directory>&#47;Search</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>930</xloc>
+      <yloc>273</yloc>
+      </entry>
+    <entry>
+      <name>Load GWAS file to staging</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>rep_name</specification_method>
+      <trans_object_id/>
+      <filename/>
+      <transname>ETL.snpAnalysis.Load_GWAS_file_to_staging</transname>
+      <directory>&#47;Search</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>841</xloc>
+      <yloc>97</yloc>
       </entry>
   </entries>
   <hops>
     <hop>
-      <from>Check if subject-sample map file exists</from>
-      <to>No subject-sample map file</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>N</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Check number of gene expression data files</from>
-      <to>Fail if number of files = 0</to>
+      <from>eQTL Data</from>
+      <to>Load eQTL file to staging</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -450,53 +511,17 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Fail if number of files = 0</from>
-      <to>Check if subject-sample map file exists</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>N</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Fail if number of files = 0</from>
-      <to>No gene expression data file</to>
+      <from>Load metadata to biomart</from>
+      <to>GWAS Data</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Write To Log</from>
-      <to>Check number of gene expression data files</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Check for File Only load</from>
-      <to>Success</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Check for File Only load</from>
-      <to>run i2b2_process_mrna_data</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>N</evaluation>
       <unconditional>N</unconditional>
     </hop>
     <hop>
       <from>START</from>
-      <to>Validate parameters</to>
+      <to>Set variables for ETL_ID</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -504,34 +529,61 @@
       <unconditional>Y</unconditional>
     </hop>
     <hop>
-      <from>Validate parameters</from>
+      <from>Start Audit</from>
+      <to>Start analysis audit</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Start analysis audit</from>
+      <to>Load metadata to biomart</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>GWAS Data</from>
+      <to>Metabolic GWAS</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Metabolic GWAS</from>
+      <to>eQTL Data</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>eQTL Data</from>
       <to>Write To Log</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
+      <evaluation>N</evaluation>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>run i2b2_process_mrna_data</from>
-      <to>End Audit</to>
+      <from>Load metadata to biomart</from>
+      <to>Set FAILED status</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>Y</unconditional>
-    </hop>
-    <hop>
-      <from>Load All Gene Expression data for study</from>
-      <to>Check for File Only load</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
+      <evaluation>N</evaluation>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Check if subject-sample map file exists</from>
+      <from>Set variables for ETL_ID</from>
       <to>Start Audit</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
@@ -540,8 +592,98 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Start Audit</from>
-      <to>Load All Gene Expression data for study</to>
+      <from>Write To Log</from>
+      <to>Set FAILED status</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load eQTL file to staging</from>
+      <to>Set FAILED status</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Set SUCCESS status</from>
+      <to>Zip and archive file</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load eQTL file to staging</from>
+      <to>Set SUCCESS status</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Set FAILED status</from>
+      <to>Update analysis status</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Zip and archive file</from>
+      <to>Update analysis status</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Update analysis status</from>
+      <to>End Audit</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>GWAS Data</from>
+      <to>Load GWAS file to staging</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load GWAS file to staging</from>
+      <to>Set SUCCESS status</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load GWAS file to staging</from>
+      <to>Set FAILED status</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Metabolic GWAS</from>
+      <to>Load GWAS file to staging</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -566,12 +708,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************&#47;</note>
-      <xloc>27</xloc>
-      <yloc>421</yloc>
-      <width>524</width>
-      <heigth>234</heigth>
-      <fontname/>
-      <fontsize>-1</fontsize>
+      <xloc>31</xloc>
+      <yloc>429</yloc>
+      <width>444</width>
+      <heigth>197</heigth>
+      <fontname>Microsoft Sans Serif</fontname>
+      <fontsize>8</fontsize>
       <fontbold>N</fontbold>
       <fontitalic>N</fontitalic>
       <fontcolorred>0</fontcolorred>

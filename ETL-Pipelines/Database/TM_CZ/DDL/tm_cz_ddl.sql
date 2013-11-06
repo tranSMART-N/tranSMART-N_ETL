@@ -630,5 +630,17 @@ CREATE TABLE "TM_CZ"."CZ_FORM_LAYOUT"
 	"SEQUENCE" numeric(22,0)
    );
    
+     CREATE TABLE "TM_CZ"."MIGRATE_TABLES" 
+	 ("DATA_TYPE" VARCHAR(50)
+	 , "TABLE_OWNER" VARCHAR(50)
+	 , "TABLE_NAME" VARCHAR(50)
+	 , "STUDY_SPECIFIC" CHAR(1)
+	 , "WHERE_CLAUSE" VARCHAR(2000)
+	 , "INSERT_SEQ" INT4
+	 , "STAGE_TABLE_NAME" varchar(100)
+	 , "REBUILD_INDEX" CHAR(1)
+	 , "DELETE_SEQ" INT4) ;
+
+   
 ALTER TABLE tm_cz.cz_person ADD CONSTRAINT cz_person_pk PRIMARY KEY (person_id);
 ALTER TABLE tm_cz.cz_test ADD CONSTRAINT cz_test_cz_test_category_fk1 FOREIGN KEY (test_category_id) REFERENCES tm_cz.cz_test_category (test_category_id);

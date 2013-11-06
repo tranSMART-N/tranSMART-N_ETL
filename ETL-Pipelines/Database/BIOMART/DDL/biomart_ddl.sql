@@ -1429,7 +1429,87 @@ CREATE TABLE "BIOMART"."BIO_AD_HOC_PROPERTY"
 	"PROPERTY_KEY" varchar(50), 
 	"PROPERTY_VALUE" varchar(2000)
    )  ;
+   
+  CREATE TABLE "BIOMART"."BIO_ASSAY_ANALYSIS_EQTL" 
+   ("BIO_ASY_ANALYSIS_EQTL_ID" numeric(22,0) NOT NULL, 
+	"BIO_ASSAY_ANALYSIS_ID" numeric(22,0) NOT NULL, 
+	"RS_ID" varchar(50), 
+	"GENE" varchar(50), 
+	"P_VALUE_CHAR" varchar(100), 
+	"P_VALUE" double precision, 
+	"LOG_P_VALUE" double precision, 
+	"CIS_TRANS" varchar(10), 
+	"DISTANCE_FROM_GENE" varchar(10), 
+	"ETL_ID" numeric(18,0), 
+	"EXT_DATA" varchar(4000)
+  )  ;
+ 
+  CREATE TABLE "BIOMART"."BIO_ASSAY_ANALYSIS_EXT" 
+   ("BIO_ASSAY_ANALYSIS_EXT_ID" numeric(18,0), 
+	"BIO_ASSAY_ANALYSIS_ID" numeric(18,0), 
+	"VENDOR" varchar(500), 
+	"VENDOR_TYPE" varchar(500), 
+	"GENOME_VERSION" varchar(500), 
+	"TISSUE" varchar(500), 
+	"CELL_TYPE" varchar(500), 
+	"POPULATION" varchar(500), 
+	"RESEARCH_UNIT" varchar(500), 
+	"SAMPLE_SIZE" varchar(500), 
+	"MODEL_NAME" varchar(100), 
+	"MODEL_DESC" varchar(500), 
+	"SENSITIVE_FLAG" int4, 
+	"SENSITIVE_DESC" varchar(500)
+  ) ;
+  
+ CREATE TABLE "BIOMART"."BIO_ASSAY_ANALYSIS_GWAS" 
+   ("BIO_ASY_ANALYSIS_GWAS_ID" numeric(18,0) NOT NULL, 
+	"BIO_ASSAY_ANALYSIS_ID" numeric(18,0) NOT NULL, 
+	"RS_ID" varchar(50), 
+	"P_VALUE_CHAR" varchar(100), 
+	"P_VALUE" double precision, 
+	"LOG_P_VALUE" double precision, 
+	"ETL_ID" numeric(18,0), 
+	"EXT_DATA" varchar(4000)
+  ) ;
+   
+  CREATE TABLE "BIOMART"."BIO_ASY_ANALYSIS_DATA_IDX" 
+   ("BIO_ASY_ANALYSIS_DATA_IDX_ID" numeric(18,0) NOT NULL,  
+	"EXT_TYPE" varchar(255) NOT NULL, 
+	"FIELD_IDX" numeric(10,0) NOT NULL, 
+	"FIELD_NAME" varchar(255) NOT NULL,
+	"DISPLAY_IDX" numeric(10,0) NOT NULL, 
+	"DISPLAY_NAME" varchar(255) NOT NULL
+  ) ;
 
+  
+  CREATE TABLE "BIOMART"."BIO_ASY_ANALYSIS_GWAS_TOP50" 
+   ("BIO_ASSAY_ANALYSIS_ID"	numeric(18,0),
+    "ANALYSIS" varchar(500), 
+	"CHROM" varchar(4), 
+	"POS" numeric(10,0), 
+	"RSGENE" varchar(200), 
+	"RSID" varchar(50), 
+	"PVALUE" numeric(18,5), 
+	"LOGPVALUE" numeric(18,5), 
+	"EXTDATA" varchar(4000), 
+	"RNUM" numeric(18,0)
+   );
+  
+  
+  CREATE TABLE "BIOMART"."BIO_ASY_ANALYSIS_EQTL_TOP50" 
+   ("BIO_ASSAY_ANALYSIS_ID"	numeric(18,0),
+    "ANALYSIS" varchar(500), 
+	"CHROM" varchar(4), 
+	"POS" numeric(10,0), 
+	"RSGENE" varchar(200), 
+	"RSID" varchar(50), 
+	"PVALUE" numeric(18,5), 
+	"LOGPVALUE" numeric(18,5), 
+	"EXTDATA" varchar(4000), 
+	"RNUM" numeric(18,0)
+   ) ;
+  
+  
 CREATE SEQUENCE biomart.bio_assay_data_stats_seq as bigint NO MINVALUE no MAXVALUE INCREMENT BY 1 START WITH 1;
 
 CREATE SEQUENCE biomart.hibernate_sequence as bigint NO MINVALUE no MAXVALUE INCREMENT BY 1 START WITH 1;

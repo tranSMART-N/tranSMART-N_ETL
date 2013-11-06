@@ -397,7 +397,7 @@ Begin
 	--	delete old concept_counts
 	
 	delete from i2b2demodata.concept_counts
-	where concept_path like old_path || '%';
+	where concept_path like old_path || '%' escape '';
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete concept_counts for old path',rowCount,stepCt,'Done');
@@ -439,6 +439,21 @@ Begin
 	end if;	
 	
 	call tm_cz.i2b2_load_security_data(jobId);
+	
+	--	cleanup BKP data
+	
+	delete from i2b2metadata.i2b2
+	where sourcesystem_cd = 'BKP:' || Trialid;
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete backup i2b2 for old path',rowCount,stepCt,'Done');
+	
+	delete from i2b2demodata.concept_dimension
+	where sourcesystem_cd = 'BKP:' || Trialid;
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete backup concept_dimension for old path',rowCount,stepCt,'Done');
+	
 	
 	IF newJobFlag = 1
 	THEN
