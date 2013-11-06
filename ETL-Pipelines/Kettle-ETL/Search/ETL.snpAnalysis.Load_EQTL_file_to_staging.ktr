@@ -63,7 +63,7 @@
   <created_user>-</created_user>
   <created_date>2012&#47;09&#47;30 04:14:41.057</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;04 13:33:14.037</modified_date>
+  <modified_date>2013&#47;11&#47;06 11:55:47.086</modified_date>
   </info>
   <notepads>
     <notepad>
@@ -172,7 +172,7 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Add rec_num</from><to>Split field to rows</to><enabled>Y</enabled> </hop>  <hop> <from>Check missing column</from><to>Sort header columns</to><enabled>Y</enabled> </hop>  <hop> <from>Check missing column</from><to>Write to log 2</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Check missing column</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File</from><to>Add rec_num</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL header</from><to>Split hdr into column names</to><enabled>Y</enabled> </hop>  <hop> <from>Remove double-quotes in column_value</from><to>Sort data rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data header columns</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data rows</from><to>Merge columns names with data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort header columns</from><to>Merge columns names with data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort std column names</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Split field to rows</from><to>Remove double-quotes in column_value</to><enabled>Y</enabled> </hop>  <hop> <from>Split hdr into column names</from><to>Uppercase column_name</to><enabled>Y</enabled> </hop>  <hop> <from>Write to log 2</from><to>Abort 2</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate values for ext_data</from><to>Remove ` from ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Remove ` from ext_data</from><to>Sort ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Set column_value to ` if null</from><to>Concatenate values for ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort results by rec_num, field_idx, column_name</from><to>Set column_value to ` if null</to><enabled>Y</enabled> </hop>  <hop> <from>Merge columns names with data</from><to>Get BIO_ASSAY_ANALYSIS_ID</to><enabled>Y</enabled> </hop>  <hop> <from>Get BIO_ASSAY_ANALYSIS_ID</from><to>Lookup data_type, column_name in IDX</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten data back to single row</from><to>Add seq for BIO_ASY_ANALYSIS_EQTL_ID</to><enabled>Y</enabled> </hop>  <hop> <from>Add seq for BIO_ASY_ANALYSIS_EQTL_ID</from><to>Sort rows</to><enabled>Y</enabled> </hop>  <hop> <from>Add constants</from><to>Read EQTL File Step</to><enabled>Y</enabled> </hop>  <hop> <from>Block for auditing</from><to>Output steps metrics</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File Step</from><to>Set step_count for input records</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File Step</from><to>Set step_count for output records</to><enabled>Y</enabled> </hop>  <hop> <from>Get job_id</from><to>Add constants</to><enabled>Y</enabled> </hop>  <hop> <from>Output steps metrics</from><to>Sort metrics by step name</to><enabled>Y</enabled> </hop>  <hop> <from>Set database_name</from><to>Call cz_write_audit</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_count for input records</from><to>Skip log of 0 step_count</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_count for output records</from><to>Skip log of 0 step_count</to><enabled>Y</enabled> </hop>  <hop> <from>Skip log of 0 step_count</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Skip log of 0 step_count</from><to>Set database_name</to><enabled>Y</enabled> </hop>  <hop> <from>Sort metrics by step name</from><to>Group by</to><enabled>Y</enabled> </hop>  <hop> <from>List of valid column names</from><to>Sort std column names</to><enabled>Y</enabled> </hop>  <hop> <from>Uppercase column_name</from><to>Sort data header columns</to><enabled>Y</enabled> </hop>  <hop> <from>Get BIO_ASSAY_ANALYSIS_ID for delete</from><to>Delete BIO_ASSAY_ANALYSIS_EQTL</to><enabled>Y</enabled> </hop>  <hop> <from>Block for delete</from><to>Read EQTL File</to><enabled>Y</enabled> </hop>  <hop> <from>EXT_DATA field</from><to>Remap period to `</to><enabled>Y</enabled> </hop>  <hop> <from>Remap period to `</from><to>Sort results by rec_num, field_idx, column_name</to><enabled>Y</enabled> </hop>  <hop> <from>Lookup data_type, column_name in IDX</from><to>EXT_DATA field</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data by rec_num</from><to>Select values 2</to><enabled>Y</enabled> </hop>  <hop> <from>Select values 2</from><to>Flatten data back to single row</to><enabled>Y</enabled> </hop>  <hop> <from>Sort ext_data</from><to>Add EXT_DATA to data stream</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows</from><to>Add EXT_DATA to data stream</to><enabled>Y</enabled> </hop>  <hop> <from>Set step number</from><to>Set step_number to integer</to><enabled>Y</enabled> </hop>  <hop> <from>Group by</from><to>Set step number</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_number to integer</from><to>Get job_id</to><enabled>Y</enabled> </hop>  <hop> <from>EXT_DATA field</from><to>Sort data by rec_num</to><enabled>Y</enabled> </hop>  <hop> <from>Add EXT_DATA to data stream</from><to>Insert to BIO_ASSAY_ANALYSIS_EQTL</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Add rec_num</from><to>Split field to rows</to><enabled>Y</enabled> </hop>  <hop> <from>Check missing column</from><to>Sort header columns</to><enabled>Y</enabled> </hop>  <hop> <from>Check missing column</from><to>Write to log 2</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Check missing column</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File</from><to>Add rec_num</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL header</from><to>Split hdr into column names</to><enabled>Y</enabled> </hop>  <hop> <from>Remove double-quotes in column_value</from><to>Sort data rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data header columns</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data rows</from><to>Merge columns names with data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort header columns</from><to>Merge columns names with data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort std column names</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Split field to rows</from><to>Remove double-quotes in column_value</to><enabled>Y</enabled> </hop>  <hop> <from>Split hdr into column names</from><to>Uppercase column_name</to><enabled>Y</enabled> </hop>  <hop> <from>Write to log 2</from><to>Abort 2</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate values for ext_data</from><to>Remove ` from ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Remove ` from ext_data</from><to>Sort ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Set column_value to ` if null</from><to>Concatenate values for ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort results by rec_num, field_idx, column_name</from><to>Set column_value to ` if null</to><enabled>Y</enabled> </hop>  <hop> <from>Merge columns names with data</from><to>Get BIO_ASSAY_ANALYSIS_ID</to><enabled>Y</enabled> </hop>  <hop> <from>Get BIO_ASSAY_ANALYSIS_ID</from><to>Lookup data_type, column_name in IDX</to><enabled>Y</enabled> </hop>  <hop> <from>Add constants</from><to>Read EQTL File Step</to><enabled>Y</enabled> </hop>  <hop> <from>Block for auditing</from><to>Output steps metrics</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File Step</from><to>Set step_count for input records</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File Step</from><to>Set step_count for output records</to><enabled>Y</enabled> </hop>  <hop> <from>Get job_id</from><to>Add constants</to><enabled>Y</enabled> </hop>  <hop> <from>Output steps metrics</from><to>Sort metrics by step name</to><enabled>Y</enabled> </hop>  <hop> <from>Set database_name</from><to>Call cz_write_audit</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_count for input records</from><to>Skip log of 0 step_count</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_count for output records</from><to>Skip log of 0 step_count</to><enabled>Y</enabled> </hop>  <hop> <from>Skip log of 0 step_count</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Skip log of 0 step_count</from><to>Set database_name</to><enabled>Y</enabled> </hop>  <hop> <from>Sort metrics by step name</from><to>Group by</to><enabled>Y</enabled> </hop>  <hop> <from>List of valid column names</from><to>Sort std column names</to><enabled>Y</enabled> </hop>  <hop> <from>Uppercase column_name</from><to>Sort data header columns</to><enabled>Y</enabled> </hop>  <hop> <from>Get BIO_ASSAY_ANALYSIS_ID for delete</from><to>Delete BIO_ASSAY_ANALYSIS_EQTL</to><enabled>Y</enabled> </hop>  <hop> <from>Block for delete</from><to>Read EQTL File</to><enabled>Y</enabled> </hop>  <hop> <from>EXT_DATA field</from><to>Remap period to `</to><enabled>Y</enabled> </hop>  <hop> <from>Remap period to `</from><to>Sort results by rec_num, field_idx, column_name</to><enabled>Y</enabled> </hop>  <hop> <from>Lookup data_type, column_name in IDX</from><to>EXT_DATA field</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data by rec_num</from><to>Select values 2</to><enabled>Y</enabled> </hop>  <hop> <from>Select values 2</from><to>Flatten data back to single row</to><enabled>Y</enabled> </hop>  <hop> <from>Sort ext_data</from><to>Add EXT_DATA to data stream</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows</from><to>Add EXT_DATA to data stream</to><enabled>Y</enabled> </hop>  <hop> <from>Set step number</from><to>Set step_number to integer</to><enabled>Y</enabled> </hop>  <hop> <from>Group by</from><to>Set step number</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_number to integer</from><to>Get job_id</to><enabled>Y</enabled> </hop>  <hop> <from>EXT_DATA field</from><to>Sort data by rec_num</to><enabled>Y</enabled> </hop>  <hop> <from>Add EXT_DATA to data stream</from><to>Insert to BIO_ASSAY_ANALYSIS_EQTL</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten data back to single row</from><to>Add eqtl_id</to><enabled>Y</enabled> </hop>  <hop> <from>Add eqtl_id</from><to>Sort rows</to><enabled>Y</enabled> </hop>  <hop> <from>Get seq for eqtl_id</from><to>Add eqtl_id</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Abort 2</name>
     <type>Abort</type>
@@ -309,34 +309,6 @@
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>508</xloc>
       <yloc>273</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Add seq for BIO_ASY_ANALYSIS_EQTL_ID</name>
-    <type>Sequence</type>
-    <description/>
-    <distribute>N</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-      <valuename>BIO_ASY_ANALYSIS_EQTL_ID</valuename>
-      <use_database>Y</use_database>
-      <connection>BIOMART</connection>
-      <schema>BIOMART</schema>
-      <seqname>SEQ_BIO_DATA_ID</seqname>
-      <use_counter>N</use_counter>
-      <counter_name/>
-      <start_at>1</start_at>
-      <increment_by>1</increment_by>
-      <max_value>999999999</max_value>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>152</xloc>
-      <yloc>622</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2212,6 +2184,61 @@
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>947</xloc>
       <yloc>142</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Get seq for eqtl_id</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>BIOMART</connection>
+    <sql>SELECT next value for biomart.seq_bio_data_id as BIO_ASY_ANALYSIS_EQTL_ID;</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>315</xloc>
+      <yloc>629</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Add eqtl_id</name>
+    <type>JoinRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <directory>${SORT_DIR}</directory>
+      <prefix>out</prefix>
+      <cache_size>500</cache_size>
+      <main>Flatten data back to single row</main>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue/>
+ <function>=</function>
+ <rightvalue/>
+ </condition>
+    </compare>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>151</xloc>
+      <yloc>630</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
