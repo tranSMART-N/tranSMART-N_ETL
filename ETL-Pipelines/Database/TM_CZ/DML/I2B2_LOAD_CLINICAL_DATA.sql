@@ -115,7 +115,7 @@ BEGIN
 	
 	if topLevel < 3 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Path specified in top_node must contain at least 2 nodes',1,stepCt,'ERROR');
-		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_error_handler(jobid,procedurename,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;	
@@ -128,7 +128,7 @@ BEGIN
 	
 	if pExists = 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'No data found for study in lt_src_clinical_data',1,stepCt,'ERROR');
-		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_error_handler(jobid,procedurename,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -145,7 +145,7 @@ BEGIN
 		  
 	if pExists > 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Invalid visit_date in tm_lz.lt_src_clinical_data',1,stepCt,'ERROR');
-		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_error_handler(jobid,procedurename,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -162,7 +162,7 @@ BEGIN
 		  
 	if pExists > 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Invalid end_date in tm_lz.lt_src_clinical_data',1,stepCt,'ERROR');
-		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_error_handler(jobid,procedurename,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -179,7 +179,7 @@ BEGIN
 		  
 	if pExists > 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Invalid enroll_date in tm_lz.lt_src_subj_enroll_date',1,stepCt,'ERROR');
-		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_error_handler(jobid,procedurename,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -480,8 +480,8 @@ BEGIN
 	where exists
 	     (select 1 from tm_wz.wt_num_data_types x
 	      where coalesce(t.category_cd,'@') = coalesce(x.category_cd,'@')
-			and coalesce(t.data_label,'**NULL**') = coalesce(x.data_label,'**NULL**')
-			and coalesce(t.visit_name,'**NULL**') = coalesce(x.visit_name,'**NULL**')
+			and coalesce(t.data_label,'@') = coalesce(x.data_label,'@')
+			and coalesce(t.visit_name,'@') = coalesce(x.visit_name,'@')
 		  )
 	  and t.data_type = 'T';
 	rowCount := ROW_COUNT;
@@ -499,87 +499,82 @@ BEGIN
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated visit_date for date data_types',rowCount,stepCt,'Done');
-  
+	
+	--	create leaf_node in wrk_clinical_data
+	
+	update tm_wz.wrk_clinical_data a
+	set leaf_node=regexp_replace(
+				case
+    			--	Text data_type 
+				when a.data_type = 'T'
+				then case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
+						  then topNode || replace(replace(replace(a.category_path,'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION','') || bslash || a.data_value || bslash
+						  else topNode || a.category_path || bslash  || coalesce(a.data_label,'') || bslash || a.data_value || bslash || coalesce(a.visit_name,'') || bslash
+					 end
+				--	else is numeric or date data_type and default_node
+				else case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
+						  then topNode || replace(replace(replace(a.category_path,'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION',coalesce(a.obs_string,'')) || bslash
+						  else topNode || a.category_path || bslash  || coalesce(a.data_label,'') || bslash || coalesce(a.visit_name,'') || bslash               
+						end
+				end ,'(\\){2,}', bslash);
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated leaf_node in wrk_clinical_data',rowCount,stepCt,'Done');	
+ 
+	--	Check if any duplicate records of key columns (site_id, subject_id, visit_name, data_label, category_cd) for numeric data
+	--	exist.  Raise error if yes
+	
+	execute immediate 'truncate table tm_wz.wt_clinical_data_dups';
 
-	-- Build all needed leaf nodes in one pass for both numeric and text nodes
+	insert into tm_wz.wt_clinical_data_dups
+	(site_id
+	,subject_id
+	,visit_name
+	,data_label
+	,category_cd)
+	select a.site_id
+		  ,a.subject_id
+		  ,a.visit_name
+		  ,a.data_label
+		  ,a.category_cd
+	from tm_wz.wrk_clinical_data a
+		,(select w.site_id, w.subject_id, w.leaf_node
+		  from tm_wz.wrk_clinical_data w  
+		  where w.data_type = 'N'
+		   and w.visit_date is null
+		  group by w.site_id, w.subject_id, w.leaf_node
+		  having count(*) > 1) x
+	where coalesce(a.site_id,'@') = coalesce(x.site_id,'@')
+	  and a.subject_id = x.subject_id
+	  and a.leaf_node = x.leaf_node;
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Check for duplicate key columns',rowCount,stepCt,'Done');
+	if rowCount > 0 then
+		stepCt := stepCt + 1;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Duplicate values found in key columns',rowCount,stepCt,'Done');	
+		call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error');
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
+		return 16;	
+	end if;
+
+	-- Get distinct leaf node and name
  
 	execute immediate 'truncate table tm_wz.wt_trial_nodes' ;
 	
 	insert into tm_wz.wt_trial_nodes
 	(leaf_node
-	,category_cd
-	,visit_name
-	,data_label
-	--,node_name
-	,data_value
+	,node_name
 	,data_type
-	,data_value_ctrl_vocab_code
-	,data_label_ctrl_vocab_code
-	,data_label_components
-	,link_type
-	,obs_string
-	,valuetype_cd
 	)
-    select 	substr(REGEXP_REPLACE(Case 
-				--	Text data_type (default node)
-				When a.data_type = 'T'
-				then case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
-						  then topNode || replace(replace(replace(coalesce(a.category_path,''),'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION','') || bslash || a.data_value || bslash
-						  else topNode || coalesce(a.category_path,'') || bslash  || coalesce(a.data_label,'') || bslash || coalesce(a.data_value,'') || bslash || coalesce(a.visit_name,'') || bslash
-					 end
-				--	else is numeric or date data_type and default_node
-				else case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
-						  then topNode || replace(replace(replace(coalesce(a.category_path,''),'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION',coalesce(a.obs_string,'')) || bslash
-						  else topNode || coalesce(a.category_path,'') || bslash  || coalesce(a.data_label,'') || bslash || coalesce(a.visit_name,'') || bslash               
-						end
-				end ,'(\\){2,}', bslash),1,2000) as leaf_node
-			,a.category_cd
-			,a.visit_name
-			,a.data_label
-			,case when a.data_type = 'T' then a.data_value else null end as data_value
-			,a.data_type
-			,a.data_value_ctrl_vocab_code
-			,a.data_label_ctrl_vocab_code
-			,a.data_label_components
-			,a.link_type
-			,a.obs_string
-			,max(a.valuetype_cd)
-	from  tm_wz.wrk_clinical_data a
-	group by substr(REGEXP_REPLACE(Case 
-				--	Text data_type (default node)
-				When a.data_type = 'T'
-				then case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
-						  then topNode || replace(replace(replace(coalesce(a.category_path,''),'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION','') || bslash || a.data_value || bslash
-						  else topNode || coalesce(a.category_path,'') || bslash  || coalesce(a.data_label,'') || bslash || coalesce(a.data_value,'') || bslash || coalesce(a.visit_name,'') || bslash
-					 end
-				--	else is numeric or date data_type and default_node
-				else case when a.category_path like '%DATALABEL%' or a.category_path like '%VISITNAME%' or a.category_path like '%OBSERVATION%'
-						  then topNode || replace(replace(replace(coalesce(a.category_path,''),'DATALABEL',coalesce(a.data_label,'')),'VISITNAME',coalesce(a.visit_name,'')),'OBSERVATION',coalesce(a.obs_string,'')) || bslash
-						  else topNode || coalesce(a.category_path,'') || bslash  || coalesce(a.data_label,'') || bslash || coalesce(a.visit_name,'') || bslash               
-						end
-				end ,'(\\){2,}', bslash),1,2000)
-			,a.category_cd
-			,a.visit_name
-			,a.data_label
-			,case when a.data_type = 'T' then a.data_value else null end 
-			,a.data_type
-			,a.data_value_ctrl_vocab_code
-			,a.data_label_ctrl_vocab_code
-			,a.data_label_components
-			,a.link_type
-			,a.obs_string;
+    select distinct leaf_node
+		  ,replace(substr(leaf_node,instr(leaf_node,bslash,-2)+1),bslash,'')
+		  ,data_type
+	from  tm_wz.wrk_clinical_data;
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create leaf nodes for trial',rowCount,stepCt,'Done');
-	
-	--	set node_name
-	
-	update tm_wz.wt_trial_nodes a
-	set node_name=replace(substr(leaf_node,instr(leaf_node,bslash,-2)+1),bslash,'');
-	rowCount := ROW_COUNT;
-	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated node name for leaf nodes',rowCount,stepCt,'Done');	
-	
+
 	--	check if any node is a parent of another, all nodes must be children
 	
 	select count(*) into pExists
@@ -593,7 +588,7 @@ BEGIN
 
 	if pExists > 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Leaf node in tm_wz.wt_trial_nodes is a parent of another node',1,stepCt,'ERROR');
-		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_error_handler(jobid,procedurename,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -607,7 +602,7 @@ BEGIN
 			,coalesce(data_value_ctrl_vocab_code, data_label_ctrl_vocab_code) as data_value_ctrl_vocab_code
 			,null as label_components
 			,null as data_label
-		from tm_wz.wt_trial_nodes
+		from tm_wz.wrk_clinical_data
 		where replace(replace(data_value_ctrl_vocab_code,';',''),'null','')	!= ''
 	loop	
 		dcount := length(vocab_rec.data_value_ctrl_vocab_code)-length(replace(vocab_rec.data_value_ctrl_vocab_code,';',''))+1;		
@@ -856,7 +851,6 @@ BEGIN
 	from (select distinct t.leaf_node as c_fullname
                  ,t.data_type  --t.data_type
                  ,t.node_name
-				 ,t.valuetype_cd
            from tm_wz.wt_trial_nodes t
               ,i2b2metadata.i2b2 c
            where t.leaf_node = c.c_fullname 
@@ -995,7 +989,7 @@ BEGIN
 				end as nval_num
 		  ,a.study_id
 		  ,etlDate
-		  ,case when t.valuetype_cd is null then '@' else coalesce(a.valuetype_cd,'N') end as valuetype_cd
+		  ,case when a.valuetype_cd is null then '@' else coalesce(a.valuetype_cd,'N') end as valuetype_cd
 		  ,'@'
 		  ,'@'
 		  ,units_cd
@@ -1011,19 +1005,10 @@ BEGIN
 			   and enc.study_id = TrialId
 		 inner join i2b2demodata.patient_dimension c
              on  a.usubjid = c.sourcesystem_cd
-		 inner join tm_wz.wt_trial_nodes t
-             on  coalesce(a.category_cd,'@') = coalesce(t.category_cd,'@')
-			 and coalesce(a.obs_string,'@') = coalesce(t.obs_string,'@')
-             and coalesce(a.data_label,'@') = coalesce(t.data_label,'@')
-             and coalesce(a.visit_name,'@') = coalesce(t.visit_name,'@')
-             and decode(a.data_type,'T',a.data_value,'@') = coalesce(t.data_value,'@')
 		 inner join i2b2metadata.i2b2 i
-             on t.leaf_node = i.c_fullname
+             on a.leaf_node = i.c_fullname
 		 left outer join tm_wz.wt_vocab_nodes vv
-			 on t.leaf_node = vv.label_node
-	where not exists		-- don't insert if lower level node exists
-		 (select 1 from tm_wz.wt_trial_nodes x
-		  where x.leaf_node like t.leaf_node || '%_');  
+			 on a.leaf_node = vv.label_node;  
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial into I2B2DEMODATA observation_fact',rowCount,stepCt,'Done');	
@@ -1197,10 +1182,10 @@ BEGIN
 	,visit_name
 	,sourcesystem_cd
 	)
-	select cd.concept_cd as concept_cd
+	select distinct cd.concept_cd as concept_cd
 		  ,t.visit_name
 		  ,TrialId as sourcesystem_cd
-	from tm_wz.wt_trial_nodes t
+	from tm_wz.wrk_clinical_data t
 		,i2b2demodata.concept_dimension cd
 	where t.leaf_node = cd.concept_path
 	  and t.data_type != 'D'
@@ -1235,7 +1220,7 @@ BEGIN
 	from (select p.c_basecode
 				,max(case when t.link_type = 'SUBJECT' then 1 else 0 end) as subject_type
 				,max(case when t.link_type = 'SUBJECT' then 0 else 1 end) as enc_type
-		 from tm_wz.wt_trial_nodes t
+		 from tm_wz.wrk_clinical_data t
 			 ,i2b2metadata.i2b2 p
 			 ,i2b2metadata.i2b2 c
 		 where t.leaf_node = c.c_fullname

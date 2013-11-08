@@ -33,6 +33,7 @@ CREATE TABLE TM_WZ."WRK_CLINICAL_DATA"
 	"OBS_STRING" VARCHAR(100), 
 	"REC_NUM" NUMERIC(18,0), 
 	"VALUETYPE_CD" VARCHAR(50)
+	"LEAF_NODE" varchar(2000)
    ) ;
 
 --------------------------------------------------------
