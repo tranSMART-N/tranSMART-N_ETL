@@ -668,7 +668,7 @@ sag.ID = sasoa.AUTH_PRINCIPAL_ID
 --------------------------------------------------------
 
 
-  CREATE MATERIALIZED VIEW "SEARCHAPP"."SEARCH_BIO_MKR_CORREL_FAST_MV" 
+  CREATE  VIEW "SEARCHAPP"."SEARCH_BIO_MKR_CORREL_FAST_MV" 
   AS SELECT   i.SEARCH_GENE_SIGNATURE_ID AS domain_object_id,
          i.BIO_MARKER_ID AS asso_bio_marker_id,
          'GENE_SIGNATURE_ITEM' AS correl_type,
