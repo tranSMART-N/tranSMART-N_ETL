@@ -198,7 +198,7 @@ BEGIN
 			 ,null;
 		rowCount := ROW_COUNT;
 		stepCt := stepCt + 1;
-		call tm_cz.czx_(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to concept_dimension',rowCount,stepCt,'Done');
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert \Public Studies\SECURITY\ node to concept_dimension',rowCount,stepCt,'Done');
 	end if;
 
     ---Cleanup OVERALL JOB if this proc is being run standalone
