@@ -34,6 +34,7 @@ Declare
 	rootPath	varchar(200);
 	bslash		char(1);
 	etlDate		timestamp;
+	v_sqlerrm	varchar(1000);
 	
 Begin
 	rootNode := root_node;
@@ -159,6 +160,7 @@ Begin
 
 	EXCEPTION
 	WHEN OTHERS THEN
+		v_sqlerrm := substr(SQLERRM, 1, 1000);
 		raise notice 'error: %', SQLERRM;
 		--Handle errors.
 		call tm_cz.czx_error_handler (jobID, procedureName);
