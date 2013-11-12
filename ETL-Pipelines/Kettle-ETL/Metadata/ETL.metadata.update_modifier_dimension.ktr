@@ -1,12 +1,12 @@
 <transformation>
   <info>
-    <name>ETL.Publish.get_target_migrate_tables</name>
+    <name>ETL.metadata.update_modifier_dimension</name>
     <description/>
     <extended_description/>
     <trans_version/>
     <trans_type>Normal</trans_type>
     <trans_status>0</trans_status>
-    <directory>&#47;Publish</directory>
+    <directory>&#47;Metadata</directory>
     <parameters>
     </parameters>
     <log>
@@ -61,21 +61,56 @@
     <clusterschemas>
     </clusterschemas>
   <created_user>-</created_user>
-  <created_date>2013&#47;03&#47;29 07:50:04.728</created_date>
+  <created_date>2013&#47;11&#47;11 09:33:25.230</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;12 08:28:37.082</modified_date>
+  <modified_date>2013&#47;11&#47;11 10:05:47.094</modified_date>
   </info>
   <notepads>
+    <notepad>
+      <note>&#47;*************************************************************************
+* Copyright 2008-2012 Janssen Research &amp; Development, LLC.
+*
+* Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http:&#47;&#47;www.apache.org&#47;licenses&#47;LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+******************************************************************&#47;</note>
+      <xloc>121</xloc>
+      <yloc>349</yloc>
+      <width>524</width>
+      <heigth>234</heigth>
+      <fontname>Arial</fontname>
+      <fontsize>10</fontsize>
+      <fontbold>N</fontbold>
+      <fontitalic>N</fontitalic>
+      <fontcolorred>0</fontcolorred>
+      <fontcolorgreen>0</fontcolorgreen>
+      <fontcolorblue>0</fontcolorblue>
+      <backgroundcolorred>255</backgroundcolorred>
+      <backgroundcolorgreen>165</backgroundcolorgreen>
+      <backgroundcolorblue>0</backgroundcolorblue>
+      <bordercolorred>100</bordercolorred>
+      <bordercolorgreen>100</bordercolorgreen>
+      <bordercolorblue>100</bordercolorblue>
+      <drawshadow>Y</drawshadow>
+    </notepad>
   </notepads>
   <connection>
-    <name>PROD_CZ</name>
-    <server>${PROD_CZ_DB_SERVER}</server>
+    <name>I2B2DEMODATA</name>
+    <server>${I2B2DEMODATA_DB_SERVER}</server>
     <type>NETEZZA</type>
     <access>Native</access>
-    <database>${PROD_CZ_DB_NAME}</database>
-    <port>${PROD_CZ_DB_PORT}</port>
-    <username>${PROD_CZ_DB_USER}</username>
-    <password>${PROD_CZ_DB_PWD}</password>
+    <database>${I2B2DEMODATA_DB_NAME}</database>
+    <port>${I2B2DEMODATA_DB_PORT}</port>
+    <username>${I2B2DEMODATA_DB_USER}</username>
+    <password>${I2B2DEMODATA_DB_PWD}</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>
@@ -83,35 +118,17 @@
       <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
       <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
       <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>${PROD_CZ_DB_PORT}</attribute></attribute>
-      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>PROD_CZ</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>${I2B2DEMODATA_DB_PORT}</attribute></attribute>
+      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>I2B2DEMODATA</attribute></attribute>
       <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
       <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Read migrate_tables for DATA_TYPE</from><to>Copy rows to result</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Get children&#47;level</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Set folder node</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Set leaf node</to><enabled>Y</enabled> </hop>  <hop> <from>Set folder node</from><to>Update modifier_dimension</to><enabled>Y</enabled> </hop>  <hop> <from>Set leaf node</from><to>Update modifier_dimension</to><enabled>Y</enabled> </hop>  </order>
   <step>
-    <name>Copy rows to result</name>
-    <type>RowsToResult</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>356</xloc>
-      <yloc>129</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Read migrate_tables for DATA_TYPE</name>
+    <name>Get children&#47;level</name>
     <type>TableInput</type>
     <description/>
     <distribute>Y</distribute>
@@ -120,24 +137,155 @@
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <connection>PROD_CZ</connection>
-    <sql>Select 
-  stage_table_name as TABLE_NAME
-, &apos;TM_STAGE&apos; as SCHEMA_NAME
-, case when STUDY_SPECIFIC = &apos;Y&apos; then &apos;RELEASE_STUDY=&apos; || &apos;&apos;&apos;&apos; || &apos;${STUDY_ID}&apos; || &apos;&apos;&apos;&apos;
-       else &apos;1 = 1&apos;
-       end as WHERE_CONDITION
-from tm_cz.migrate_tables
-where instr(&apos;${DATA_TYPE}&apos;,data_type) &gt; 0</sql>
+    <connection>I2B2DEMODATA</connection>
+    <sql>select p.modifier_path
+	  ,count(*) as nbr_children
+   ,length(p.modifier_path)-length(replace(p.modifier_path,&apos;\&apos;,&apos;&apos;)) as node_level
+from i2b2demodata.modifier_dimension p
+    ,i2b2demodata.modifier_dimension c
+where c.modifier_path like p.modifier_path || &apos;%&apos; escape &apos;&apos;
+group by p.modifier_path</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
-    <variables_active>Y</variables_active>
+    <variables_active>N</variables_active>
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>175</xloc>
-      <yloc>128</yloc>
+      <xloc>193</xloc>
+      <yloc>129</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Update modifier_dimension</name>
+    <type>Update</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>I2B2DEMODATA</connection>
+    <skip_lookup>N</skip_lookup>
+    <commit>100</commit>
+    <use_batch>Y</use_batch>
+    <error_ignored>N</error_ignored>
+    <ignore_flag_field/>
+    <lookup>
+      <schema/>
+      <table>MODIFIER_DIMENSION</table>
+      <key>
+        <name>MODIFIER_PATH</name>
+        <field>MODIFIER_PATH</field>
+        <condition>=</condition>
+        <name2/>
+        </key>
+      <value>
+        <name>MODIFIER_LEVEL</name>
+        <rename>NODE_LEVEL</rename>
+        </value>
+      <value>
+        <name>MODIFIER_NODE_TYPE</name>
+        <rename>modifier_node_type</rename>
+        </value>
+      </lookup>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>610</xloc>
+      <yloc>124</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Set folder node</send_true_to>
+<send_false_to>Set leaf node</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>NBR_CHILDREN</leftvalue>
+ <function>&gt;</function>
+ <rightvalue/>
+ <value><name>constant</name><type>Integer</type><text>1</text><length>-1</length><precision>0</precision><isnull>N</isnull><mask>#;-#</mask></value> </condition>
+    </compare>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>328</xloc>
+      <yloc>132</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Set folder node</name>
+    <type>Constant</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>modifier_node_type</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif>F</nullif>
+        <length>-1</length>
+        <precision>-1</precision>
+      </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>460</xloc>
+      <yloc>63</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Set leaf node</name>
+    <type>Constant</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>modifier_node_type</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif>L</nullif>
+        <length>-1</length>
+        <precision>-1</precision>
+      </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>468</xloc>
+      <yloc>196</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

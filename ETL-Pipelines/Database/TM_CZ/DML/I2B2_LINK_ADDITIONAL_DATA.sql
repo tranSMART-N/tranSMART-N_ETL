@@ -1,10 +1,9 @@
-set define off;
-CREATE OR REPLACE PROCEDURE "I2B2_LINK_ADDITIONAL_DATA" 
-( currentJobID NUMBER := null
-, rtn_code OUT number
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_LINK_ADDITIONAL_DATA
+( bigint
 )
- AUTHID CURRENT_USER
-AS
+RETURNS int4
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
 /*************************************************************************
 * Copyright 2008-2012 Janssen Research & Development, LLC.
 *
@@ -20,41 +19,46 @@ AS
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************/
-
-	pexists			int;
-	subjCt			int;
+Declare
+	--	alias for parameters
+	currentJobID alias for $1;
+	
+	pexists			int4;
+	subjCt			int4;
+	bslash			char(1);
 	
 	--Audit variables
-	newJobFlag INTEGER(1);
+	newJobFlag int4;
 	databaseName VARCHAR(100);
 	procedureName VARCHAR(100);
-	jobID number(18,0);
-	stepCt number(18,0);
-	
-	no_repository		exception;
-	unmapped_subjects	exception;
+	jobID numeric(18,0);
+	stepCt numeric(18,0);
+	rowCount	numeric(18,0);
+	v_sqlerrm	varchar(1000);
 
 BEGIN
 
 	stepCt := 0;
+	rowCount := 0;
+	bslash := '\\';
 
 	--Set Audit Parameters
 	newJobFlag := 0; -- False (Default)
 	jobID := currentJobID;
 
-	SELECT sys_context('USERENV', 'CURRENT_SCHEMA') INTO databaseName FROM dual;
-	procedureName := $$PLSQL_UNIT;
+	databaseName := 'TM_CZ';
+	procedureName := 'I2B2_LINK_ADDITIONAL_DATA';
 
 	--Audit JOB Initialization
 	--If Job ID does not exist, then this is a single procedure run and we need to create it
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		czx_start_audit (procedureName, databaseName, jobID);
+		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
 	END IF;
 
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Starting ' || procedureName,0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Starting ' || procedureName,0,stepCt,'Done');
 	
 	select count(*) into pExists
 	from (select t.platform, bcr.location
@@ -67,7 +71,9 @@ BEGIN
 				 where t.platform = g.platform));
 		  
 	if pExists > 0 then
-		raise no_repository;
+		stepCt := stepCt + 1;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'At least one platform in lt_src_mrna_subj_samp_map does not exist in bio_content_repository',0,stepCt,'Done');
+		return 16;
 	end if;
 	
 	--	check to make sure subject map to patient_dimension
@@ -79,23 +85,25 @@ BEGIN
 		  where t.platform = g.platform);
 	
 	select count(*) into pExists
-	from lt_src_mrna_subj_samp_map t
-		,patient_dimension pd
-	where REGEXP_REPLACE(t.trial_name || ':' || t.site_id || ':' || t.subject_id,
+	from tm_lz.lt_src_mrna_subj_samp_map t
+		,i2b2demodata.patient_dimension pd
+	where REGEXP_REPLACE(t.trial_name || ':' || coalesce(t.site_id,'') || ':' || t.subject_id,
                    '(::){1,}', ':') = pd.sourcesystem_cd
 	  and not exists
 		 (select 1 from deapp.de_gpl_info g
 		  where t.platform = g.platform);
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Check patient mapping',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Check patient mapping',SQL%ROWCOUNT,stepCt,'Done');
 	
 	if pExists < subjCt then
-		raise unmapped_subjects;
+		stepCt := stepCt + 1;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'One or more subject in subject_sample map file are not mapped to patients',0,stepCt,'Done');
+		return 16;
 	end if;
 
 	--	insert additional data into bio_content
 	
-	insert into bio_content
+	insert into biomart.bio_content
 	(file_name			-- filename value in sample_cd without extension
 	,repository_id		-- bio_content_repo_id
 	,location			-- study_id
@@ -119,25 +127,23 @@ BEGIN
 	,t.trial_name as study_name
 	,bc.location || '/' || t.trial_name || '/' as cel_location
 	,substr(t.sample_cd,instr(t.sample_cd,'.')) as cel_file_suffix
-	from lt_src_mrna_subj_samp_map t
-		,bio_content_repository bc
+	from tm_lz.lt_src_mrna_subj_samp_map t
+		,biomart.bio_content_repository bc
 	where upper(bc.repository_type) = upper(t.platform)
 	  --and t.platform not in (select distinct x.platform from de_gpl_info x)
 	  and not exists
-		 (select 1 from bio_content x
+		 (select 1 from biomart.bio_content x
 		  where substr(t.sample_cd,1,instr(t.sample_cd,'.')-1) = x.file_name
 		    and bc.bio_content_repo_id = x.repository_id
 			and t.trial_name = x.location
 			and bc.location || '/' || t.trial_name = x.cel_location
 			and substr(t.sample_cd,instr(t.sample_cd,'.')) = x.cel_file_suffix);
-	
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Add additional data links to bio_content',SQL%ROWCOUNT,stepCt,'Done');
-	commit;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Add additional data links to bio_content',SQL%ROWCOUNT,stepCt,'Done');
 			
 	--	insert into bio_experiment if needed
 
-	insert into bio_experiment
+	insert into biomart.bio_experiment
 	(bio_experiment_type
 	,title
 	,etl_id
@@ -146,17 +152,16 @@ BEGIN
 	,'Metadata not available'
 	,'METADATA:' || t.trial_name
 	,t.trial_name
-	from lt_src_mrna_subj_samp_map t
+	from tm_lz.lt_src_mrna_subj_samp_map t
 	where not exists 
-		(select 1 from bio_experiment x
+		(select 1 from biomart.bio_experiment x
 		 where t.trial_name = x.accession);
-
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Added trial to bio_experiment if needed',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Added trial to bio_experiment if needed',SQL%ROWCOUNT,stepCt,'Done');
 
 	--	insert into bio_content_reference
 	
-	insert into bio_content_reference
+	insert into biomart.bio_content_reference
 	(bio_content_id
 	,bio_data_id	
 	,content_reference_type
@@ -168,24 +173,23 @@ BEGIN
 	,'Data'
 	,null
 	,'METADATA:' || sm.trial_name
-	from lt_src_mrna_subj_samp_map sm
-		,bio_content bc
-		,bio_experiment be
+	from tm_lz.lt_src_mrna_subj_samp_map sm
+		,biomart.bio_content bc
+		,biomart.bio_experiment be
 	where sm.trial_name = bc.etl_id_c
 	and sm.trial_name = be.accession
 	and bc.file_type = 'Data'
 	and not exists
-	  (select 1 from bio_content_reference x
+	  (select 1 from biomart.bio_content_reference x
 	   where x.bio_content_id = bc.bio_file_content_id
 		 and x.bio_data_id = be.bio_experiment_id
 		 and x.content_reference_type = 'Data');
-
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Added data to bio_content_reference',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Added data to bio_content_reference',SQL%ROWCOUNT,stepCt,'Done');
 
 	--	insert records into de_subject_sample_mapping with dummy concept codes (-1)
 
-	insert into de_subject_sample_mapping
+	insert into deapp.de_subject_sample_mapping
 	select distinct pd.patient_num as patient_id
 		  ,null as site_id
 		  ,t.subject_id
@@ -212,46 +216,37 @@ BEGIN
 		  ,'ADDL' as source_cd
 		  ,t.trial_name as omic_source_study
 		  ,pd.patient_num as omic_patient_num
-	from lt_src_mrna_subj_samp_map t
-		,patient_dimension pd
-	where REGEXP_REPLACE(t.trial_name || ':' || t.site_id || ':' || t.subject_id,
+	from tm_lz.lt_src_mrna_subj_samp_map t
+		,i2b2demodata.patient_dimension pd
+	where REGEXP_REPLACE(t.trial_name || ':' || coalesce(t.site_id,'') || ':' || t.subject_id,
                    '(::){1,}', ':') = pd.sourcesystem_cd
 	  and not exists
 		  (select 1 from deapp.de_gpl_info g
 		   where t.platform = g.platform);
 	pExists := SQL%ROWCOUNT;
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'Insert additional data records into de_subject_sample_mapping',SQL%ROWCOUNT,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert additional data records into de_subject_sample_mapping',SQL%ROWCOUNT,stepCt,'Done');
 
 	stepCt := stepCt + 1;
-	czx_write_audit(jobId,databaseName,procedureName,'End ' || procedureName,0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'End ' || procedureName,0,stepCt,'Done');
 	
        ---Cleanup OVERALL JOB if this proc is being run standalone
 	IF newJobFlag = 1
 	THEN
-		czx_end_audit (jobID, 'SUCCESS');
+		call tm_cz.czx_end_audit (jobID, 'SUCCESS');
 	END IF;
 
-	rtn_code := 0;
+	return 0;
 	
 	EXCEPTION
-	when no_repository then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'At least one platform in lt_src_mrna_subj_samp_map does not exist in bio_content_repository',0,stepCt,'Done');
-		-- End Proc
-		czx_end_audit (jobID, 'FAIL');
-		rtn_code := 16;
-	when unmapped_subjects then
-		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'One or more subject in subject_sample map file are not mapped to patients',0,stepCt,'Done');
-		-- End Proc
-		czx_end_audit (jobID, 'FAIL');
-		rtn_code := 16;
 	WHEN OTHERS THEN
+		v_sqlerrm := substr(SQLERRM,1,1000);
+		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-		czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		-- End Proc
-		czx_end_audit (jobID, 'FAIL');
-		rtn_code := 16;
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
+		return 16;
 
 END;
+END_PROC;

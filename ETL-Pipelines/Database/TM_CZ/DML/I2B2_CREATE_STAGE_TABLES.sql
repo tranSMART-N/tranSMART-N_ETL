@@ -1,8 +1,7 @@
-set define off;
-CREATE OR REPLACE PROCEDURE "I2B2_CREATE_STAGE_TABLES" 
-AUTHID CURRENT_USER
-AS
-
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_CREATE_STAGE_TABLES(BIGINT)
+returns int4
+LANGUAGE NZPLSQL AS
+BEGIN_PROC
 /*************************************************************************
 * Copyright 2008-2012 Janssen Research & Development, LLC.
 *
@@ -18,35 +17,28 @@ AS
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************/
+Declare
+
+	--Audit variables
+	newJobFlag 	int4;
+	databaseName 	varchar(100);
+	procedureName varchar(100);
+	jobID 		numeric(18,0);
+	stepCt 		numeric(18,0);
+	rowCount	numeric(18,0);
 
 	--	Define the abstract result set record
 	
-	TYPE r_type IS RECORD (
-		 table_owner		varchar2(50)
-		,table_name			varchar2(50)
-		,study_specific		char(1)
-		,stage_table_name	varchar2(50)
-	);
+	r_stage_table		record;
+	r_stage_column		record;
 	
-	--	Define the abstract result set table
-	TYPE tr_type IS TABLE OF r_type;
-
-	--	Define the result set
-	
-	rtn_array tr_type;
-
 	--	Variables
 
-	tText 			varchar2(2000);
-	pExists			int;
-	release_table	varchar2(50);
+	tText 			varchar(2000);
+	pExists			int4;
+	release_table	varchar(50);
+	v_sqlerrm		varchar(1000);
 	
-    --Audit variables
-	newJobFlag INTEGER(1);
-	databaseName VARCHAR(100);
-	procedureName VARCHAR(100);
-	jobID number(18,0);
-	stepCt number(18,0);
 	
 	BEGIN	
 	
@@ -54,74 +46,81 @@ AS
 	newJobFlag := 0; -- False (Default)
 	jobID := -1;
 
-	SELECT sys_context('USERENV', 'CURRENT_SCHEMA') INTO databaseName FROM dual;
-	procedureName := $$PLSQL_UNIT;
+	databaseName := 'TM_CZ';
+	procedureName := 'I2B2_CREATE_STAGE_TABLES';
 
 	--Audit JOB Initialization
 	--If Job ID does not exist, then this is a single procedure run and we need to create it
 	IF(jobID IS NULL or jobID < 1)
 	THEN
 		newJobFlag := 1; -- True
-		czx_start_audit (procedureName, databaseName, jobID);
+		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
 	END IF;
     	
 	stepCt := 0;	
-	czx_write_audit(jobId,databaseName,procedureName,'Starting ' || procedureName,0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Starting ' || procedureName,0,stepCt,'Done');
 	
-	select upper(table_owner) as table_owner
-		  ,upper(table_name) as table_name
-		  ,upper(study_specific) as study_specific
-		  ,upper(stage_table_name) as stage_table_name
-	bulk collect into rtn_array
-	from tm_cz.migrate_tables;
-      
-	for i in rtn_array.first .. rtn_array.last
+	for r_stage_table in
+		select upper(table_owner) as table_owner
+			  ,upper(table_name) as table_name
+			  ,upper(study_specific) as study_specific
+			  ,upper(stage_table_name) as stage_table_name
+		from tm_cz.migrate_tables
 	loop
-	
-		release_table := rtn_array(i).stage_table_name;
+		release_table := r_stage_table.stage_table_name;
 
 		select count(*) into pExists
-		from all_tables
-		where owner = 'TM_STAGE'
-		  and table_name = release_table;	
+		from _v_table
+		where schema = 'TM_STAGE'
+		  and tablename = release_table;	
 	  
 		if pExists > 0 then
-			execute immediate('drop table tm_stage.' || release_table);
+			tText := 'drop table tm_stage.' || release_table;
+			execute immediate tText;
 		end if;
 
-		tText := 'create table tm_stage.' || release_table || ' as select * from ' || 
-				  rtn_array(i).table_owner || '.' || rtn_array(i).table_name ||
-				 ' where 1=2';
-		execute immediate(tText);
+		tText := 'create table tm_stage.' || release_table || ' (';
 		
-		if rtn_array(i).study_specific = 'Y' then
-			tText := 'alter table tm_stage.' || release_table || ' add RELEASE_STUDY VARCHAR2(200)';
-			execute immediate(tText);
+		for r_stage_column in
+			select attname as column_name
+				  ,format_type
+			from _v_relation_column 
+			where name=upper(r_stage_table.table_name)
+			order by attnum asc
+		loop
+			tText := tText || r_stage_column.column_name || ' ' || r_stage_column.format_type || ',';	
+		end loop;
+		
+		if r_stage_table.study_specific = 'Y' then
+			tText := tText || 'release_study varchar(200))';
+		else
+			tText := trim(trailing ',' from tText) || ')';
 		end if;
-
+		execute immediate tText;
 		stepCt := stepCt + 1;
-		czx_write_audit(jobId,databaseName,procedureName,'Created '|| release_table,0,stepCt,'Done');
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Created '|| release_table,0,stepCt,'Done');
 			
 	end loop;
 	
-	-- util_grant_all('TM_CZ','TABLES');
-	
-	czx_write_audit(jobId,databaseName,procedureName,'End i2b2_create_release_tablese',0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'End i2b2_create_release_tablese',0,stepCt,'Done');
 	stepCt := stepCt + 1;
 	
 	    ---Cleanup OVERALL JOB if this proc is being run standalone
   IF newJobFlag = 1
   THEN
-    czx_end_audit (jobID, 'SUCCESS');
+    call tm_cz.czx_end_audit (jobID, 'SUCCESS');
   END IF;
 
   EXCEPTION
   WHEN OTHERS THEN
+	v_sqlerrm := substr(SQLERRM,1,1000);
+	raise notice 'error: %', v_sqlerrm;
     --Handle errors.
-    czx_error_handler (jobID, procedureName);
+    call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
     --End Proc
-    czx_end_audit (jobID, 'FAIL');
+    call tm_cz.czx_end_audit (jobID, 'FAIL');
 	
 END;
+END_PROC;
 
 
