@@ -120,7 +120,7 @@
 	"DESCRIPTION" varchar(1000), 
 	"CREATINGUSER" varchar(200), 
 	"PUBLIC_FLAG" char(1), 
-	"CREATE_timestamp" timestamp, 
+	"CREATE_DATE" timestamp, 
 	"STUDY" varchar(200)
    ) ;
 --------------------------------------------------------
@@ -238,9 +238,9 @@
 	"NAME" varchar(100), 
 	"DESCRIPTION" varchar(1000), 
 	"UNIQUE_ID" varchar(50), 
-	"CREATE_timestamp" timestamp, 
+	"CREATE_DATE" timestamp, 
 	"CREATED_BY_AUTH_USER_ID" numeric(18,0), 
-	"LAST_MODIFIED_timestamp" timestamp, 
+	"LAST_MODIFIED_DATE" timestamp, 
 	"MODIFIED_BY_AUTH_USER_ID" numeric(18,0), 
 	"VERSION_NUMBER" varchar(50), 
 	"PUBLIC_FLAG" numeric(1,0) DEFAULT 0, 
@@ -278,7 +278,7 @@
 	"FOLD_CHG_METRIC_CONCEPT_ID" numeric(18,0) DEFAULT NULL, 
 	"EXPERIMENT_TYPE_CELL_LINE_ID" numeric(18,0), 
 	"QC_PERFORMED" numeric(1,0), 
-	"QC_timestamp" timestamp, 
+	"QC_DATE" timestamp, 
 	"QC_INFO" varchar(255), 
 	"DATA_SOURCE" varchar(255), 
 	"CUSTOM_VALUE1" varchar(255), 
@@ -301,11 +301,11 @@
  
    COMMENT ON COLUMN "SEARCHAPP"."SEARCH_GENE_SIGNATURE"."UNIQUE_ID" IS 'a unique code assigned to the object by a naming convention';
  
-   COMMENT ON COLUMN "SEARCHAPP"."SEARCH_GENE_SIGNATURE"."CREATE_timestamp" IS 'timestamp object was created';
+   COMMENT ON COLUMN "SEARCHAPP"."SEARCH_GENE_SIGNATURE"."CREATE_DATE" IS 'timestamp object was created';
  
    COMMENT ON COLUMN "SEARCHAPP"."SEARCH_GENE_SIGNATURE"."CREATED_BY_AUTH_USER_ID" IS 'auth user that created the object';
  
-   COMMENT ON COLUMN "SEARCHAPP"."SEARCH_GENE_SIGNATURE"."LAST_MODIFIED_timestamp" IS 'timestamp of the last modification';
+   COMMENT ON COLUMN "SEARCHAPP"."SEARCH_GENE_SIGNATURE"."LAST_MODIFIED_DATE" IS 'timestamp of the last modification';
  
    COMMENT ON COLUMN "SEARCHAPP"."SEARCH_GENE_SIGNATURE"."MODIFIED_BY_AUTH_USER_ID" IS 'auth user that last modified the object';
  
@@ -525,7 +525,7 @@
    (	"TERM_ID" numeric(22,0), 
 	"TERM_NAME" varchar(900), 
 	"SOURCE_CD" varchar(900), 
-	"IMPORT_timestamp" timestamp DEFAULT now(), 
+	"IMPORT_DATE" timestamp DEFAULT now(), 
 	"SEARCH_KEYWORD_ID" numeric(38,0)
    ) ;
 --------------------------------------------------------
@@ -544,7 +544,7 @@
   CREATE TABLE "SEARCHAPP"."SEARCH_USER_FEEDBACK" 
    (	"SEARCH_USER_FEEDBACK_ID" numeric(18,0), 
 	"SEARCH_USER_ID" numeric(18,0), 
-	"CREATE_timestamp" timestamp, 
+	"CREATE_DATE" timestamp, 
 	"FEEDBACK_TEXT" varchar(2000), 
 	"APP_VERSION" varchar(100)
    ) ;
@@ -565,10 +565,10 @@
   CREATE TABLE "SEARCHAPP"."SUBSET" 
    (	"SUBSET_ID" numeric(18,0), 
 	"DESCRIPTION" varchar(1000), 
-	"CREATE_timestamp" timestamp, 
+	"CREATE_DATE" timestamp, 
 	"CREATING_USER" varchar(200), 
-	"PUBLIC_FLAG" numeric(1,0) DEFAULT 0, 
-	"DELETED_FLAG" numeric(1,0) DEFAULT 0, 
+	"PUBLIC_FLAG" boolean DEFAULT false, 
+	"DELETED_FLAG" boolean DEFAULT false, 
 	"QUERY_MASTER_ID_1" numeric(18,0), 
 	"QUERY_MASTER_ID_2" numeric(18,0), 
 	"STUDY" varchar(200)
