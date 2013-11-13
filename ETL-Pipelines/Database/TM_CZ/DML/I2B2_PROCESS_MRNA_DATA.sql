@@ -1,5 +1,5 @@
-CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_PROCESS_MRNA_DATA(CHARACTER VARYING(50), CHARACTER VARYING(500), CHARACTER VARYING(10), CHARACTER VARYING(50), NUMERIC(4,0), CHARACTER VARYING(50), BIGINT)
-RETURNS int4
+CREATE OR REPLACE PROCEDURE tm_cz.I2B2_PROCESS_MRNA_DATA(CHARACTER VARYING(50), CHARACTER VARYING(500), CHARACTER VARYING(10), CHARACTER VARYING(50), NUMERIC(4,0), CHARACTER VARYING(50), BIGINT)
+RETURNS INTEGER
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
 /*************************************************************************
@@ -410,7 +410,7 @@ BEGIN
 	,node_type
 	)
 	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(replace(
-	       substr(category_cd,1,instr(category_cd,'ATTR1')+5),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',attribute_2),'TISSUETYPE',tissue_type),'+',bslash),'_',' ') || bslash,
+	       substr(category_cd,1,instr(category_cd,'ATTR1')+5),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',coalesce(tissue_type,'')),'+',bslash),'_',' ') || bslash,
 		   '(\\){2,}', bslash),1,2000)
 		  ,substr(category_cd,1,instr(category_cd,'ATTR1')+5)
 		  ,case when instr(substr(category_cd,1,instr(category_cd,'ATTR1')+5),'PLATFORM') > 1 then platform else null end as platform
@@ -437,7 +437,7 @@ BEGIN
 	,node_type
 	)
 	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(replace(
-	       substr(category_cd,1,instr(category_cd,'ATTR2')+5),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',tissue_type),'+',bslash),'_',' ') || bslash,
+	       substr(category_cd,1,instr(category_cd,'ATTR2')+5),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',coalesce(tissue_type,'')),'+',bslash),'_',' ') || bslash,
 		   '(\\){2,}', bslash),1,2000)
 		  ,substr(category_cd,1,instr(category_cd,'ATTR2')+5)
 		  ,case when instr(substr(category_cd,1,instr(category_cd,'ATTR2')+5),'PLATFORM') > 1 then platform else null end as platform
@@ -477,7 +477,7 @@ BEGIN
 	rowCount := ROW_COUNT;
     stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create ATTR2 nodes in wt_mrna_nodes',rowCount,stepCt,'Done');
-				
+
 	update tm_wz.wt_mrna_nodes t
 	set node_name=x.node_name
 	from (select distinct leaf_node,replace(substr(leaf_node,instr(leaf_node,bslash,-2)+1),bslash,'') as node_name
@@ -486,6 +486,7 @@ BEGIN
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated node_name in DEAPP tmp_mrna_nodes',rowCount,stepCt,'Done');
+
 	--	add leaf nodes for mRNA data  Only add nodes that do not already exist.
 
 	FOR r_Nodes in 

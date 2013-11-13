@@ -8,7 +8,7 @@
   <created_user>-</created_user>
   <created_date>2011&#47;11&#47;09 09:34:02.533</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;06 09:01:48.556</modified_date>
+  <modified_date>2013&#47;11&#47;12 10:58:38.294</modified_date>
     <parameters>
         <parameter>
             <name>COLUMN_MAP_FILE</name>
@@ -208,8 +208,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>1084</xloc>
-      <yloc>519</yloc>
+      <xloc>1076</xloc>
+      <yloc>457</yloc>
       </entry>
     <entry>
       <name>Success</name>
@@ -219,7 +219,7 @@
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>1201</xloc>
-      <yloc>522</yloc>
+      <yloc>464</yloc>
       </entry>
     <entry>
       <name>Check if LOAD_TYPE=F</name>
@@ -645,28 +645,6 @@
       <yloc>387</yloc>
       </entry>
     <entry>
-      <name>Delete group-by work files</name>
-      <description/>
-      <type>DELETE_FILES</type>
-      <arg_from_previous>N</arg_from_previous>
-      <include_subfolders>N</include_subfolders>
-      <fields>
-        <field>
-          <name>${SORT_DIR}&#47;</name>
-          <filemask>grp.*.tmp$</filemask>
-        </field>
-        <field>
-          <name>${SORT_DIR}&#47;</name>
-          <filemask>out.*.tmp$</filemask>
-        </field>
-      </fields>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>1081</xloc>
-      <yloc>435</yloc>
-      </entry>
-    <entry>
       <name>Create Enroll Date file</name>
       <description/>
       <type>TRANS</type>
@@ -865,24 +843,6 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Delete group-by work files</from>
-      <to>Check if LOAD_TYPE=I</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>Y</unconditional>
-    </hop>
-    <hop>
-      <from>Create DSE tree and mult values files</from>
-      <to>Delete group-by work files</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
       <from>Load clinical data</from>
       <to>Create Enroll Date file</to>
       <from_nr>0</from_nr>
@@ -912,6 +872,15 @@
     <hop>
       <from>Load standard output file and process</from>
       <to>Success 2</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Create DSE tree and mult values files</from>
+      <to>Check if LOAD_TYPE=I</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>

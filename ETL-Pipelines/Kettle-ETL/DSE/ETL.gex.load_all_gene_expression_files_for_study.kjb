@@ -8,7 +8,7 @@
   <created_user>-</created_user>
   <created_date>2011&#47;11&#47;28 13:37:20.528</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;01 12:07:27.572</modified_date>
+  <modified_date>2013&#47;11&#47;12 13:40:35.834</modified_date>
     <parameters>
     </parameters>
   <connection>
@@ -106,7 +106,7 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>675</xloc>
+      <xloc>833</xloc>
       <yloc>165</yloc>
       </entry>
     <entry>
@@ -137,8 +137,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>869</xloc>
-      <yloc>166</yloc>
+      <xloc>1008</xloc>
+      <yloc>167</yloc>
       </entry>
     <entry>
       <name>Load subject-sample map</name>
@@ -170,8 +170,8 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>677</xloc>
-      <yloc>295</yloc>
+      <xloc>648</xloc>
+      <yloc>299</yloc>
       </entry>
     <entry>
       <name>Abort job</name>
@@ -181,8 +181,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>513</xloc>
-      <yloc>461</yloc>
+      <xloc>476</xloc>
+      <yloc>455</yloc>
       </entry>
     <entry>
       <name>Write To Log</name>
@@ -194,8 +194,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>506</xloc>
-      <yloc>377</yloc>
+      <xloc>470</xloc>
+      <yloc>376</yloc>
       </entry>
     <entry>
       <name>Check if file-only load</name>
@@ -238,8 +238,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>476</xloc>
-      <yloc>164</yloc>
+      <xloc>732</xloc>
+      <yloc>57</yloc>
       </entry>
     <entry>
       <name>Write study_id to audit</name>
@@ -289,23 +289,36 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>495</xloc>
+      <xloc>463</xloc>
       <yloc>296</yloc>
+      </entry>
+    <entry>
+      <name>Check pivoted_files</name>
+      <description/>
+      <type>SIMPLE_EVAL</type>
+      <valuetype>variable</valuetype>
+      <fieldname/>
+      <variablename>${PIVOTED_FILES}</variablename>
+      <fieldtype>string</fieldtype>
+      <mask/>
+      <comparevalue>Y</comparevalue>
+      <minvalue/>
+      <maxvalue/>
+      <successcondition>equal</successcondition>
+      <successnumbercondition>equal</successnumbercondition>
+      <successbooleancondition>false</successbooleancondition>
+      <successwhenvarset>N</successwhenvarset>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>643</xloc>
+      <yloc>164</yloc>
       </entry>
   </entries>
   <hops>
     <hop>
       <from>Get list of filenames for Study</from>
       <to>load each file for study</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Load subject-sample map</from>
-      <to>Get list of filenames for Study</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -329,15 +342,6 @@
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>Y</unconditional>
-    </hop>
-    <hop>
-      <from>Check if file-only load</from>
-      <to>Delete any previous output file</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
     </hop>
     <hop>
       <from>Delete any previous output file</from>
@@ -378,6 +382,42 @@
     <hop>
       <from>Write study_id to audit</from>
       <to>Truncate lt_src_mrna_data</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Check if file-only load</from>
+      <to>Check pivoted_files</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Check pivoted_files</from>
+      <to>Delete any previous output file</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Check pivoted_files</from>
+      <to>Get list of filenames for Study</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load subject-sample map</from>
+      <to>Check pivoted_files</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
