@@ -911,7 +911,7 @@ class GeneInfo {
         String currentSchema = Util.getNetezzaCurrentSchema(biomart)
 
         String qry = "select count(*) from information_schema.tables where lower(table_name)=? and TABLE_SCHEMA='$currentSchema'"
-        log.info qry
+//        log.info qry
 
         if (biomart.firstRow(qry, [geneInfoTable])[0] > 0) {
             log.info "Drop Netezza table $geneInfoTable ..."
