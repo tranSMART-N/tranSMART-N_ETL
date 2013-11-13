@@ -19,12 +19,8 @@
   
 
 package com.recomdata.pipeline.plink
-
-import java.io.File;
-
-import org.apache.log4j.Logger;
-
 import groovy.sql.Sql
+import org.apache.log4j.Logger
 
 class SnpProbe {
 
@@ -97,7 +93,38 @@ class SnpProbe {
 		log.info "End loading data into the table DE_SNP_PRObE ... "
 	}
 
-	
+
+    void loadSnpProbe(String databaseType, Map columnMap){
+        if(databaseType.equals("oracle")){
+            loadSnpProbe(columnMap)
+        } else if (databaseType.equals("netezza")){
+            loadNetezzaSnpProbe(columnMap)
+        }  else if(databaseType.equals("postgresql")){
+//            loadPostgreSQLSnpProbe(columnMap)
+        }   else if(databaseType.equals("db2")){
+//            loadDB2SnpProbe(columnMap)
+        }   else {
+            log.info("The database $databaseType is not supported.")
+        }
+    }
+
+
+    void loadNetezzaSnpProbe(Map columnMap){
+
+        log.info "Start loading data into the table DE_SNP_PROBE ... ${new Date()} "
+
+        String qry = """insert into de_snp_probe (snp_probe_id, probe_name, snp_id, snp_name)
+						select next value for seq_data_id, t.probe_name, t.snp_id, t.snp_name
+						from (
+                            select distinct t1.${columnMap["probe"]} as probe_name, t2.snp_info_id as snp_id, t1.${columnMap["rs"]} as snp_name
+                            from """ + annotationTable + """ t1, de_snp_info t2
+                            where upper(t1.${columnMap["probe"]})=upper(t2.name) and t1.${columnMap["rs"]} is not null
+                                  and t2.snp_info_id not in (select snp_id from de_snp_probe) ) t """
+        deapp.execute(qry)
+
+        log.info "End loading data into the table DE_SNP_PRObE ... ${new Date()} "
+    }
+
 
 	void loadSnpProbe(Map columnMap){
 
