@@ -808,12 +808,17 @@ BEGIN
 	update i2b2metadata.i2b2 b
 	set c_columndatatype='T'
 	   ,c_metadataxml=null
-	   ,c_visualattributes=case when t.min_node = 0 then 'LAH' else 'FA' end
-	from (select concept_cd
-		  		,min(case when node_type = 'LEAF' then 0 else 1 end) as min_node
-		 from tm_wz.wt_mrna_nodes
-		 group by concept_cd) t
-	where b.c_basecode = t.concept_cd;
+	   ,c_visualattributes=case when t.nbr_children = 1 then 'LAH' else 'FA' end
+	from (select p.c_fullname, count(*) as nbr_children 
+				 from tm_wz.wt_mrna_nodes t
+				     ,i2b2metadata.i2b2 p
+					,i2b2metadata.i2b2 c
+				 where t.node_type = 'LEAF'
+				   and t.leaf_node like p.c_fullname || '%' escape ''
+				   and c.c_fullname like p.c_fullname || '%' escape '`'
+				   and p.c_fullname > topNode
+				   group by p.c_fullname) t
+	where b.c_fullname = t.c_fullname;
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update visual attributes for leaf nodes in I2B2METADATA i2b2',rowCount,stepCt,'Done');
