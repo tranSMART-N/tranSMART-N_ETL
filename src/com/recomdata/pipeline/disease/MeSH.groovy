@@ -68,9 +68,9 @@ class MeSH {
         if (input.size() > 0) {
             log.info("Start processing MeSH file: ${input} ...")
 
-            StringBuffer sb = new StringBuffer()
+            StringBuffer sbMeSH = new StringBuffer()
             StringBuffer entry = new StringBuffer()
-            String mh = "", ui = "", entry1 = "", entry2 = ""
+            String mh = "", ui = "", entry1 = "", entry2 = "", mn = ""
             String[] treeNodes
             boolean isNeeded = false
 
@@ -80,21 +80,26 @@ class MeSH {
                     ui = ""
                 }
                 if (it.indexOf("MH ") == 0) mh = it.split("=")[1].trim()
+                if (it.indexOf("MN ") == 0) mn = it.split("=")[1].trim()
 
-                if (meshTree.equals(null) || meshTree.equals("")) {
+                if (meshTree.equals(null) || meshTree.trim().equals("")) {
                     isNeeded = true
                 } else if (meshTree.indexOf(",")) {
                     treeNodes = meshTree.split(",")
                     treeNodes.each { tree ->
-                        if (it.indexOf("MN = $tree") == 0) isNeeded = true
+                        if (it.indexOf("MN = $tree") == 0) {
+                            isNeeded = true
+                        }
                     }
                 } else {
-                    if (it.indexOf("MN = $meshTree") == 0) isNeeded = true
+                    if (it.indexOf("MN = $meshTree") == 0) {
+                        isNeeded = true
+                    }
                 }
 
                 if (it.indexOf("UI ") == 0) {
                     ui = it.split("=")[1].trim()
-                    if (isNeeded && (mh.size() > 0) && (ui.size() > 0)) sb.append("$ui\t$mh\n")
+                    if (isNeeded && (mh.size() > 0) && (ui.size() > 0)) sbMeSH.append("$ui\t$mh\t$mn\n")
                     isNeeded = false
                 }
                 if (it.indexOf("ENTRY") == 0) {
@@ -112,7 +117,7 @@ class MeSH {
                 output.delete()
                 output.createNewFile()
             }
-            output.append(sb.toString())
+            output.append(sbMeSH.toString())
 
             if (synonym.size() > 0) {
                 synonym.delete()
@@ -691,7 +696,7 @@ class MeSH {
      */
     void loadOracleMeSH(Sql sql, File mesh, String MeSHTable) {
 
-        String qry = "insert into $MeSHTable (ui, mh) values(?, ?)"
+        String qry = "insert into $MeSHTable (ui, mh, mn) values(?, ?, ?)"
 
         if (mesh.size() > 0) {
             log.info("Start loading MeSH file: ${mesh} into ${MeSHTable} ...")
@@ -700,7 +705,8 @@ class MeSH {
                 sql.withBatch(qry, { stmt ->
                     mesh.eachLine {
                         String[] str = it.split("\t")
-                        stmt.addBatch([str[0], str[1]])
+                        if(str.size()==3) stmt.addBatch([str[0], str[1], str[2]])
+                        else log.info "Invalid line: $it"
                     }
                 })
             }
@@ -719,6 +725,7 @@ class MeSH {
      */
     void createTempTable(String databaseType, Sql sql, String MeSHTable, String MeSHSynonymTable) {
         if (databaseType.equals("oracle")) {
+//        if (databaseType == "oracle") {
             createOracleMeSHTable(sql, MeSHTable)
             createOracleMeSHSynonymTable(sql, MeSHSynonymTable)
         } else if (databaseType.equals("netezza")) {
@@ -746,7 +753,8 @@ class MeSH {
 
         String qry = """ create table ${MeSHTable} (
 									UI  varchar2(20) primary key,
-									MH	varchar2(200)
+									MH	varchar2(200),
+									MN  varchar2(200)
 								 )
 							"""
 
@@ -779,7 +787,7 @@ class MeSH {
 					"""
 
         String qry1 = "select count(*) from user_tables where table_name=?"
-        if (deapp.firstRow(qry1, [
+        if (sql.firstRow(qry1, [
                 MeSHSynonymTable.toUpperCase()
         ])[0] > 0) {
             log.info "Drop table ${MeSHSynonymTable} first ... "
@@ -817,7 +825,8 @@ class MeSH {
 
         String qry = """ create table ${MeSHTable} (
 									UI  varchar(20) primary key,
-									MH	varchar(200)
+									MH	varchar(200),
+									MN  varchar(200)
 								 )
 							"""
 
