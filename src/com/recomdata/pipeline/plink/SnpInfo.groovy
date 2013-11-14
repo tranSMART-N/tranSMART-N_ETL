@@ -91,6 +91,20 @@ class SnpInfo {
 	}
 
 
+    void loadSnpInfo(String databaseType, Map columnMap) {
+        if (databaseType.equals("oracle")) {
+            loadSnpInfo(columnMap)
+        } else if (databaseType.equals("netezza")) {
+            loadNetezzaSnpInfo(columnMap)
+        } else if (databaseType.equals("postgresql")) {
+//            loadPostgreSQLSnpInfo(columnMap)
+        } else if (databaseType.equals("db2")) {
+//            loadDB2SnpInfo(columnMap)
+        } else {
+            log.info("The database $databaseType is not supported.")
+        }
+    }
+
 	void loadSnpInfo(Map columnMap){
 
 		log.info "Start loading data into the table DE_SNP_INFO ... "
@@ -104,7 +118,24 @@ class SnpInfo {
 		log.info "End loading data into the table DE_SNP_INFO ... "
 	}
 
-	
+
+    void loadNetezzaSnpInfo(Map columnMap){
+
+        log.info "Start loading data into the Netezza table DE_SNP_INFO ... "
+
+        String qry = """insert into de_snp_info (snp_info_id, name, chrom, chrom_pos)
+						select next value for seq_data_id, t.name, t.chrom, t.chrom_pos
+						from (
+                            select distinct ${columnMap["name"]} name, ${columnMap["chr"]} chrom, ${columnMap["pos"]} chrom_pos
+                            from  $annotationTable
+                            where upper(${columnMap["name"]}) not in (select upper(name) from de_snp_info)
+                        ) t """
+        deapp.execute(qry)
+
+        log.info "End loading data into the Netezza table DE_SNP_INFO ... "
+    }
+
+
 	void createTempSnpInfoTable(String tempSnpInfoTable){
 
 		String qry = "select count(1) from user_tables where table_name=upper(?)"

@@ -19,15 +19,8 @@
   
 
 package com.recomdata.pipeline.transmart
-
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
-import groovy.sql.Sql;
-
-import com.recomdata.pipeline.util.Util
-
+import groovy.sql.Sql
+import org.apache.log4j.Logger
 
 class GplInfo {
 
@@ -58,7 +51,7 @@ class GplInfo {
 		log.info "Start inserting data into DE_GPL_INFO ... "
 
 		if(isGplInfoExist(gplInfoMap["platform"], gplInfoMap["markerType"])){
-			log.info "Platform [${gplInfoMap["platform"]}] already extists in DE_GPL_INFO ... "
+			log.info "   Platform [${gplInfoMap["platform"]}] already extists in DE_GPL_INFO ... "
 		}else{
 			String qry = """insert into de_gpl_info (platform, title, organism, annotation_date, marker_type, release_nbr) values(?, ?, ?, ?, ?,?) """
 			deapp.execute(qry, [
