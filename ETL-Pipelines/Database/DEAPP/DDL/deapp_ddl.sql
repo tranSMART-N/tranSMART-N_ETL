@@ -298,7 +298,7 @@ CREATE TABLE deapp.de_subject_sample_mapping (
     omic_source_study varchar(200),
     omic_patient_id bigint,
     partition_id numeric
-);
+) DISTRIBUTE ON (ASSAY_ID);
 
 CREATE TABLE deapp.de_subject_snp_dataset (
     subject_snp_dataset_id bigint NOT NULL,

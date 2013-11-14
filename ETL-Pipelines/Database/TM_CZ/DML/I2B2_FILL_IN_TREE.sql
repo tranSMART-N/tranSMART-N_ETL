@@ -99,7 +99,10 @@ BEGIN
 			if curr_node is not null and curr_node != bslash then
 				insert into tm_wz.wt_folder_nodes
 				(folder_path,folder_name)
-				values(curr_node,node_name);
+				select curr_node,node_name
+				where not exists
+					 (select 1 from tm_wz.wt_folder_nodes
+					  where folder_path = curr_node);
 			end if;
 		end loop;
 	end loop;	

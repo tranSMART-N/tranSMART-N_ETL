@@ -41,7 +41,7 @@ begin
 	jobID := currentJobID;
 
 	databaseName := 'TM_CZ';
-	procedureName := 'I2B2_FILL_IN_TREE';
+	procedureName := 'I2B2_DELETE_1_NODE';
 
 	--Audit JOB Initialization
 	--If Job ID does not exist, then this is a single procedure run and we need to create it

@@ -300,17 +300,6 @@ BEGIN
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete data from de_subject_microarray_data',ROW_COUNT,stepCt,'Done');
-		
-	--	Cleanup any existing data in de_subject_sample_mapping.  
-
-	delete from deapp.de_subject_sample_mapping 
-	where trial_name = TrialID 
-	  and coalesce(source_cd,'STD') = sourceCd
-	  and platform = 'MRNA_AFFYMETRIX'; --Making sure only mRNA data is deleted
-	rowCount := ROW_COUNT;
-	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete trial from DEAPP de_subject_sample_mapping',rowCount,stepCt,'Done');
-
 
 	--	truncate tmp node table
 
@@ -393,7 +382,8 @@ BEGIN
 		  ,case when instr(substr(category_cd,1,instr(category_cd,'PLATFORM')+8),'ATTR1') > 1 then attribute_1 else null end as attribute_1
           ,case when instr(substr(category_cd,1,instr(category_cd,'PLATFORM')+8),'ATTR2') > 1 then attribute_2 else null end as attribute_2
 		  ,'PLATFORM'
-	from  tm_wz.wt_mrna_node_values; 
+	from  tm_wz.wt_mrna_node_values
+	where category_cd like '%PLATFORM%'; 
 	rowCount := ROW_COUNT;
     stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create platform nodes in wt_mrna_nodes',rowCount,stepCt,'Done');
@@ -504,20 +494,7 @@ BEGIN
 		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,tText,1,stepCt,'Done');
 		
 	END LOOP;  
-	
-	--	fill in any missing nodes
-	call tm_cz.i2b2_fill_in_tree(TrialId, topNode, jobID);
-	
-	--	set sourcesystem_cd, c_comment to null if any added upper-level nodes
-	
-	update i2b2metadata.i2b2 b
-	set sourcesystem_cd=null,c_comment=null
-	where b.sourcesystem_cd = TrialId
-	  and length(b.c_fullname) < length(topNode);
-	rowCount := ROW_COUNT;
-	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Set sourcesystem_cd to null for added upper level nodes',rowCount,stepCt,'Done');
-		
+
 	--	update concept_cd for nodes, this is done to make the next insert easier
 
 	update tm_wz.wt_mrna_nodes t
@@ -529,6 +506,81 @@ BEGIN
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update wt_mrna_nodes with newly created concept_cds',rowCount,stepCt,'Done');
 
+	--	delete any concepts that are no longer valid
+	
+	for r_nodes in
+		select c_fullname
+		from i2b2metadata.i2b2
+		where c_basecode in
+		(select distinct concept_code
+		 from deapp.de_subject_sample_mapping 
+		 where trial_name = TrialId
+		 and source_cd = v_source_cd
+		 and platform = 'MRNA_AFFYMETRIX'
+		 union
+		 select distinct timepoint_cd as concept_code
+		 from deapp.de_subject_sample_mapping 
+		 where trial_name = TrialId
+		 and source_cd = v_source_cd
+		 and platform = 'MRNA_AFFYMETRIX'
+		 and timepoint_cd is not null
+		 union
+		 select distinct platform_cd as concept_code
+		 from deapp.de_subject_sample_mapping 
+		 where trial_name = TrialId
+		 and source_cd = v_source_cd
+		 and platform = 'MRNA_AFFYMETRIX'
+		 and platform_cd is not null
+		 union
+		 select distinct tissue_type_cd as concept_code
+		 from deapp.de_subject_sample_mapping 
+		 where trial_name = TrialId
+		 and source_cd = v_source_cd
+		 and platform = 'MRNA_AFFYMETRIX'
+		 and tissue_type_cd is not null
+		 union
+		 select distinct sample_type_cd as concept_code
+		 from deapp.de_subject_sample_mapping 
+		 where trial_name = TrialId
+		 and source_cd = v_source_cd
+		 and platform = 'MRNA_AFFYMETRIX'
+		 and sample_type_cd is not null
+		 minus
+		 select distinct concept_cd as concept_code
+		 from tm_wz.wt_mrna_nodes)
+	loop
+		--	deletes unused nodes for a trial one at a time
+		call tm_cz.i2b2_delete_1_node(r_Nodes.c_fullname,jobId);
+		stepCt := stepCt + 1;
+		tText := 'Deleted unused node: ' || r_Nodes.c_fullname;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,tText,1,stepCt,'Done');
+	END LOOP;
+	
+	--	fill in any missing nodes
+	
+	call tm_cz.i2b2_fill_in_tree(TrialId, topNode, jobID);
+	
+	--	set sourcesystem_cd, c_comment to null if any added upper-level nodes
+	
+	update i2b2metadata.i2b2 b
+	set sourcesystem_cd=null,c_comment=null
+	where b.sourcesystem_cd = TrialId
+	  and length(b.c_fullname) < length(topNode);
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Set sourcesystem_cd to null for added upper level nodes',rowCount,stepCt,'Done');
+			
+	--	Cleanup any existing data in de_subject_sample_mapping.  
+
+	delete from deapp.de_subject_sample_mapping 
+	where trial_name = TrialID 
+	  and coalesce(source_cd,'STD') = sourceCd
+	  and platform = 'MRNA_AFFYMETRIX'; --Making sure only mRNA data is deleted
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete trial from DEAPP de_subject_sample_mapping',rowCount,stepCt,'Done');
+
+	
   --Load the DE_SUBJECT_SAMPLE_MAPPING from wt_subject_mrna_data
 
   --PATIENT_ID      = PATIENT_ID (SAME AS ID ON THE PATIENT_DIMENSION)
@@ -840,9 +892,9 @@ BEGIN
 			and substr(c_visualattributes,2,1) = 'H'
 	Loop
 		--	deletes hidden nodes for a trial one at a time
-		call i2b2_delete_1_node(r_delNodes.c_fullname);
+		call tm_cz.i2b2_delete_1_node(r_Nodes.c_fullname,jobId);
 		stepCt := stepCt + 1;
-		tText := 'Deleted node: ' || r_delNodes.c_fullname;
+		tText := 'Deleted node: ' || r_Nodes.c_fullname;
 		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,tText,1,stepCt,'Done');
 
 	END LOOP;  	
