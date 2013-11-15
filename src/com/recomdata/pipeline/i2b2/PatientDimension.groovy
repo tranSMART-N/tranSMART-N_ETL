@@ -83,6 +83,41 @@ class PatientDimension {
 	}
 
 
+    def loadPatientDimensionFromSamples(String databaseType, Map samples){
+        if(databaseType.equals("oracle")){
+            loadPatientDimensionFromSamples(samples)
+        }  else if(databaseType.equals("netezza")){
+            loadNetezzaPatientDimensionFromSamples(samples)
+        }  else if(databaseType.equals("postgresql")){
+//            loadPostgreSQLPatientDimensionFromSamples(samples)
+        }  else if(databaseType.equals("db2")){
+//            loadDB2PatientDimensionFromSamples(samples)
+        }  else {
+            log.info("The database $databaseType is not supported.")
+        }
+    }
+
+
+    def loadNetezzaPatientDimensionFromSamples(Map samples){
+
+        log.info  "Start loading data into PATIENT_DIMENSION from Samples ... "
+
+        String qry = "insert into patient_dimension(patient_num, sourcesystem_cd, import_date) values (next value for SQ_PATIENT_NUM, ?, now())"
+
+        samples.each {key, val ->
+            String sourcesystem_cd = sourceSystemPrefix + ":" + key
+            def patient_num = getPatientNumberByIndividualId(sourcesystem_cd)
+            if(patient_num > 0)  {
+                log.info "Patient exists for : " + sourcesystem_cd + "(" + patient_num + ")"
+            } else {
+                log.info "New patient for : " + sourcesystem_cd
+                i2b2demodata.execute(qry, [sourcesystem_cd])
+            }
+        }
+
+        log.info "End loading data into PATIENT_DIMENSION from Samples ..."
+    }
+
 
 	def loadPatientDimensionFromSamples(Map samples){
 
@@ -105,7 +140,6 @@ class PatientDimension {
 	}
 
 
-
 	boolean isPatientNumber(String patientNum){
 		try{
 			int pid = Integer.parseInt(patientNum)
@@ -117,7 +151,6 @@ class PatientDimension {
 			return false
 		}
 	}
-
 
 
 	void addPatient(String subjectId){
@@ -132,7 +165,6 @@ class PatientDimension {
 			log.info "$subjectId already exists in PATIENT_DIMENSION ... "
 		}
 	}
-
 
 
 	Map getPatientMap(){

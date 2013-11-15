@@ -36,6 +36,11 @@ class ConceptDimension {
 	}
 
 
+    void loadConceptDimensions(String databaseType, List concepts){
+        concepts.each{ insertConceptDimension(databaseType, it) }
+    }
+
+
 	Map getConceptCode(List concepts){
 
 		Map conceptPathToCode = [:]
@@ -62,6 +67,21 @@ class ConceptDimension {
 			return res[0]
 		}
 	}
+
+    void insertConceptDimension(String databaseType, String conceptPath){
+        if(databaseType.equals("oracle")){
+            insertConceptDimension(conceptPath)
+        }  else if (databaseType.equals("netezza")){
+            insertNetezzaConceptDimension(conceptPath)
+        }  else if (databaseType.equals("postgresql")){
+//            insertPostgreSQLConceptDimension(conceptPath)
+        }  else if(databaseType.equals("db2")){
+//            insertDB2ConceptDimension(conceptPath)
+        }  else {
+            log.info("The database $databaseType is not supported.")
+        }
+    }
+
 
 	/**
 	 * Create the following trigger for CONCEPT_DIMENSION:
@@ -103,6 +123,28 @@ class ConceptDimension {
 		}
 	}
 
+    void insertNetezzaConceptDimension(String conceptPath){
+
+        if(tableName.equals(null)) tableName = "CONCEPT_DIMENSION"
+
+        String [] str = conceptPath.split("/")
+        String nameChar = str[str.size()-1]
+        log.info str.size() + ":\t" + nameChar
+
+        String qry = """ insert into concept_dimension(concept_cd, concept_path, name_char, sourcesystem_cd)
+                         values(next value for i2b2demodata.SQ_CONCEPT_CD, ?, ?, ?) """
+
+        String concept = conceptPath.replace("/", "\\")
+        if(isConceptDimensonExist(concept)){
+            log.info "$conceptPath already exists ..."
+        }else{
+            i2b2demodata.execute(qry, [
+                    concept,
+                    nameChar,
+                    studyName
+            ])
+        }
+    }
 
 	boolean isConceptDimensonExist(String conceptPath){
 		String qry = "select count(*) from concept_dimension where concept_path=?"

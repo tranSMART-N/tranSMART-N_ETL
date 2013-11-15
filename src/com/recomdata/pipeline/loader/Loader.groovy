@@ -90,14 +90,14 @@ class Loader {
 		// loading records into I2B2_SECURE
 		loader.loadI2b2Secure(props, i2b2metadata, visualAttributes, conceptPathToCode)
 
-		// loading records into I2B2_TAGS need to be completed
+		//TODO: loading records into I2B2_TAGS need to be completed
 		loader.loadI2b2Tags(props, i2b2metadata)
 
 		// loading records into OBSERVATION_FACT
 		loader.loadObservationFact(props, i2b2demodata, conceptPathToCode, subjectToPatient)
 
 		// loading records into CONCEPT_COUNTS
-		// TO_BE_DONE: update parent node's count ...
+		//TODO: update parent node's count ...
 		loader.loadConceptCounts(props, i2b2demodata)
 
 		// loading records into DE_GPL_INFO
@@ -174,7 +174,7 @@ class Loader {
 			log.info "Skip loading records into CONCEPT_DIMENSION table ..."
 		}else{
 			log.info "Start loading records into CONCEPT_DIMENSION table ..."
-			cd.loadConceptDimensions(concepts)
+			cd.loadConceptDimensions(Util.getDatabaseType(props), concepts)
 			log.info "End loading records into CONCEPT_DIMENSION table ..."
 		}
 
@@ -195,7 +195,7 @@ class Loader {
 		}else{
 			log.info "Start loading records into PATIENT_DIMENSION table ..."
 
-			pd.loadPatientDimensionFromSamples(subjects)
+			pd.loadPatientDimensionFromSamples(Util.getDatabaseType(props),subjects)
 			log.info "End loading records into PATIENT_DIMENSION table ..."
 		}
 
@@ -213,7 +213,7 @@ class Loader {
 			i2b2.setI2b2metadata(i2b2metadata)
 			i2b2.setStudyName(props.get("study_name"))
 			i2b2.setVisualAttrs(visualAttrs)
-			i2b2.loadConceptPaths(conceptPathToCode)
+			i2b2.loadConceptPaths(Util.getDatabaseType(props), conceptPathToCode)
 			log.info "End loading records into I2B2 table ..."
 		}
 	}
@@ -248,7 +248,7 @@ class Loader {
 			obsf.setSubjectToPatient(subjectToPatient)
 			obsf.setStudyName(props.get("study_name"))
 			obsf.setBasePath(props.get("snp_base_node") + "/" + props.get("platform_name") + "/")
-			obsf.loadObservationFact(subjects)
+			obsf.loadObservationFact(Util.getDatabaseType(props), subjects)
 			log.info "End loading records into OBSERVATION_FACT table ..."
 		}
 	}
@@ -284,7 +284,7 @@ class Loader {
 			ssm.setSubjectPatientMap(subjectToPatient)
 			ssm.setconceptPathToCode(conceptPathToCode)
 			ssm.setSubjectSamples(subjectSamples)
-			ssm.loadSubjectSampleMapping()
+			ssm.loadSubjectSampleMapping(Util.getDatabaseType(props))
 			log.info "End loading records into DE_SUBJECT_SAMPLE_MAPPING table ..."
 		}
 	}
@@ -376,9 +376,6 @@ class Loader {
 				//if((it.indexOf("study_id") == -1) && (it.indexOf("Data+SNP_Profiling+PLATFORM+TISSUETYPE") >= 0)){
 				//if((it.indexOf("study_id") == -1) && (it.toUpperCase().indexOf("SNP_PROFILING") >= 0)){
 				if((it.indexOf("study_id") == -1) && (it.indexOf("subject_id") == -1)) {
-
-					//log.info it
-
 					if(it.indexOf("\t") != -1) str = it.split("\t")
 					else str = it.split(" +")
 
@@ -388,8 +385,8 @@ class Loader {
 					} else{
 						String sampleType = str[5].trim()
 
-						if(sampleType.size() > 0) {
-							sampleTypes[sampleType] = 1
+						if(sampleType.trim().size() > 0) {
+							sampleTypes[sampleType.trim()] = 1
 							subjects[str[2].trim()] = sampleType
 						}else{
 							subjects[str[2].trim()] = ""

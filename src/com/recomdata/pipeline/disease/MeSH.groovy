@@ -13,12 +13,8 @@ class MeSH {
 
     private static final Logger log = Logger.getLogger(MeSH)
     private static Properties props
-    //static Level logLevel = Level.INFO
 
     static main(args) {
-
-        //BasicConfigurator.configure();
-       // log.setLevel(logLevel)
 
         PropertyConfigurator.configure("conf/log4j.properties");
 
@@ -38,7 +34,6 @@ class MeSH {
         } else {
             mesh.createTempTable(databaseType, biomart, props.get("mesh_table"), props.get("mesh_synonym_table"))
         }
-
 
         File input = new File(props.get("mesh_source"))
         File output = new File(input.getParent() + "/MeSH.tsv")
@@ -650,8 +645,9 @@ class MeSH {
         String user = props.get("biomart_username")
         String password = props.get("biomart_password")
         String host = props.get("url").split(":")[2].toString().replaceAll("/") { "" }
+        String databaseName = Util.getDatabaseName(props)
 
-        def command = "$nzload -u $user -pw $password -host \"$host\" -db transmart -t $MeSHSynonymTable -delim \"\\t\" -outputDir \"c:/temp\" -df \"$meshEntry\""
+        def command = "$nzload -u $user -pw $password -host \"$host\" -db $databaseName -t $MeSHSynonymTable -delim \"\\t\" -outputDir \"c:/temp\" -df \"$meshEntry\""
         log.info "nzload command: " + command
         def proc = command.execute()
         proc.waitFor()
@@ -669,8 +665,9 @@ class MeSH {
         String user = props.get("biomart_username")
         String password = props.get("biomart_password")
         String host = props.get("url").split(":")[2].toString().replaceAll("/") { "" }
+        String databaseName = Util.getDatabaseName(props)
 
-        def command = "$nzload -u $user -pw $password -host \"$host\" -db transmart -t $MeSHTable -delim \"\\t\" -outputDir \"c:/temp\" -df \"$mesh\""
+        def command = "$nzload -u $user -pw $password -host \"$host\" -db $databaseName -t $MeSHTable -delim \"\\t\" -outputDir \"c:/temp\" -df \"$mesh\""
         log.info "nzload command: " + command
         def proc = command.execute()
         proc.waitFor()
@@ -885,6 +882,5 @@ class MeSH {
         sql.execute(qry)
         log.info "End creating Netezza/PostgreSQL table: ${MeSHSynonymTable}"
     }
-
 
 }

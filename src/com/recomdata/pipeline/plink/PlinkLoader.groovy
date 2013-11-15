@@ -17,22 +17,15 @@
  *
  ******************************************************************/
   
-
 package com.recomdata.pipeline.plink
 
-import java.util.Map;
-
-import org.apache.log4j.PropertyConfigurator;
-import org.apache.log4j.Logger;
-
-import com.recomdata.pipeline.i2b2.PatientDimension;
+import com.recomdata.pipeline.converter.CopyNumberReader
+import com.recomdata.pipeline.i2b2.PatientDimension
 import com.recomdata.pipeline.transmart.SubjectSampleMapping
 import com.recomdata.pipeline.util.Util
-
-import com.recomdata.pipeline.converter.CopyNumberFormatter
-import com.recomdata.pipeline.converter.CopyNumberReader
-
-import groovy.sql.Sql;
+import groovy.sql.Sql
+import org.apache.log4j.Logger
+import org.apache.log4j.PropertyConfigurator
 
 class PlinkLoader {
 
@@ -88,7 +81,7 @@ class PlinkLoader {
 
 	void load(Properties props){
 
-		log.info(Util.getMemoryUsage(runtime))
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 
 		log.info("Loading property file: SNP.properties ...")
 
@@ -97,18 +90,18 @@ class PlinkLoader {
 
 		// truncate tables as needed
 		//		Util.truncateSNPTable(deapp)
-		log.info(new Date())
 
 		// pre-normalize chromosome from letter to number
 		preNormalizeChromosomeName(deapp)
-		log.info(Util.getMemoryUsage(runtime))
-		log.info(new Date())
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 
 		// create a PatientDimension object
 		PatientDimension patientDimension = createPatientDimension(props, i2b2demodata)
 
-		// extract the mapping among patient_num, subject_id, concept_code and sample_type from DE_SUBJECT_SAMPLE_MAPPING
-		SubjectSampleMapping subjectSampleMapping = createSubjectSampleMapping(deapp)
+		// create a DE_SUBJECT_SAMPLE_MAPPING object
+//		SubjectSampleMapping subjectSampleMapping = createSubjectSampleMapping(deapp)
+		SubjectSampleMapping subjectSampleMapping = new SubjectSampleMapping(deapp)
+
 		// patient_num:concept_code -> subject_id:sample_type map
 		Map patientConceptCodeMap = subjectSampleMapping.getPatientConceptCodeMap(props.get("study_name"), props.get("platform_type"))
 		//Util.printMap(patientConceptCodeMap)
@@ -129,34 +122,26 @@ class PlinkLoader {
 
 		// populate DE_SUBJECT_SNP_DATASET and DE_SNP_DATASET_LOC, and also return a map:
 		Map patientSnpDatasetMap = loadSubjectSnpDataset(props, deapp, subjectSnpDatasetMap)
-		log.info(Util.getMemoryUsage(runtime))
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 		//Util.printMap(patientSnpDatasetMap)
 
 
 		// Populate DE_SNP_PROBE_SORTED_DEF
 		loadSnpProbeSortedDef(props, deapp)
-		log.info(Util.getMemoryUsage(runtime))
-		log.info(new Date())
-
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 
 		// Load DE_SNP_SUBJECT_SORTED_DEF
 		Map patientSubjectMap = getPatientSubjectMap(patientConceptCodeMap)
 		loadSnpSubjectSortedDef(props, deapp, patientSubjectMap)
-		log.info(Util.getMemoryUsage(runtime))
-		log.info(new Date())
-
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 
 		// Load DE_SNP_COPY_NUMBER
 		loadSnpCopyNumber(props, deapp)
-		log.info(Util.getMemoryUsage(runtime))
-		log.info(new Date())
-
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 
 		// Load DE_SN_CALLS_BY_GSM
 		loadSnpCallsByGsm(props, deapp, samplePatientMap)
-		log.info(Util.getMemoryUsage(runtime))
-		log.info(new Date())
-
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 
 		// a map: patient_num -> dataset_id
 		Map patintSnpDatasetMap = getPatientSnpDatasetMap(props, deapp)
@@ -167,23 +152,16 @@ class PlinkLoader {
 		// Populate DE_SNP_DATA_BY_PATIENT
 		//loadSnpDataByPatient(props, deapp, patientDimension, cnr, subjectSnpDataset)
 		loadSnpDataByPatient(props, deapp, patientSnpDatasetMap, cnr)
-		log.info(Util.getMemoryUsage(runtime))
-		log.info(new Date())
-
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 
 		// Populate DE_SNP_DATA_BY_PROBE
 		loadSnpDataByProbe(props, deapp, cnr)
-		log.info(Util.getMemoryUsage(runtime))
-		log.info(new Date())
-
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 
 		// Normalize Chromosome naming
 		postNormalizeChromosomeName(deapp)
-		log.info(Util.getMemoryUsage(runtime))
-		log.info(new Date())
-
+		log.info(new Date() + ":\t" + Util.getMemoryUsage(runtime))
 	}
-
 
 
 	/**
@@ -366,7 +344,6 @@ class PlinkLoader {
 	}
 
 
-
 	void loadSnpDataByProbe(Properties props, Sql deapp, CopyNumberReader cnr){
 
 		if(props.get("skip_snp_data_by_probe").toString().toLowerCase().equals("yes")){
@@ -458,8 +435,6 @@ class PlinkLoader {
 	}
 
 
-
-
 	void preNormalizeChromosomeName(Sql deapp){
 
 		log.info("Start renameing chromosomes from letter to number, such as X to 23, ...")
@@ -470,6 +445,7 @@ class PlinkLoader {
 			"25:XY",
 			"26:MT"
 		]
+
 		Util.normalizeChromosomeNaming(deapp, "de_snp_info", "chrom", chrMap)
 		Util.normalizeChromosomeNaming(deapp, "de_snp_data_by_patient", "chrom", chrMap)
 		Util.normalizeChromosomeNaming(deapp, "de_snp_probe_sorted_def", "chrom", chrMap)
@@ -497,7 +473,7 @@ class PlinkLoader {
 
 
 	SubjectSampleMapping createSubjectSampleMapping(Sql deapp){
-		log.info("Create a SubjectSampleMapping object ... ")
+		log.info("Create a DE_Subject_Sample_Mapping object ... ")
 		SubjectSampleMapping subjectSampleMapping = new SubjectSampleMapping()
 		subjectSampleMapping.setDeapp(deapp)
 		return subjectSampleMapping

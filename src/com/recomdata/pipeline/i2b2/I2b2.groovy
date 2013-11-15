@@ -32,13 +32,62 @@ class I2b2 {
 	String studyName
 	Map visualAttrs
 
-	
+
+    void loadConceptPaths(String databaseType, Map conceptPathToCode){
+        if(databaseType.equals("oracle")){
+            loadConceptPaths(conceptPathToCode)
+        } else if (databaseType.equals("netezza")){
+            loadNetezzaConceptPaths(conceptPathToCode)
+        } else if (databaseType.equals("postgresql")){
+//            loadPostgreSQLConceptPaths(conceptPathToCode)
+        }  else if(databaseType.equals("db2")){
+//            loadDB2ConceptPaths(conceptPathToCode)
+        }  else {
+            log.info("The database $databaseType is not supported.")
+        }
+    }
+
+
+    void loadNetezzaConceptPaths(Map conceptPathToCode){
+
+        conceptPathToCode.each{key, val ->
+            loadNetezzaConceptPath(key, val)
+        }
+    }
+
 	void loadConceptPaths(Map conceptPathToCode){
 
 		conceptPathToCode.each{key, val ->
 			loadConceptPath(key, val)
 		}
 	}
+
+
+    void loadNetezzaConceptPath(String conceptPath, String conceptCode){
+
+        String qry = """ INSERT INTO I2B2 (C_HLEVEL, C_FULLNAME, C_NAME, C_SYNONYM_CD, C_VISUALATTRIBUTES, C_TOTALNUM,
+								C_BASECODE, C_METADATAXML, C_FACTTABLECOLUMN, C_TABLENAME, C_COLUMNNAME, C_COLUMNDATATYPE,
+								C_OPERATOR, C_DIMCODE, C_COMMENT, C_TOOLTIP, M_APPLIED_PATH, UPDATE_DATE, DOWNLOAD_DATE, IMPORT_DATE,
+								SOURCESYSTEM_CD, VALUETYPE_CD, M_EXCLUSION_CD, C_PATH, C_SYMBOL)
+						 VALUES(?, ?, ?, 'N', ?, 0,
+							   ?, null, 'CONCEPT_CD', 'CONCEPT_DIMENSION', 'CONCEPT_PATH', 'T',
+							   'LIKE', ?, ?, ?, '@', now(), now(), now(),
+							   ?, null, null, null, null)""";
+
+        String [] str = conceptPath.split("/")
+        int c_hlevel = str.size() - 2
+        String c_name = str[str.size() - 1]
+        String path = conceptPath.replace("/", "\\")
+        String c_comment = "trial:" + studyName
+        String visualAttr = visualAttrs[conceptPath]
+
+        if(isI2b2Exist(path)){
+            log.info "$conceptPath already exists ..."
+        }else{
+            log.info "insert concept path: $conceptPath into Netezza I2B2 ..."
+            i2b2metadata.execute(qry, [c_hlevel, path, c_name, visualAttr, conceptCode, path, c_comment, path, studyName])
+        }
+    }
 
 	
 	void loadConceptPath(String conceptPath, String conceptCode){

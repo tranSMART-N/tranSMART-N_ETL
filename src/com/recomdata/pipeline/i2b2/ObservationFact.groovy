@@ -33,9 +33,24 @@ class ObservationFact {
 	String studyName, basePath
 
 
-	void loadObservationFact(Map subjects){
+    void loadObservationFact(String databaseType, Map subjects){
+         if(databaseType.equals("oracle")){
+             loadObservationFact(subjects)
+         } else if(databaseType.equals("netezza")){
+             loadNetezzaObservationFact(subjects)
+         }   else if(databaseType.equals("postgresql")){
+//             loadPostgreSQLObservationFact(subjects)
+         }   else if(databaseType.equals("db2")){
+//             loadDB2ObservationFact(subjects)
+         }   else {
+             log.info("The database $databaseType is not supported.")
+         }
+    }
 
-		log.info "Start loading OBSERVATION_FACT ..."
+
+	void loadNetezzaObservationFact(Map subjects){
+
+		log.info "Start loading Netezza OBSERVATION_FACT ..."
 
 		String conceptPath
 		subjects.each{key, val ->
@@ -45,15 +60,68 @@ class ObservationFact {
 			else conceptPath = basePath + val + "/"
 			String conceptCode = conceptPathToCode[conceptPath]
 
-			insertObservationFact(patientNum, conceptCode)
+			insertNetezzaObservationFact(patientNum, conceptCode)
 		}
+
+        log.info "End loading Netezza OBSERVATION_FACT ..."
 	}
 
 
-	void insertObservationFact(long patientNum, String conceptCode){
+    void loadObservationFact(Map subjects){
 
+        log.info "Start loading OBSERVATION_FACT ..."
+
+        String conceptPath
+        subjects.each{key, val ->
+
+            long patientNum =subjectToPatient[key]
+            if(val.equals(null) || val.size() ==0 )   conceptPath = basePath
+            else conceptPath = basePath + val + "/"
+            String conceptCode = conceptPathToCode[conceptPath]
+
+            insertObservationFact(patientNum, conceptCode)
+        }
+    }
+
+
+	void insertNetezzaObservationFact(long patientNum, String conceptCode){
 
 		String qry = """ insert into observation_fact (patient_num, concept_cd, modifier_cd
+							,valtype_cd
+							,tval_char
+							,nval_num
+							,sourcesystem_cd
+							,import_date
+							,valueflag_cd
+							,provider_id
+							,location_cd
+							)
+						 values(?, ?, ?
+								  ,'T' -- Text data type
+								  ,'E'  --Stands for Equals for Text Types
+								  ,null	--	not numeric for Proteomics
+								  ,?
+								  ,now()
+								  ,'@'
+								  ,'@'
+								  ,'@')
+							""";
+
+		if(isObservationFactExist(patientNum, conceptCode)){
+			log.info "($patientNum, $conceptCode) already exists in OBSERVATION_FACT ..."
+		}else{
+			i2b2demodata.execute(qry, [
+				patientNum,
+				conceptCode,
+				studyName,
+				studyName
+			])
+		}
+	}
+
+    void insertObservationFact(long patientNum, String conceptCode){
+
+        String qry = """ insert into observation_fact (patient_num, concept_cd, modifier_cd
 							,valtype_cd
 							,tval_char
 							,nval_num
@@ -74,19 +142,17 @@ class ObservationFact {
 								  ,'@')
 							""";
 
-		if(isObservationFactExist(patientNum, conceptCode)){
-			log.info "($patientNum, $conceptCode) already exists in OBSERVATION_FACT ..."
-		}else{
-			i2b2demodata.execute(qry, [
-				patientNum,
-				conceptCode,
-				studyName,
-				studyName
-			])
-		}
-	}
-
-
+        if(isObservationFactExist(patientNum, conceptCode)){
+            log.info "($patientNum, $conceptCode) already exists in OBSERVATION_FACT ..."
+        }else{
+            i2b2demodata.execute(qry, [
+                    patientNum,
+                    conceptCode,
+                    studyName,
+                    studyName
+            ])
+        }
+    }
 
 	boolean isObservationFactExist(long patientNum, String conceptCode){
 		String qry = "select count(*) from observation_fact where patient_num=? and concept_cd=?"
