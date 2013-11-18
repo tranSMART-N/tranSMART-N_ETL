@@ -102,16 +102,20 @@ class PatientDimension {
 
         log.info  "Start loading data into PATIENT_DIMENSION from Samples ... "
 
-        String qry = "insert into patient_dimension(patient_num, sourcesystem_cd, import_date) values (next value for SQ_PATIENT_NUM, ?, now())"
+        String qry = "insert into patient_dimension(patient_num, sex_cd, sourcesystem_cd, import_date) values (next value for SQ_PATIENT_NUM, ?, ?, now())"
+        String update = "update patient_dimension set sex_cd=? where sourcesystem_cd=?"
 
         samples.each {key, val ->
             String sourcesystem_cd = sourceSystemPrefix + ":" + key
+            String gender = val.split(":")[1].toString().trim()
             def patient_num = getPatientNumberByIndividualId(sourcesystem_cd)
             if(patient_num > 0)  {
-                log.info "Patient exists for : " + sourcesystem_cd + "(" + patient_num + ")"
+                log.info "Patient exists for : " + sourcesystem_cd + "(" + patient_num + "), so update its gender"
+                if(!gender.equals(null) && gender.size() > 0) i2b2demodata.execute(qry, [gender, sourcesystem_cd])
             } else {
                 log.info "New patient for : " + sourcesystem_cd
-                i2b2demodata.execute(qry, [sourcesystem_cd])
+                if(!gender.equals(null) && gender.size() > 0) i2b2demodata.execute(qry, [gender, sourcesystem_cd])
+                else i2b2demodata.execute(qry, [null, sourcesystem_cd])
             }
         }
 
