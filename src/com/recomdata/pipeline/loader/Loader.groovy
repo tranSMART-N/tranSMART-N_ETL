@@ -318,7 +318,7 @@ class Loader {
 			String title = props.get("title")
 			String organism = props.get("organism")
 			String markerType = props.get("marker_type")
-			gi.insertGplInfo(gplPlatorm, title, organism, markerType)
+			gi.insertGplInfo(Util.getDatabaseType(props), gplPlatorm, title, organism, markerType)
 			log.info "End loading records into DE_GPL_INFO table ..."
 		}
 	}

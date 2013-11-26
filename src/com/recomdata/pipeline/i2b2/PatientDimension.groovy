@@ -102,7 +102,8 @@ class PatientDimension {
 
         log.info  "Start loading data into PATIENT_DIMENSION from Samples ... "
 
-        String qry = "insert into patient_dimension(patient_num, sex_cd, sourcesystem_cd, import_date) values (next value for SQ_PATIENT_NUM, ?, ?, now())"
+        String qry = """ insert into patient_dimension(patient_num, sex_cd, sourcesystem_cd, import_date)
+                         values (next value for i2b2demodata.SQ_PATIENT_NUM, ?, ?, now()) """
         String update = "update patient_dimension set sex_cd=? where sourcesystem_cd=?"
 
         samples.each {key, val ->

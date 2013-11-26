@@ -47,8 +47,8 @@ class SubjectSnpDataset {
             patientNum = Integer.parseInt(k.split(":")[0])
             conceptCode = k.split(":")[1]
             subjectId = v.split(":")[0]
-            sampleType = v.split(":")[1].replace("null", "")
-            gender = v.split(":")[2]
+            sampleType = v.split(":")[1].toString().replace("null", "")
+            gender = v.split(":")[2].toString().replace("null", "")
 
             if (!isSubjectSnpDatasetExist(conceptCode, patientNum, trialName, platform)) {
 
@@ -221,9 +221,9 @@ class SubjectSnpDataset {
 
     def loadSnpDatasetLocation(String databaseType) {
         if (databaseType.equals("oracle")) {
-            loadSnpDatasetLocation
+            loadSnpDatasetLocation()
         } else if (databaseType.equals("netezza")) {
-            loadNetezzaSnpDatasetLocation
+            loadNetezzaSnpDatasetLocation()
         } else if (databaseType.equals("postgresql")) {
 //            loadPostgreSQLSnpDatasetLocation
         } else if (databaseType.equals("db2")) {
@@ -371,7 +371,6 @@ class SubjectSnpDataset {
         this.sampleType = sampleType
     }
 
-
     Map getPatientSnpDatasetMap() {
 
         Map patientDatasetMap = [:]
@@ -385,7 +384,6 @@ class SubjectSnpDataset {
 
         return patientDatasetMap
     }
-
 
     Map getSnpDatasetId() {
 
@@ -401,7 +399,6 @@ class SubjectSnpDataset {
         return patientDatasetMap
     }
 
-
     Map getSnpDatasetId(String trialName) {
 
         Map patientDatasetMap = [:]
@@ -415,8 +412,6 @@ class SubjectSnpDataset {
 
         return patientDatasetMap
     }
-
-
 
     def getSnpDatasetId(String trial, String subjectId) {
 
@@ -480,7 +475,6 @@ class SubjectSnpDataset {
         }
     }
 
-
     def getSnpDatasetIdByPatientNumber(String trial, int patientNum) {
 
         String qry = """ select subject_snp_dataset_id from de_subject_snp_dataset
@@ -497,16 +491,13 @@ class SubjectSnpDataset {
         }
     }
 
-
     def setSourceSystemPrefix(String sourceSystemPrefix) {
         this.sourceSystemPrefix = sourceSystemPrefix
     }
 
-
     void setPatientDimension(PatientDimension pd) {
         this.pd = pd
     }
-
 
     void setPatientConceptCodeMap(Map patientConceptCodeMap) {
         this.patientConceptCodeMap = patientConceptCodeMap
