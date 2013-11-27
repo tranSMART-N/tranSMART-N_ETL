@@ -83,6 +83,46 @@ class PatientDimension {
 	}
 
 
+    def loadPatientDimensionFromSamples(String databaseType, Map samples){
+        if(databaseType.equals("oracle")){
+            loadPatientDimensionFromSamples(samples)
+        }  else if(databaseType.equals("netezza")){
+            loadNetezzaPatientDimensionFromSamples(samples)
+        }  else if(databaseType.equals("postgresql")){
+//            loadPostgreSQLPatientDimensionFromSamples(samples)
+        }  else if(databaseType.equals("db2")){
+//            loadDB2PatientDimensionFromSamples(samples)
+        }  else {
+            log.info("The database $databaseType is not supported.")
+        }
+    }
+
+
+    def loadNetezzaPatientDimensionFromSamples(Map samples){
+
+        log.info  "Start loading data into PATIENT_DIMENSION from Samples ... "
+
+        String qry = """ insert into patient_dimension(patient_num, sex_cd, sourcesystem_cd, import_date)
+                         values (next value for i2b2demodata.SQ_PATIENT_NUM, ?, ?, now()) """
+        String update = "update patient_dimension set sex_cd=? where sourcesystem_cd=?"
+
+        samples.each {key, val ->
+            String sourcesystem_cd = sourceSystemPrefix + ":" + key
+            String gender = val.split(":")[1].toString().trim()
+            def patient_num = getPatientNumberByIndividualId(sourcesystem_cd)
+            if(patient_num > 0)  {
+                log.info "Patient exists for : " + sourcesystem_cd + "(" + patient_num + "), so update its gender"
+                if(!gender.equals(null) && gender.size() > 0) i2b2demodata.execute(qry, [gender, sourcesystem_cd])
+            } else {
+                log.info "New patient for : " + sourcesystem_cd
+                if(!gender.equals(null) && gender.size() > 0) i2b2demodata.execute(qry, [gender, sourcesystem_cd])
+                else i2b2demodata.execute(qry, [null, sourcesystem_cd])
+            }
+        }
+
+        log.info "End loading data into PATIENT_DIMENSION from Samples ..."
+    }
+
 
 	def loadPatientDimensionFromSamples(Map samples){
 
@@ -105,7 +145,6 @@ class PatientDimension {
 	}
 
 
-
 	boolean isPatientNumber(String patientNum){
 		try{
 			int pid = Integer.parseInt(patientNum)
@@ -117,7 +156,6 @@ class PatientDimension {
 			return false
 		}
 	}
-
 
 
 	void addPatient(String subjectId){
@@ -132,7 +170,6 @@ class PatientDimension {
 			log.info "$subjectId already exists in PATIENT_DIMENSION ... "
 		}
 	}
-
 
 
 	Map getPatientMap(){

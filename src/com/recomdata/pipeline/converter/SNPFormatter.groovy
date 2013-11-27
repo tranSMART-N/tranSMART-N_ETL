@@ -19,18 +19,14 @@
   
 
 package com.recomdata.pipeline.converter
-
-import java.io.File;
-import java.util.regex.Matcher
-import java.util.regex.Pattern
-
 import com.recomdata.pipeline.i2b2.PatientDimension
 import com.recomdata.pipeline.transmart.SubjectSampleMapping
 import com.recomdata.pipeline.util.Util
-
 import groovy.sql.Sql
 import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.PropertyConfigurator
+
+import java.util.regex.Pattern
 
 class SNPFormatter {
 
@@ -53,21 +49,25 @@ class SNPFormatter {
 		String studyName = props.get("study_name")
 		Map samplePatientMap = formatter.getSamplePatientMap(deapp, studyName)
 		log.info "Print out sample-patient map from $studyName ..."
-		Util.printMap(samplePatientMap)
+//		Util.printMap(samplePatientMap)
 
-		formatter.formatCopyNumber(samplePatientMap, props)
-		formatter.formatCNCopyNumber(samplePatientMap, props)
-		formatter.formatGenotype(samplePatientMap, props)
+//		formatter.formatCopyNumber(samplePatientMap, props)
+//		formatter.formatCNCopyNumber(samplePatientMap, props)
+//		formatter.formatGenotype(samplePatientMap, props)
 
-		PatientDimension pd = new PatientDimension()
-		pd.setI2b2demodata(i2b2demodata)
-		pd.setSourceSystemPrefix(studyName)
+//		PatientDimension pd = new PatientDimension()
+//		pd.setI2b2demodata(i2b2demodata)
+//		pd.setSourceSystemPrefix(studyName)
 
-		// create PLINK .fam file
-		formatter.createPlinkFamFile(props, pd, samplePatientMap)
+		// generate PLINK .fam file
+//		formatter.createPlinkFamFile(props, pd, samplePatientMap)
+		formatter.createPlinkFamFile(i2b2demodata, props)
+
+//        formatter.createLongFormatPlinkFile(props)
+        formatter.reformatCopyNumberFile(props)
 
 		// convert PLINK Long-format to Binary format
-		formatter.createPlinkFile(props)
+//		formatter.createPlinkFile(props)
 
 	}
 
@@ -146,6 +146,22 @@ class SNPFormatter {
 	}
 
 
+    /**
+     *  Query patient_num and sex_cd from i2b2demodata.patient_dimension,
+     *  and sample_type from deapp.de_subject_sample_mapping to create
+     *  PLINK FAM file for a particular study
+     *
+     * @param sql
+     * @param props
+     */
+    void  createPlinkFamFile(Sql sql, Properties props){
+
+        PlinkFamGenerator pfg = new PlinkFamGenerator()
+        pfg.setOutputDirectory(props.get("output_directory"))
+        pfg.setStudyName(props.get("study_name"))
+        pfg.createPlinkFamFile(sql)
+    }
+
 	/**
 	 *  Create *.fam for PLINK to use and its columns are in the following order:
 	 *  
@@ -201,8 +217,9 @@ class SNPFormatter {
 			cnf.setCopyNumberFileDirectory(props.get("source_directory") + "/" + props.get("cn_directory"))
 			cnf.setStudyName(props.get("study_name"))
 			cnf.setOutputDirectory(props.get("output_directory"))
-			cnf.setExperimentPatientMap(experimentPatientMap)
-			cnf.setSourceCopyNumberFilePattern(props.get("source_cn_file_pattern"))
+            cnf.setSourceCopyNumberFilePattern(props.get("copy_number_file_pattern"))
+//			cnf.setExperimentPatientMap(experimentPatientMap)
+			cnf.setSourceCopyNumberFilePattern(props.get("copy_number_file_pattern"))
 			cnf.createCopyNumberFile()
 		}
 	}

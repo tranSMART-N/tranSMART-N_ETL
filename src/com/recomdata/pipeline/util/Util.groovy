@@ -432,4 +432,15 @@ class Util {
     static String getDatabaseType(Properties props){
         return props.("url").split(":")[1].toString().toLowerCase()
     }
+
+    /**
+     *  extract database name from JDBC URL
+     *
+     * @param props
+     * @return          database name
+     */
+    static String getDatabaseName(Properties props){
+        return props.("url").split("/")[-1].toString().toLowerCase()
+    }
+
 }

@@ -19,15 +19,8 @@
   
 
 package com.recomdata.pipeline.plink
-
-import java.io.File;
-
-import org.apache.log4j.Logger;
-
-import com.recomdata.pipeline.i2b2.PatientDimension
-import com.recomdata.pipeline.util.Util
-
 import groovy.sql.Sql
+import org.apache.log4j.Logger
 
 class SnpSubjectSortedDef {
 
@@ -37,6 +30,49 @@ class SnpSubjectSortedDef {
 	Sql deapp
 	Map patientSubjectMap
 	File pedFile
+
+    void loadSubjectSorteDef(String databaseType){
+        if(databaseType.equals("oracle")){
+            loadSubjectSorteDef()
+        } else if(databaseType.equals("netezza")){
+            loadNetezzaSubjectSorteDef()
+        } else if(databaseType.equals("postgresql")){
+//            loadPostgreSQLSubjectSorteDef()
+        }  else if(databaseType.equals("db2")) {
+//            loadDB2SubjectSorteDef()
+        }  else {
+            log.info("The database $databaseType is not supported.")
+        }
+
+    }
+
+    void loadNetezzaSubjectSorteDef(){
+
+        if(isSubjectSortedDefExist(trialName)){
+            log.info " There are records for $trialName in Netezza DE_SNP_SUBJECT_SORTED_DEF ... "
+        } else {
+            log.info("Start loading records for $trialName into Netezza DE_SNP_SUBJECT_SORTED_DEF ...")
+
+            Map orderedPatientNumberList = getOrderedPatientNumberList()
+
+            String qry = " insert into DE_SNP_SUBJECT_SORTED_DEF(SNP_SUBJECT_SORTED_DEF_ID, trial_name, patient_position, patient_num, subject_id) values(next value for SEQ_DATA_ID, ?, ?, ?, ?)"
+
+            deapp.withTransaction {
+                deapp.withBatch(qry, { stmt ->
+                    orderedPatientNumberList.each { k, v ->
+                        stmt.addBatch([
+                                trialName,
+                                k,
+                                v,
+                                patientSubjectMap[v]
+                        ])
+                    }
+                })
+            }
+
+            log.info("End loading records for $trialName into Netezza DE_SNP_SUBJECT_SORTED_DEF ...")
+        }
+    }
 
 	void loadSubjectSorteDef(){
 
