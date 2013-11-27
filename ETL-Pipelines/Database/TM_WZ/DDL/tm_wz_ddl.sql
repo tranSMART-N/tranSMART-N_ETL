@@ -284,21 +284,21 @@ CREATE TABLE TM_WZ."WT_VOCAB_NODES"
    ) ;
 
 	create table tm_wz.wt_subject_sample_mapping
-	(patient_num		numeric(38,0)
-	,site_id			varchar(100)
-	,subject_id			varchar(100)
-	,concept_code		varchar(50)
-	,sample_type		varchar(100)
-	,sample_type_cd		varchar(100)
-	,timepoint			varchar(100)
-	,timepoint_cd		varchar(50)
-	,tissue_type		varchar(100)
-	,tissue_type_cd		varchar(50)
-	,platform			varchar(50)
-	,platform_cd		varchar(50)
-	,data_uid			varchar(100)
-	,gpl_id				varchar(20)
-	,sample_cd			varchar(200)
-	,category_cd		varchar(1000));
+	(patient_num numeric(38,0),
+	 site_id varchar(100),
+	 subject_id	 varchar(100),
+	 concept_code varchar(50),
+	 sample_type varchar(100),
+	 sample_type_cd varchar(100),
+	 timepoint varchar(100),
+	 timepoint_cd varchar(50),
+	 tissue_type varchar(100),
+	 tissue_type_cd varchar(50),
+	 platform varchar(50),
+	 platform_cd varchar(50),
+	 data_uid varchar(100),
+	 gpl_id varchar(20),
+	 sample_cd varchar(200),
+	 category_cd varchar(1000));
 
 	

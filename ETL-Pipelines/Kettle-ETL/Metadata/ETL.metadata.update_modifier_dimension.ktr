@@ -63,7 +63,7 @@
   <created_user>-</created_user>
   <created_date>2013&#47;11&#47;11 09:33:25.230</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;11 10:05:47.094</modified_date>
+  <modified_date>2013&#47;11&#47;21 10:12:29.898</modified_date>
   </info>
   <notepads>
     <notepad>
@@ -128,79 +128,6 @@
   <order>
   <hop> <from>Get children&#47;level</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Set folder node</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Set leaf node</to><enabled>Y</enabled> </hop>  <hop> <from>Set folder node</from><to>Update modifier_dimension</to><enabled>Y</enabled> </hop>  <hop> <from>Set leaf node</from><to>Update modifier_dimension</to><enabled>Y</enabled> </hop>  </order>
   <step>
-    <name>Get children&#47;level</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>I2B2DEMODATA</connection>
-    <sql>select p.modifier_path
-	  ,count(*) as nbr_children
-   ,length(p.modifier_path)-length(replace(p.modifier_path,&apos;\&apos;,&apos;&apos;)) as node_level
-from i2b2demodata.modifier_dimension p
-    ,i2b2demodata.modifier_dimension c
-where c.modifier_path like p.modifier_path || &apos;%&apos; escape &apos;&apos;
-group by p.modifier_path</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-    <lazy_conversion_active>N</lazy_conversion_active>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>193</xloc>
-      <yloc>129</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Update modifier_dimension</name>
-    <type>Update</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>I2B2DEMODATA</connection>
-    <skip_lookup>N</skip_lookup>
-    <commit>100</commit>
-    <use_batch>Y</use_batch>
-    <error_ignored>N</error_ignored>
-    <ignore_flag_field/>
-    <lookup>
-      <schema/>
-      <table>MODIFIER_DIMENSION</table>
-      <key>
-        <name>MODIFIER_PATH</name>
-        <field>MODIFIER_PATH</field>
-        <condition>=</condition>
-        <name2/>
-        </key>
-      <value>
-        <name>MODIFIER_LEVEL</name>
-        <rename>NODE_LEVEL</rename>
-        </value>
-      <value>
-        <name>MODIFIER_NODE_TYPE</name>
-        <rename>modifier_node_type</rename>
-        </value>
-      </lookup>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>610</xloc>
-      <yloc>124</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Filter rows</name>
     <type>FilterRows</type>
     <description/>
@@ -224,6 +151,37 @@ group by p.modifier_path</sql>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>328</xloc>
       <yloc>132</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Get children&#47;level</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>I2B2DEMODATA</connection>
+    <sql>select p.modifier_path
+	  ,count(*) as nbr_children
+   ,length(p.modifier_path)-length(replace(p.modifier_path,&apos;\&apos;,&apos;&apos;))-2 as node_level
+from i2b2demodata.modifier_dimension p
+    ,i2b2demodata.modifier_dimension c
+where c.modifier_path like p.modifier_path || &apos;%&apos; escape &apos;&apos;
+group by p.modifier_path</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>193</xloc>
+      <yloc>129</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -286,6 +244,48 @@ group by p.modifier_path</sql>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>468</xloc>
       <yloc>196</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Update modifier_dimension</name>
+    <type>Update</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>I2B2DEMODATA</connection>
+    <skip_lookup>N</skip_lookup>
+    <commit>100</commit>
+    <use_batch>Y</use_batch>
+    <error_ignored>N</error_ignored>
+    <ignore_flag_field/>
+    <lookup>
+      <schema/>
+      <table>MODIFIER_DIMENSION</table>
+      <key>
+        <name>MODIFIER_PATH</name>
+        <field>MODIFIER_PATH</field>
+        <condition>=</condition>
+        <name2/>
+        </key>
+      <value>
+        <name>MODIFIER_LEVEL</name>
+        <rename>NODE_LEVEL</rename>
+        </value>
+      <value>
+        <name>MODIFIER_NODE_TYPE</name>
+        <rename>modifier_node_type</rename>
+        </value>
+      </lookup>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>610</xloc>
+      <yloc>124</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

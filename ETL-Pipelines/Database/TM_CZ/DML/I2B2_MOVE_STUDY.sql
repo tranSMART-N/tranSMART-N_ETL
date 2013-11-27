@@ -67,7 +67,7 @@ Begin
 		-- raise invalid_TrialId;  exceptions not supported in Netezza
 		stepCt := stepCt + 1;
 		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Trial Id '||trial_id||' does not exist',0,stepCt,'Done');	
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error');
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
 		return 16;
 	end if;
@@ -90,7 +90,7 @@ Begin
 		-- raise invalid_topNode;  exception not supported in Netezza
 		stepCt := stepCt + 1;
 		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Path specified as topNode must contain at least 2 nodes',0,stepCt,'Done');	
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error');
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
 		return 16;
 	end if;
@@ -103,7 +103,7 @@ Begin
 		-- raise invalid_topNode;  exception not supported  by Netezza
 		stepCt := stepCt + 1;
 		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Path specified as topNode must contain at least 2 nodes',0,stepCt,'Done');	
-		call tm_cz.czx_error_handler (jobID, procedureName);
+		call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error');
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
 		return 16;
 	end if;

@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE tm_cz.I2B2_PROCESS_MRNA_DATA(CHARACTER VARYING(50), CHARACTER VARYING(500), CHARACTER VARYING(10), CHARACTER VARYING(50), NUMERIC(4,0), CHARACTER VARYING(50), BIGINT)
+CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_PROCESS_MRNA_DATA(CHARACTER VARYING(50), CHARACTER VARYING(500), CHARACTER VARYING(10), CHARACTER VARYING(50), NUMERIC(4,0), CHARACTER VARYING(50), BIGINT)
 RETURNS INTEGER
 LANGUAGE NZPLSQL AS
 BEGIN_PROC
@@ -132,7 +132,7 @@ BEGIN
 	
 	if pCount > 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Platform data missing from one or more subject_sample mapping records',1,stepCt,'ERROR');
-		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_error_handler(jobid,procedurename,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -145,7 +145,7 @@ BEGIN
 	
 	if pCount = 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Platform not found in deapp.de_mrna_annotation',1,stepCt,'ERROR');
-		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME);
+		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -156,7 +156,7 @@ BEGIN
 	
 	if pCount = 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Platform not found in deapp.de_gpl_info',1,stepCt,'ERROR');
-		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME);
+		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -169,7 +169,7 @@ BEGIN
 	
 	if pCount > 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Tissue Type data missing from one or more subject_sample mapping records',1,stepCt,'ERROR');
-		call tm_cz.czx_error_handler(jobid,procedurename);
+		call tm_cz.czx_error_handler(jobid,procedurename,'Application raised error');
 		call tm_cz.czx_END_AUDIT (JOBID,'FAIL');
 		return 16;
 	end if;
@@ -184,7 +184,7 @@ BEGIN
 	
 	if pCount > 0 then
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Multiple platforms for sample_cd in lt_src_mrna_subj_samp_map',1,stepCt,'ERROR');
-		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME);
+		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -511,43 +511,20 @@ BEGIN
 	for r_nodes in
 		select c_fullname
 		from i2b2metadata.i2b2
-		where c_basecode in
-		(select distinct concept_code
-		 from deapp.de_subject_sample_mapping 
-		 where trial_name = TrialId
-		 and source_cd = v_source_cd
-		 and platform = 'MRNA_AFFYMETRIX'
-		 union
-		 select distinct timepoint_cd as concept_code
-		 from deapp.de_subject_sample_mapping 
-		 where trial_name = TrialId
-		 and source_cd = v_source_cd
-		 and platform = 'MRNA_AFFYMETRIX'
-		 and timepoint_cd is not null
-		 union
-		 select distinct platform_cd as concept_code
-		 from deapp.de_subject_sample_mapping 
-		 where trial_name = TrialId
-		 and source_cd = v_source_cd
-		 and platform = 'MRNA_AFFYMETRIX'
-		 and platform_cd is not null
-		 union
-		 select distinct tissue_type_cd as concept_code
-		 from deapp.de_subject_sample_mapping 
-		 where trial_name = TrialId
-		 and source_cd = v_source_cd
-		 and platform = 'MRNA_AFFYMETRIX'
-		 and tissue_type_cd is not null
-		 union
-		 select distinct sample_type_cd as concept_code
-		 from deapp.de_subject_sample_mapping 
-		 where trial_name = TrialId
-		 and source_cd = v_source_cd
-		 and platform = 'MRNA_AFFYMETRIX'
-		 and sample_type_cd is not null
-		 minus
-		 select distinct concept_cd as concept_code
-		 from tm_wz.wt_mrna_nodes)
+		where c_fullname in
+			 (select distinct p.c_fullname
+			  from deapp.de_subject_sample_mapping sm
+				  ,i2b2metadata.i2b2 c
+				  ,i2b2metadata.i2b2 p
+			  where sm.trial_name = TrialId
+				and sm.concept_code = c.c_basecode
+				and c.c_fullname like p.c_fullname || '%' escape ''
+				and p.c_fullname > topNode
+				and sm.platform = 'MRNA_AFFYMETRIX'
+				and sm.source_cd = sourceCd
+			  minus
+			  select distinct leaf_node as c_fullname
+			  from tm_wz.wt_mrna_nodes)
 	loop
 		--	deletes unused nodes for a trial one at a time
 		call tm_cz.i2b2_delete_1_node(r_Nodes.c_fullname,jobId);
@@ -571,7 +548,7 @@ BEGIN
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Set sourcesystem_cd to null for added upper level nodes',rowCount,stepCt,'Done');
 			
 	--	Cleanup any existing data in de_subject_sample_mapping.  
-
+/*
 	delete from deapp.de_subject_sample_mapping 
 	where trial_name = TrialID 
 	  and coalesce(source_cd,'STD') = sourceCd
@@ -579,8 +556,24 @@ BEGIN
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete trial from DEAPP de_subject_sample_mapping',rowCount,stepCt,'Done');
+*/
 
-	
+	--	delete any site/subject/samples that are not in lt_src_mrna_data for the trial on a reload
+
+	delete from deapp.de_subject_sample_mapping sm
+	where sm.trial_name = trial_id
+	  and sm.source_cd = sourceCd
+	  and sm.platform = 'MRNA_AFFYMETRIX'
+	 and not exists
+		 (select 1 from tm_lz.lt_src_mrna_subj_samp_map x
+		  where coalesce(sm.site_id,'@') = coalesce(x.site_id,'@')
+		    and sm.subject_id = x.subject_id
+			and sm.sample_cd = x.sample_cd
+			and sm.source_cd = coalesce(x.source_cd,'STD'));
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete dropped site/subject/sample from de_subject_sample_mapping',rowCount,stepCt,'Done');
+
   --Load the DE_SUBJECT_SAMPLE_MAPPING from wt_subject_mrna_data
 
   --PATIENT_ID      = PATIENT_ID (SAME AS ID ON THE PATIENT_DIMENSION)
@@ -750,6 +743,49 @@ BEGIN
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update attribute 2 in timepoint concept in wt_subject_sample_mapping',rowCount,stepCt,'Done');  
 	
+
+	--	update existing de_subject_sample_mapping records
+	
+	update deapp.de_subject_sample_mapping sm
+	set concept_code=upd.concept_code
+	   ,sample_type_cd=upd.sample_type_cd
+	   ,timepoint_cd=upd.timepoint_cd
+	   ,tissue_type_cd=upd.tissue_type_cd
+	   ,category_cd=upd.category_cd
+	   ,patient_id=upd.patient_id
+	   ,data_uid=upd.data_uid
+	   ,sample_type=upd.sample_type
+	   ,tissue_type=upd.tissue_type
+	   ,timepoint=upd.timepoint
+	   ,omic_patient_id=upd.patient_id
+	from (select TrialId as trial_name
+		        ,v_source_cd as source_cd
+				,site_id
+				,subject_id
+				,sample_cd
+				,concept_code
+				,sample_type_cd
+				,timepoint_cd
+				,tissue_type_cd
+				,category_cd
+				,patient_num as patient_id
+				,data_uid
+				,sample_type
+				,tissue_type
+				,timepoint
+		  from tm_wz.wt_subject_sample_mapping
+		 ) upd
+	where sm.trial_name = upd.trial_name
+	  and sm.source_cd = upd.source_cd
+	  and coalesce(sm.site_id,'@') = coalesce(upd.site_id,'@')
+	  and sm.subject_id = upd.subject_id
+	  and sm.sample_cd = upd.sample_cd;
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated existing data in de_subject_sample_mappping',rowCount,stepCt,'Done');  
+		  
+	--	add new data to de_subject_sample_mapping
+	  
 	insert into deapp.de_subject_sample_mapping
 	(patient_id
 	,site_id
@@ -798,17 +834,31 @@ BEGIN
 		  ,sourceCd
 		  ,TrialId
 		  ,t.patient_num
-	from tm_wz.wt_subject_sample_mapping t;
+	from tm_wz.wt_subject_sample_mapping t
+	where not exists
+		  (select 1 from deapp.de_subject_sample_mapping sm
+		   where sm.trial_name = TrialId
+		     and sm.source_cd = v_source_cd
+			 and coalesce(sm.site_id,'@') = coalesce(t.site_id,'@')
+			 and sm.subject_id = t.subject_id
+			 and sm.sample_cd = t.sample_cd
+			 and sm.platform = 'MRNA_AFFYMETRIX');
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial into DEAPP de_subject_sample_mapping',rowCount,stepCt,'Done');
 
-	--	Fail if no records inserted into deapp.de_subject_sample_mapping
+	--	Fail if no records exist in deapp.de_subject_sample_mapping
 	
-	if rowCount = 0 then
+	select count(*) into pExists
+	from deapp.de_subject_sample_mapping
+	where trial_name = Trialid
+	  and source_cd = v_source_cd
+	  and platform = 'MRNA_AFFYMETRIX';
+	
+	if pExists = 0 then
 		raise notice 'no subject_sample_mapping records inserted';
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'No records inserted into deapp.de_subject_sample_mapping',1,stepCt,'ERROR');
-		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME);
+		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;
@@ -884,7 +934,7 @@ BEGIN
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create concept counts',0,stepCt,'Done');
 	
 	--	delete leaf nodes that are hidden
-
+	
 	FOR r_Nodes in 
 		  select distinct c_fullname 
 		  from  i2b2metadata.i2b2
@@ -946,7 +996,7 @@ BEGIN
 	if rowCount = 0 then
 		raise notice 'no records inserted into wt_mrna_probeset';
 		call tm_cz.czx_write_audit(jobId,databasename,procedurename,'Unable to match probesets to platform in probeset_deapp',1,stepCt,'ERROR');
-		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME);
+		call tm_cz.czx_ERROR_HANDLER(JOBID,PROCEDURENAME,'Application raised error');
 		call tm_cz.czx_end_audit (jobId,'FAIL');
 		return 16;
 	end if;

@@ -751,12 +751,15 @@ BEGIN
 		 (select t.leaf_node 
 		  from tm_wz.wt_trial_nodes t
 		  union
-		  select m.c_fullname
+		  select distinct p.c_fullname as leaf_node
 		  from deapp.de_subject_sample_mapping sm
-			  ,i2b2metadata.i2b2 m
+			  ,i2b2metadata.i2b2 c
+			  ,i2b2metadata.i2b2 p
 		  where sm.trial_name = TrialId
-		    and sm.concept_code = m.c_basecode
-			and m.c_visualattributes like 'L%');
+		    and sm.concept_code = c.c_basecode
+		    and c.c_fullname like p.c_fullname || '%' escape ''
+			and p.c_fullname > topNode
+			);
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;	
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert nodes into tm_wz.wt_del_nodes',rowCount,stepCt,'Done');
@@ -1311,7 +1314,7 @@ BEGIN
 	select l.c_fullname
 		  ,l.c_basecode
 	from i2b2metadata.i2b2 l
-	where l.c_visualattributes like '%H%'
+	where substr(l.c_visualattributes,2,1) = 'H'
 	  and l.c_fullname like topNode || '%' escape '';
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;	
