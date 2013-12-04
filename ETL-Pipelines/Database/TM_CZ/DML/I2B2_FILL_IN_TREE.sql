@@ -117,7 +117,7 @@ BEGIN
 	,download_date
 	,import_date
 	,sourcesystem_cd)
-	Select next value for i2b2demodata.concept_id
+	Select next value for i2b2demodata.sq_concept_cd
 	      ,folder_path
 		  ,folder_name
 		  ,etlDate

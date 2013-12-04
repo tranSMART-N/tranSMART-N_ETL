@@ -717,7 +717,7 @@ BEGIN
      import_date,
      sourcesystem_cd
     )
-    select next value for i2b2demodata.seq_patient_num,
+    select next value for i2b2demodata.sq_patient_num,
 		   t.sex_cd,
 		   t.age_in_years_num,
 		   t.race_cd,
@@ -823,7 +823,7 @@ BEGIN
 	,import_date
 	,sourcesystem_cd
 	)
-    select next value for i2b2demodata.concept_id
+    select next value for i2b2demodata.sq_concept_cd
 	     ,x.leaf_node
 		 ,x.node_name
 		 ,etlDate

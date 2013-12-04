@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE TM_CZ.CZX_WRITE_ERROR(bigint, INTEGER, VARCHAR(1000),INTEGER, INTEGER)
+CREATE OR REPLACE PROCEDURE TM_CZ.CZX_WRITE_ERROR(bigint, character varying(any), character varying(any),character varying(any), character varying(any))
 RETURNS INTEGER
 EXECUTE AS OWNER
 LANGUAGE NZPLSQL AS

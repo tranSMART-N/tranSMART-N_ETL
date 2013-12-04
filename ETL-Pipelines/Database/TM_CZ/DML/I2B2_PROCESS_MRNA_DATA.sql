@@ -265,7 +265,7 @@ BEGIN
       import_date,
       sourcesystem_cd
     )
-    select next value for i2b2demodata.seq_patient_num
+    select next value for i2b2demodata.sq_patient_num
 		  ,sex_cd
 		  ,age_in_years_num
 		  ,race_cd
@@ -1116,7 +1116,7 @@ BEGIN
 			  ,c.mean_intensity 
 			  ,c.stddev_intensity 
 			  ,c.median_intensity 
-			  ,CASE WHEN stddev_intensity=0 THEN 0 ELSE (log_intensity - median_intensity ) / stddev_intensity END
+			  ,round(CASE WHEN stddev_intensity=0 THEN 0 ELSE (log_intensity - median_intensity ) / stddev_intensity END,4)
 			  ,d.patient_id
 			  ,TrialId
 		from tm_wz.wt_subject_microarray_logs d 

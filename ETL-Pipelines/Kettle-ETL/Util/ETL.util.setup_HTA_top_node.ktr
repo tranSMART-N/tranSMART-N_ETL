@@ -63,7 +63,7 @@
   <created_user>-</created_user>
   <created_date>2013&#47;03&#47;26 13:13:51.457</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;12 10:45:37.403</modified_date>
+  <modified_date>2013&#47;11&#47;25 12:48:29.718</modified_date>
   </info>
   <notepads>
     <notepad>
@@ -142,7 +142,7 @@
  C_FULLNAME
 FROM i2b2metadata.I2B2
 where sourcesystem_cd is null
-and c_fullname not like &apos;%\SECURITY\&apos;
+and c_fullname not like &apos;%\SECURITY\&apos; escape &apos;&apos;
 order by c_fullname
 </sql>
     <limit>0</limit>

@@ -434,6 +434,7 @@ BEGIN
 		end loop;
 	end loop;
 
+	/*
 		--	Create i2b2_tags
 	
 	delete from i2b2metadata.i2b2_tags
@@ -524,7 +525,7 @@ BEGIN
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert Disease tags in I2B2METADATA i2b2_tags',rowCount,stepCt,'Done');
-
+*/
 	--	Load bio_ad_hoc_property
 	
 	delete from biomart.bio_ad_hoc_property

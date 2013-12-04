@@ -24,7 +24,7 @@ CREATE TABLE tm_cz.cz_job_audit (
 	records_manipulated bigint,
 	step_number bigint,
 	job_date timestamp,
-	time_elapsed_secs double precision DEFAULT 0
+	time_elapsed_secs numeric(18,3) DEFAULT 0
 );
 
 ALTER TABLE tm_cz.cz_job_audit ADD CONSTRAINT cz_job_audit_pk PRIMARY KEY (seq_id);
@@ -55,7 +55,7 @@ CREATE TABLE tm_cz.cz_job_master (
 	start_date timestamp,
 	end_date timestamp,
 	active varchar(1),
-	time_elapsed_secs double precision DEFAULT 0,
+	time_elapsed_secs numeric(18,3) DEFAULT 0,
 	build_id bigint,
 	session_id bigint,
 	database_name varchar(50),

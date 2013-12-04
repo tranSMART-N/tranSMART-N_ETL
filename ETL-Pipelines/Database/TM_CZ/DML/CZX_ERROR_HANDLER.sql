@@ -32,7 +32,7 @@ BEGIN
 
 	--write out the error info
 	errorMessage := v_sqlerrm;
-	CALL tm_cz.czx_write_error(jobID, errorNumber, errorMessage, errorStack, errorBackTrace);
+	CALL tm_cz.czx_write_error(jobID, '-1', errorMessage, errorStack, errorBackTrace);
 
 	return 0;
 

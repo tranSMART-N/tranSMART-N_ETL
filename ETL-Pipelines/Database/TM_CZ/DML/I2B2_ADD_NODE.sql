@@ -80,7 +80,7 @@ BEGIN
 		where input_path = concept_path;
 		
 		if pexists = 0 then
-			select next value for i2b2demodata.CONCEPT_ID into v_concept_id;
+			select next value for i2b2demodata.sq_concept_cd into v_concept_id;
 			--CONCEPT DIMENSION
 			insert into i2b2demodata.concept_dimension
 			(concept_cd
