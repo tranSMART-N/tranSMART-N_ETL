@@ -188,6 +188,7 @@ Begin
     ,m_exclusion_cd
     ,c_path
     ,c_symbol
+	,i2b2_id
 	)
 	select  c_hlevel
 		   ,c_fullname
@@ -214,6 +215,7 @@ Begin
 		   ,m_exclusion_cd
 		   ,c_path
 		   ,c_symbol
+		   ,i2b2_id
 	from i2b2metadata.i2b2
 	where sourcesystem_cd = TrialId;
 	rowCount := ROW_COUNT;
@@ -285,6 +287,7 @@ Begin
     ,m_exclusion_cd
     ,c_path
     ,c_symbol
+	,i2b2_id
 	)
 	select  (length(replace(c_fullname, old_path, newPath)) - coalesce(length(replace(replace(c_fullname, old_path, newPath), bslash,'')),0)) / length(bslash) - 2 + root_level as c_hlevel
 		   ,replace(c_fullname, old_path, newPath) as c_fullname
@@ -311,6 +314,7 @@ Begin
 		   ,m_exclusion_cd
 		   ,c_path
 		   ,c_symbol
+		   ,i2b2_id
 	from i2b2metadata.i2b2
 	where sourcesystem_cd = TrialId;
 	rowCount := ROW_COUNT;

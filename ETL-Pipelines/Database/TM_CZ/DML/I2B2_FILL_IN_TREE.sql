@@ -152,7 +152,8 @@ BEGIN
 	,c_operator
 	,c_columndatatype
 	,c_comment
-	,m_applied_path)
+	,m_applied_path
+	,i2b2_id)
     select (length(concept_path) - coalesce(length(replace(concept_path, bslash, '')),0)) / length(bslash) - 2 + root_level
 		  ,concept_path
 		  ,name_char
@@ -172,6 +173,7 @@ BEGIN
 		  ,'T'
 		  ,case when concept_path < topNode then null else 'trial:' || TrialID end
 		  ,'@'
+		  ,next value for i2b2metadata.sq_i2b2_id
     from i2b2demodata.concept_dimension cd
     where cd.concept_path in (select distinct folder_path from tm_wz.wt_folder_nodes)
 	  and not exists

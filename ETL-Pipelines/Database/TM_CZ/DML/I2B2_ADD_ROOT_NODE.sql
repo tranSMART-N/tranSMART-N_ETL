@@ -119,6 +119,7 @@ Begin
 	,sourcesystem_cd
 	,valuetype_cd
 	,m_applied_path
+	,i2b2_id
 	)
 	select 0 as c_hlevel
 		  ,rootPath as c_fullname
@@ -142,6 +143,7 @@ Begin
 		  ,null as sourcesystem_cd
 		  ,null as valuetype_cd
 		  ,'@'
+		  ,next value for i2b2metadata.sq_i2b2_id
 	where not exists
 		 (select 1 from i2b2metadata.i2b2 x
 		  where x.c_name = rootNode);		

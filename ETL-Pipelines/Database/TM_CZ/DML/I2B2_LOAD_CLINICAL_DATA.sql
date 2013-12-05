@@ -886,6 +886,7 @@ BEGIN
 	,c_comment
 	,m_applied_path
 	,c_metadataxml
+	,i2b2_id
 	)
     select x.c_hlevel
 		  ,x.concept_path
@@ -907,6 +908,7 @@ BEGIN
 		  ,'trial:' || TrialId
 		  ,'@'
 		  ,x.c_metadataxml
+		  ,next value for i2b2metadata.sq_i2b2_id
 	from (select distinct (length(c.concept_path) - coalesce(length(replace(c.concept_path, bslash,'')),0)) / length(bslash) - 2 + root_level as c_hlevel
 		  ,c.concept_path
 		  ,c.concept_cd

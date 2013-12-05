@@ -129,6 +129,7 @@ BEGIN
 			,c_columndatatype
 			,c_comment
 			,m_applied_path
+			,i2b2_id
 			)
 			select (length(concept_path) - coalesce(length(replace(concept_path, bslash, '')),0)) / length(bslash) - 2 + root_level
 				  ,concept_path
@@ -149,6 +150,7 @@ BEGIN
 				  ,'T'
 				  ,case when TrialID is null then null else 'trial:' || TrialID end
 				  ,'@'
+				  ,next value for i2b2metadata.sq_i2b2_id
 			from i2b2demodata.concept_dimension
 			where concept_path = input_path;
 			rowCount := ROW_COUNT;
