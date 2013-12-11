@@ -63,7 +63,7 @@
   <created_user>-</created_user>
   <created_date>2012&#47;09&#47;12 12:46:28.927</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;10&#47;14 10:03:08.028</modified_date>
+  <modified_date>2013&#47;12&#47;09 14:40:06.733</modified_date>
   </info>
   <notepads>
     <notepad>
@@ -105,7 +105,7 @@
   <connection>
     <name>TM_CZ</name>
     <server>${TM_CZ_DB_SERVER}</server>
-    <type>ORACLE</type>
+    <type>NETEZZA</type>
     <access>Native</access>
     <database>${TM_CZ_DB_NAME}</database>
     <port>${TM_CZ_DB_PORT}</port>
@@ -119,6 +119,7 @@
       <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
       <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
       <attribute><code>PORT_NUMBER</code><attribute>${TM_CZ_DB_PORT}</attribute></attribute>
+      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>${TM_CZ_SCHEMA_NAME}</attribute></attribute>
       <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
       <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
@@ -212,7 +213,7 @@
            <schema_name/>
            </partitioning>
     <connection>TM_CZ</connection>
-    <procedure>czx_write_audit</procedure>
+    <procedure>TM_CZ.CZX_WRITE_AUDIT</procedure>
     <lookup>
       <arg>
         <name>job_id</name>
@@ -251,7 +252,7 @@
       </arg>
     </lookup>
     <result>
-      <name/>
+      <name>rtn_code</name>
       <type>Integer</type>
     </result>
     <auto_commit>Y</auto_commit>
@@ -367,7 +368,7 @@
     <name>Set database name as study - analysis</name>
     <type>Calculator</type>
     <description/>
-    <distribute>N</distribute>
+    <distribute>Y</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>

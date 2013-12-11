@@ -63,7 +63,7 @@
   <created_user>-</created_user>
   <created_date>2013&#47;03&#47;26 13:13:51.457</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;25 12:48:29.718</modified_date>
+  <modified_date>2013&#47;12&#47;05 07:32:46.460</modified_date>
   </info>
   <notepads>
     <notepad>
@@ -119,14 +119,14 @@
       <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
       <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
       <attribute><code>PORT_NUMBER</code><attribute>${I2B2METADATA_DB_PORT}</attribute></attribute>
-      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>I2B2METADATA</attribute></attribute>
+      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>${I2B2METADATA_SCHEMA_NAME}</attribute></attribute>
       <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
       <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Get top nodes from i2b2</from><to>write top_node file</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Get top nodes from i2b2</from><to>write top_node file</to><enabled>Y</enabled> </hop>  <hop> <from>Get study names</from><to>Write study names file</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Get top nodes from i2b2</name>
     <type>TableInput</type>
@@ -140,7 +140,7 @@
     <connection>I2B2METADATA</connection>
     <sql>SELECT
  C_FULLNAME
-FROM i2b2metadata.I2B2
+FROM I2B2
 where sourcesystem_cd is null
 and c_fullname not like &apos;%\SECURITY\&apos; escape &apos;&apos;
 order by c_fullname
@@ -217,6 +217,103 @@ order by c_fullname
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>320</xloc>
       <yloc>61</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Get study names</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>I2B2METADATA</connection>
+    <sql>SELECT
+ replace(replace(c_fullname,c_name,&apos;&apos;),&apos;\\&apos;,&apos;\&apos;) || &apos;;&apos; || C_NAME || &apos;;&apos; || SOURCESYSTEM_CD as STUDY_NAME
+FROM I2B2
+where c_fullname in
+(select min(c_fullname) from i2b2
+ where sourcesystem_cd is not null
+   and c_fullname not like &apos;%\SECURITY\&apos; escape &apos;&apos;
+   group by sourcesystem_cd)
+order by c_fullname
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>147</xloc>
+      <yloc>145</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Write study names file</name>
+    <type>TextFileOutput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <separator>	</separator>
+    <enclosure/>
+    <enclosure_forced>N</enclosure_forced>
+    <enclosure_fix_disabled>N</enclosure_fix_disabled>
+    <header>N</header>
+    <footer>N</footer>
+    <format>DOS</format>
+    <compression>None</compression>
+    <encoding/>
+    <endedLine/>
+    <fileNameInField>N</fileNameInField>
+    <fileNameField/>
+    <create_parent_folder>N</create_parent_folder>
+    <file>
+      <name>${HTA_LOCATION}&#47;study_names</name>
+      <is_command>N</is_command>
+      <servlet_output>N</servlet_output>
+      <do_not_open_new_file_init>N</do_not_open_new_file_init>
+      <extention>txt</extention>
+      <append>N</append>
+      <split>N</split>
+      <haspartno>N</haspartno>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <SpecifyFormat>N</SpecifyFormat>
+      <date_time_format/>
+      <add_to_result_filenames>Y</add_to_result_filenames>
+      <pad>N</pad>
+      <fast_dump>N</fast_dump>
+      <splitevery>0</splitevery>
+    </file>
+    <fields>
+      <field>
+        <name>STUDY_NAME</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <nullif/>
+        <trim_type>both</trim_type>
+        <length>-1</length>
+        <precision>-1</precision>
+      </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>325</xloc>
+      <yloc>145</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

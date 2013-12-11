@@ -546,7 +546,8 @@ BEGIN
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Set sourcesystem_cd to null for added upper level nodes',rowCount,stepCt,'Done');
-			
+			 	
+	
 	--	Cleanup any existing data in de_subject_sample_mapping.  
 /*
 	delete from deapp.de_subject_sample_mapping 

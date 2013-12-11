@@ -63,7 +63,7 @@
   <created_user>-</created_user>
   <created_date>2012&#47;09&#47;30 04:14:41.057</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;06 11:55:47.086</modified_date>
+  <modified_date>2013&#47;12&#47;11 09:06:35.134</modified_date>
   </info>
   <notepads>
     <notepad>
@@ -82,8 +82,8 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 ******************************************************************&#47;</note>
-      <xloc>32</xloc>
-      <yloc>952</yloc>
+      <xloc>63</xloc>
+      <yloc>1298</yloc>
       <width>444</width>
       <heigth>197</heigth>
       <fontname>Microsoft Sans Serif</fontname>
@@ -119,7 +119,7 @@
       <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
       <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
       <attribute><code>PORT_NUMBER</code><attribute>${BIOMART_DB_PORT}</attribute></attribute>
-      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>BIOMART</attribute></attribute>
+      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>${BIOMART_SCHEMA_NAME}</attribute></attribute>
       <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
       <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
@@ -142,7 +142,7 @@
       <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
       <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
       <attribute><code>PORT_NUMBER</code><attribute>${BIOMART_STAGE_DB_PORT}</attribute></attribute>
-      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>BIOMART_STAGE</attribute></attribute>
+      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>${BIOMART_STAGE_SCHEMA_NAME}</attribute></attribute>
       <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
       <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
@@ -165,14 +165,14 @@
       <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
       <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
       <attribute><code>PORT_NUMBER</code><attribute>${TM_CZ_DB_PORT}</attribute></attribute>
-      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>TM_CZ</attribute></attribute>
+      <attribute><code>PREFERRED_SCHEMA_NAME</code><attribute>${TM_CZ_SCHEMA_NAME}</attribute></attribute>
       <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
       <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>N</attribute></attribute>
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Add rec_num</from><to>Split field to rows</to><enabled>Y</enabled> </hop>  <hop> <from>Check missing column</from><to>Sort header columns</to><enabled>Y</enabled> </hop>  <hop> <from>Check missing column</from><to>Write to log 2</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Check missing column</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File</from><to>Add rec_num</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL header</from><to>Split hdr into column names</to><enabled>Y</enabled> </hop>  <hop> <from>Remove double-quotes in column_value</from><to>Sort data rows</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data header columns</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data rows</from><to>Merge columns names with data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort header columns</from><to>Merge columns names with data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort std column names</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Split field to rows</from><to>Remove double-quotes in column_value</to><enabled>Y</enabled> </hop>  <hop> <from>Split hdr into column names</from><to>Uppercase column_name</to><enabled>Y</enabled> </hop>  <hop> <from>Write to log 2</from><to>Abort 2</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate values for ext_data</from><to>Remove ` from ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Remove ` from ext_data</from><to>Sort ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Set column_value to ` if null</from><to>Concatenate values for ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort results by rec_num, field_idx, column_name</from><to>Set column_value to ` if null</to><enabled>Y</enabled> </hop>  <hop> <from>Merge columns names with data</from><to>Get BIO_ASSAY_ANALYSIS_ID</to><enabled>Y</enabled> </hop>  <hop> <from>Get BIO_ASSAY_ANALYSIS_ID</from><to>Lookup data_type, column_name in IDX</to><enabled>Y</enabled> </hop>  <hop> <from>Add constants</from><to>Read EQTL File Step</to><enabled>Y</enabled> </hop>  <hop> <from>Block for auditing</from><to>Output steps metrics</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File Step</from><to>Set step_count for input records</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File Step</from><to>Set step_count for output records</to><enabled>Y</enabled> </hop>  <hop> <from>Get job_id</from><to>Add constants</to><enabled>Y</enabled> </hop>  <hop> <from>Output steps metrics</from><to>Sort metrics by step name</to><enabled>Y</enabled> </hop>  <hop> <from>Set database_name</from><to>Call cz_write_audit</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_count for input records</from><to>Skip log of 0 step_count</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_count for output records</from><to>Skip log of 0 step_count</to><enabled>Y</enabled> </hop>  <hop> <from>Skip log of 0 step_count</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Skip log of 0 step_count</from><to>Set database_name</to><enabled>Y</enabled> </hop>  <hop> <from>Sort metrics by step name</from><to>Group by</to><enabled>Y</enabled> </hop>  <hop> <from>List of valid column names</from><to>Sort std column names</to><enabled>Y</enabled> </hop>  <hop> <from>Uppercase column_name</from><to>Sort data header columns</to><enabled>Y</enabled> </hop>  <hop> <from>Get BIO_ASSAY_ANALYSIS_ID for delete</from><to>Delete BIO_ASSAY_ANALYSIS_EQTL</to><enabled>Y</enabled> </hop>  <hop> <from>Block for delete</from><to>Read EQTL File</to><enabled>Y</enabled> </hop>  <hop> <from>EXT_DATA field</from><to>Remap period to `</to><enabled>Y</enabled> </hop>  <hop> <from>Remap period to `</from><to>Sort results by rec_num, field_idx, column_name</to><enabled>Y</enabled> </hop>  <hop> <from>Lookup data_type, column_name in IDX</from><to>EXT_DATA field</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data by rec_num</from><to>Select values 2</to><enabled>Y</enabled> </hop>  <hop> <from>Select values 2</from><to>Flatten data back to single row</to><enabled>Y</enabled> </hop>  <hop> <from>Sort ext_data</from><to>Add EXT_DATA to data stream</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows</from><to>Add EXT_DATA to data stream</to><enabled>Y</enabled> </hop>  <hop> <from>Set step number</from><to>Set step_number to integer</to><enabled>Y</enabled> </hop>  <hop> <from>Group by</from><to>Set step number</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_number to integer</from><to>Get job_id</to><enabled>Y</enabled> </hop>  <hop> <from>EXT_DATA field</from><to>Sort data by rec_num</to><enabled>Y</enabled> </hop>  <hop> <from>Add EXT_DATA to data stream</from><to>Insert to BIO_ASSAY_ANALYSIS_EQTL</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten data back to single row</from><to>Add eqtl_id</to><enabled>Y</enabled> </hop>  <hop> <from>Add eqtl_id</from><to>Sort rows</to><enabled>Y</enabled> </hop>  <hop> <from>Get seq for eqtl_id</from><to>Add eqtl_id</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Check missing column</from><to>Sort header columns</to><enabled>Y</enabled> </hop>  <hop> <from>Check missing column</from><to>Write to log 2</to><enabled>Y</enabled> </hop>  <hop> <from>Merge Join</from><to>Check missing column</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL header</from><to>Split hdr into column names</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data header columns</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Sort header columns</from><to>Merge columns names with data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort std column names</from><to>Merge Join</to><enabled>Y</enabled> </hop>  <hop> <from>Split field to rows</from><to>Remove double-quotes</to><enabled>Y</enabled> </hop>  <hop> <from>Write to log 2</from><to>Abort 2</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate values for ext_data</from><to>Remove ` from ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Set column_value to ` if null</from><to>Concatenate values for ext_data</to><enabled>Y</enabled> </hop>  <hop> <from>Add constants</from><to>Read EQTL File Step</to><enabled>Y</enabled> </hop>  <hop> <from>Block for auditing</from><to>Output steps metrics</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File Step</from><to>Set step_count for input records</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File Step</from><to>Set step_count for output records</to><enabled>Y</enabled> </hop>  <hop> <from>Get job_id</from><to>Add constants</to><enabled>Y</enabled> </hop>  <hop> <from>Output steps metrics</from><to>Sort metrics by step name</to><enabled>Y</enabled> </hop>  <hop> <from>Set database_name</from><to>Call cz_write_audit</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_count for input records</from><to>Skip log of 0 step_count</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_count for output records</from><to>Skip log of 0 step_count</to><enabled>Y</enabled> </hop>  <hop> <from>Skip log of 0 step_count</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Skip log of 0 step_count</from><to>Set database_name</to><enabled>Y</enabled> </hop>  <hop> <from>Sort metrics by step name</from><to>Group by</to><enabled>Y</enabled> </hop>  <hop> <from>Uppercase column_name</from><to>Sort data header columns</to><enabled>Y</enabled> </hop>  <hop> <from>Get BIO_ASSAY_ANALYSIS_ID for delete</from><to>Delete BIO_ASSAY_ANALYSIS_EQTL</to><enabled>Y</enabled> </hop>  <hop> <from>EXT_DATA field</from><to>Remap period to `</to><enabled>Y</enabled> </hop>  <hop> <from>Set step number</from><to>Set step_number to integer</to><enabled>Y</enabled> </hop>  <hop> <from>Group by</from><to>Set step number</to><enabled>Y</enabled> </hop>  <hop> <from>Set step_number to integer</from><to>Get job_id</to><enabled>Y</enabled> </hop>  <hop> <from>Fixed Columns</from><to>Append streams</to><enabled>Y</enabled> </hop>  <hop> <from>Append streams</from><to>Sort std column names</to><enabled>Y</enabled> </hop>  <hop> <from>Get standard column names</from><to>Append streams</to><enabled>Y</enabled> </hop>  <hop> <from>Remap period to `</from><to>Set column_value to ` if null</to><enabled>Y</enabled> </hop>  <hop> <from>Merge columns names with data</from><to>Sort results by rec_num, field_idx</to><enabled>Y</enabled> </hop>  <hop> <from>Convert to numbers</from><to>Add ids to data</to><enabled>Y</enabled> </hop>  <hop> <from>Get ETL_ID, BIO_ASSAY_ANALYSIS_ID</from><to>Convert to numbers</to><enabled>Y</enabled> </hop>  <hop> <from>Add EXT_DATA to data stream</from><to>Add ids to data</to><enabled>Y</enabled> </hop>  <hop> <from>Add ids to data</from><to>Insert to BIO_ASSAY_ANALYSIS_EQTL</to><enabled>Y</enabled> </hop>  <hop> <from>Read EQTL File</from><to>Split field to rows</to><enabled>Y</enabled> </hop>  <hop> <from>EXT_DATA field</from><to>Flatten data back to single row</to><enabled>Y</enabled> </hop>  <hop> <from>Remove double-quotes</from><to>Remove eqtl_rec</to><enabled>Y</enabled> </hop>  <hop> <from>Remove eqtl_rec</from><to>Sort data rows</to><enabled>Y</enabled> </hop>  <hop> <from>Split hdr into column names</from><to>Select values</to><enabled>Y</enabled> </hop>  <hop> <from>Select values</from><to>Uppercase column_name</to><enabled>Y</enabled> </hop>  <hop> <from>Block for delete</from><to>Read EQTL header</to><enabled>Y</enabled> </hop>  <hop> <from>Sort data rows</from><to>Merge data rows</to><enabled>Y</enabled> </hop>  <hop> <from>Merge data rows</from><to>Merge columns names with data</to><enabled>Y</enabled> </hop>  <hop> <from>Remove ` from ext_data</from><to>Add EXT_DATA to data stream</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten data back to single row</from><to>Add EXT_DATA to data stream</to><enabled>Y</enabled> </hop>  <hop> <from>Sort results by rec_num, field_idx</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Sorted Merge</from><to>EXT_DATA field</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Abort 2</name>
     <type>Abort</type>
@@ -215,8 +215,8 @@
     </keys_2>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>284</xloc>
-      <yloc>774</yloc>
+      <xloc>507</xloc>
+      <yloc>872</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -279,15 +279,15 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>882</xloc>
-      <yloc>674</yloc>
+      <xloc>1244</xloc>
+      <yloc>566</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Add rec_num</name>
-    <type>Sequence</type>
+    <name>Add ids to data</name>
+    <type>JoinRows</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -295,20 +295,42 @@
            <method>none</method>
            <schema_name/>
            </partitioning>
-      <valuename>rec_num</valuename>
-      <use_database>N</use_database>
-      <connection/>
-      <schema/>
-      <seqname>SEQ_</seqname>
-      <use_counter>Y</use_counter>
-      <counter_name/>
-      <start_at>1</start_at>
-      <increment_by>1</increment_by>
-      <max_value>999999999</max_value>
+      <directory>${SORT_DIR}</directory>
+      <prefix>out</prefix>
+      <cache_size>500</cache_size>
+      <main>Add EXT_DATA to data stream</main>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue/>
+ <function>=</function>
+ <rightvalue/>
+ </condition>
+    </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>508</xloc>
-      <yloc>273</yloc>
+      <xloc>512</xloc>
+      <yloc>981</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Append streams</name>
+    <type>Append</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+<head_name>Fixed Columns</head_name>
+<tail_name>Get standard column names</tail_name>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>341</xloc>
+      <yloc>123</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -329,10 +351,6 @@
         <CopyNr>0</CopyNr>
         </step>
       <step>
-        <name>List of valid column names</name>
-        <CopyNr>0</CopyNr>
-        </step>
-      <step>
         <name>Insert to BIO_ASSAY_ANALYSIS_EQTL</name>
         <CopyNr>0</CopyNr>
         </step>
@@ -347,8 +365,8 @@
       </steps>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>840</xloc>
-      <yloc>601</yloc>
+      <xloc>1202</xloc>
+      <yloc>493</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -371,8 +389,8 @@
       </steps>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>150</xloc>
-      <yloc>281</yloc>
+      <xloc>43</xloc>
+      <yloc>165</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -433,8 +451,8 @@
     <auto_commit>Y</auto_commit>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1421</xloc>
-      <yloc>789</yloc>
+      <xloc>1783</xloc>
+      <yloc>681</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -500,8 +518,51 @@
       </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>622</xloc>
-      <yloc>672</yloc>
+      <xloc>748</xloc>
+      <yloc>789</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Convert to numbers</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>        <select_unspecified>N</select_unspecified>
+      <meta>        <name>etl_id</name>
+        <rename>etl_id</rename>
+        <type>Integer</type>
+        <length>-2</length>
+        <precision>-2</precision>
+        <conversion_mask>#</conversion_mask>
+        <date_format_lenient>false</date_format_lenient>
+        <encoding/>
+        <decimal_symbol/>
+        <grouping_symbol/>
+        <currency_symbol/>
+        <storage_type/>
+      </meta>      <meta>        <name>bio_assay_analysis_id</name>
+        <rename>bio_assay_analysis_id</rename>
+        <type>Number</type>
+        <length>-2</length>
+        <precision>-2</precision>
+        <conversion_mask>#</conversion_mask>
+        <date_format_lenient>false</date_format_lenient>
+        <encoding/>
+        <decimal_symbol/>
+        <grouping_symbol/>
+        <currency_symbol/>
+        <storage_type/>
+      </meta>    </fields>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>644</xloc>
+      <yloc>981</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -548,8 +609,8 @@
            </partitioning>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1190</xloc>
-      <yloc>864</yloc>
+      <xloc>1552</xloc>
+      <yloc>756</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -565,19 +626,70 @@
            <schema_name/>
            </partitioning>
 <send_true_to>Remap period to `</send_true_to>
-<send_false_to>Sort data by rec_num</send_false_to>
+<send_false_to/>
     <compare>
 <condition>
  <negated>N</negated>
  <leftvalue>FIELD_IDX</leftvalue>
- <function>IS NOT NULL</function>
+ <function>&gt;</function>
  <rightvalue/>
- </condition>
+ <value><name>constant</name><type>Integer</type><text>0</text><length>-1</length><precision>0</precision><isnull>N</isnull><mask>#;-#</mask></value> </condition>
     </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>393</xloc>
-      <yloc>421</yloc>
+      <xloc>502</xloc>
+      <yloc>568</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Fixed Columns</name>
+    <type>DataGrid</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>std_column_name</name>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+      </field>
+      <field>
+        <name>field_idx</name>
+        <type>Integer</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+      </field>
+    </fields>
+    <data>
+      <line> <item>RS_ID</item><item>-1</item> </line>
+      <line> <item>P_VALUE</item><item>-1</item> </line>
+      <line> <item>GENE</item><item>-1</item> </line>
+      <line> <item>ACTS</item><item>-1</item> </line>
+      <line> <item>SNP_DISTANCE</item><item>-1</item> </line>
+      <line> <item>REFERENCE_REGION</item><item>-1</item> </line>
+      <line> <item>PROBE_AMBIGUITY</item><item>-1</item> </line>
+      <line> <item>PROBE_IN_REPEATED_SEQ</item><item>-1</item> </line>
+      <line> <item>SNP_PROBE_IN_GENE_PROBE</item><item>-1</item> </line>
+    </data>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>183</xloc>
+      <yloc>103</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -596,15 +708,6 @@
       <group>
         <field>
           <name>rec_num</name>
-          </field>
-        <field>
-          <name>etl_id</name>
-          </field>
-        <field>
-          <name>BIO_ASSAY_ANALYSIS_ID</name>
-          </field>
-        <field>
-          <name>load_type</name>
           </field>
         </group>
       <fields>
@@ -681,76 +784,8 @@
         </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>149</xloc>
-      <yloc>552</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Get BIO_ASSAY_ANALYSIS_ID</name>
-    <type>GetVariable</type>
-    <description/>
-    <distribute>N</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>BIO_ASSAY_ANALYSIS_ID</name>
-        <variable>${BIO_ASSAY_ANALYSIS_ID}</variable>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-      </field>
-      <field>
-        <name>load_type</name>
-        <variable>${LOAD_TYPE}</variable>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-      </field>
-      <field>
-        <name>data_type</name>
-        <variable>${DATA_TYPE}</variable>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-      </field>
-      <field>
-        <name>etl_id</name>
-        <variable>${ETL_ID}</variable>
-        <type>Integer</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-        <trim_type>none</trim_type>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>816</xloc>
-      <yloc>421</yloc>
+      <xloc>506</xloc>
+      <yloc>717</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -783,6 +818,50 @@
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>155</xloc>
       <yloc>40</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Get ETL_ID, BIO_ASSAY_ANALYSIS_ID</name>
+    <type>GetVariable</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <name>etl_id</name>
+        <variable>${ETL_ID}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>bio_assay_analysis_id</name>
+        <variable>${BIO_ASSAY_ANALYSIS_ID}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>836</xloc>
+      <yloc>983</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -849,8 +928,40 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1025</xloc>
-      <yloc>675</yloc>
+      <xloc>1387</xloc>
+      <yloc>567</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Get standard column names</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>BIOMART</connection>
+    <sql>SELECT
+ upper(FIELD_NAME) as STD_COLUMN_NAME
+,FIELD_IDX
+FROM BIOMART.BIO_ASY_ANALYSIS_DATA_IDX
+where ext_type = &apos;${DATA_TYPE}&apos;
+order by FIELD_IDX
+
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>Y</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>190</xloc>
+      <yloc>162</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -924,8 +1035,8 @@
       </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1283</xloc>
-      <yloc>601</yloc>
+      <xloc>1645</xloc>
+      <yloc>493</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -963,10 +1074,6 @@
           <stream_name>BIO_ASSAY_ANALYSIS_ID</stream_name>
         </field>
         <field>
-          <column_name>BIO_ASY_ANALYSIS_EQTL_ID</column_name>
-          <stream_name>BIO_ASY_ANALYSIS_EQTL_ID</stream_name>
-        </field>
-        <field>
           <column_name>RS_ID</column_name>
           <stream_name>RS_ID</stream_name>
         </field>
@@ -997,96 +1104,8 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>287</xloc>
-      <yloc>866</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>List of valid column names</name>
-    <type>DataGrid</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>std_column_name</name>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-      </field>
-    </fields>
-    <data>
-      <line> <item>RS_ID</item> </line>
-      <line> <item>P_VALUE</item> </line>
-      <line> <item>GENE</item> </line>
-      <line> <item>ACTS</item> </line>
-      <line> <item>SNP_DISTANCE</item> </line>
-      <line> <item>REFERENCE_REGION</item> </line>
-      <line> <item>PROBE_AMBIGUITY</item> </line>
-      <line> <item>PROBE_IN_REPEATED_SEQ</item> </line>
-      <line> <item>SNP_PROBE_IN_GENE_PROBE</item> </line>
-    </data>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>288</xloc>
-      <yloc>136</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Lookup data_type, column_name in IDX</name>
-    <type>DBLookup</type>
-    <description/>
-    <distribute>N</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>BIOMART</connection>
-    <cache>Y</cache>
-    <cache_load_all>Y</cache_load_all>
-    <cache_size>0</cache_size>
-    <lookup>
-      <schema/>
-      <table>BIO_ASY_ANALYSIS_DATA_IDX</table>
-      <orderby/>
-      <fail_on_multiple>N</fail_on_multiple>
-      <eat_row_on_failure>N</eat_row_on_failure>
-      <key>
-        <name>column_name</name>
-        <field>FIELD_NAME</field>
-        <condition>=</condition>
-        <name2/>
-      </key>
-      <key>
-        <name>data_type</name>
-        <field>ext_type</field>
-        <condition>=</condition>
-        <name2/>
-      </key>
-      <value>
-        <name>FIELD_IDX</name>
-        <rename>FIELD_IDX</rename>
-        <default/>
-        <type>Integer</type>
-      </value>
-    </lookup>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>576</xloc>
-      <yloc>421</yloc>
+      <xloc>513</xloc>
+      <yloc>1113</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1130,7 +1149,7 @@
            </partitioning>
 <join_type>INNER</join_type>
 <step1>Sort header columns</step1>
-<step2>Sort data rows</step2>
+<step2>Merge data rows</step2>
     <keys_1>
       <key>col_nbr</key>
     </keys_1>
@@ -1139,8 +1158,8 @@
     </keys_2>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>816</xloc>
-      <yloc>343</yloc>
+      <xloc>818</xloc>
+      <yloc>409</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1198,8 +1217,8 @@
         <stepsecondsfield>Duration</stepsecondsfield>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1013</xloc>
-      <yloc>601</yloc>
+      <xloc>1375</xloc>
+      <yloc>493</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1234,9 +1253,9 @@
     <noempty>Y</noempty>
     <include>N</include>
     <include_field/>
-    <rownum>N</rownum>
+    <rownum>Y</rownum>
     <rownumByFile>N</rownumByFile>
-    <rownum_field/>
+    <rownum_field>rec_num</rownum_field>
     <format>Unix</format>
     <encoding/>
     <add_to_result_filenames>Y</add_to_result_filenames>
@@ -1295,8 +1314,8 @@
     <sizeFieldName/>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>301</xloc>
-      <yloc>281</yloc>
+      <xloc>79</xloc>
+      <yloc>337</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1323,8 +1342,8 @@
     </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>882</xloc>
-      <yloc>772</yloc>
+      <xloc>1244</xloc>
+      <yloc>664</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1333,7 +1352,7 @@
     <name>Read EQTL header</name>
     <type>TextFileInput</type>
     <description/>
-    <distribute>N</distribute>
+    <distribute>Y</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
@@ -1420,8 +1439,8 @@
     <sizeFieldName/>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>93</xloc>
-      <yloc>215</yloc>
+      <xloc>79</xloc>
+      <yloc>235</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1447,8 +1466,8 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>395</xloc>
-      <yloc>504</yloc>
+      <xloc>744</xloc>
+      <yloc>614</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1457,7 +1476,7 @@
     <name>Remove ` from ext_data</name>
     <type>ReplaceString</type>
     <description/>
-    <distribute>N</distribute>
+    <distribute>Y</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
@@ -1477,14 +1496,14 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>626</xloc>
-      <yloc>764</yloc>
+      <xloc>751</xloc>
+      <yloc>873</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Remove double-quotes in column_value</name>
+    <name>Remove double-quotes</name>
     <type>ReplaceString</type>
     <description/>
     <distribute>Y</distribute>
@@ -1497,8 +1516,8 @@
       <field>
         <in_stream_name>column_value</in_stream_name>
         <out_stream_name/>
-        <use_regex>no</use_regex>
-        <replace_string>&quot;</replace_string>
+        <use_regex>yes</use_regex>
+        <replace_string>^&quot;|&quot;$</replace_string>
         <replace_by_string/>
         <replace_field_by_string/>
         <whole_word>no</whole_word>
@@ -1507,14 +1526,14 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>488</xloc>
-      <yloc>344</yloc>
+      <xloc>236</xloc>
+      <yloc>404</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Select values 2</name>
+    <name>Select values</name>
     <type>SelectValues</type>
     <description/>
     <distribute>Y</distribute>
@@ -1523,7 +1542,31 @@
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>BIO_ASSAY_ANALYSIS_ID</name>
+    <fields>        <select_unspecified>N</select_unspecified>
+      <remove>        <name>eqtl_hdr</name>
+      </remove>    </fields>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>378</xloc>
+      <yloc>238</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Remove eqtl_rec</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>rec_num</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>col_nbr</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
@@ -1531,27 +1574,11 @@
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>etl_id</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>load_type</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>rec_num</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>std_column_name</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
       </field>        <select_unspecified>N</select_unspecified>
     </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>148</xloc>
-      <yloc>480</yloc>
+      <xloc>371</xloc>
+      <yloc>406</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1581,8 +1608,8 @@
       </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>620</xloc>
-      <yloc>597</yloc>
+      <xloc>746</xloc>
+      <yloc>702</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1613,8 +1640,8 @@
 </calculation>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1293</xloc>
-      <yloc>788</yloc>
+      <xloc>1655</xloc>
+      <yloc>680</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1652,8 +1679,8 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1294</xloc>
-      <yloc>677</yloc>
+      <xloc>1656</xloc>
+      <yloc>569</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1684,8 +1711,8 @@
 </calculation>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1026</xloc>
-      <yloc>843</yloc>
+      <xloc>1388</xloc>
+      <yloc>735</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1716,8 +1743,8 @@
 </calculation>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1025</xloc>
-      <yloc>747</yloc>
+      <xloc>1387</xloc>
+      <yloc>639</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1747,8 +1774,8 @@
         <storage_type/>
       </meta>    </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1154</xloc>
-      <yloc>677</yloc>
+      <xloc>1516</xloc>
+      <yloc>569</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1775,40 +1802,8 @@
     </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1140</xloc>
-      <yloc>784</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Sort data by rec_num</name>
-    <type>SortRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-      <directory>${SORT_DIR}</directory>
-      <prefix>out</prefix>
-      <sort_size>1000000</sort_size>
-      <free_memory/>
-      <compress>N</compress>
-      <compress_variable/>
-      <unique_rows>N</unique_rows>
-    <fields>
-      <field>
-        <name>rec_num</name>
-        <ascending>Y</ascending>
-        <case_sensitive>N</case_sensitive>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>149</xloc>
-      <yloc>421</yloc>
+      <xloc>1502</xloc>
+      <yloc>676</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1839,8 +1834,8 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>662</xloc>
-      <yloc>215</yloc>
+      <xloc>664</xloc>
+      <yloc>233</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1850,7 +1845,7 @@
     <type>SortRows</type>
     <description/>
     <distribute>Y</distribute>
-    <copies>1</copies>
+    <copies>3</copies>
          <partitioning>
            <method>none</method>
            <schema_name/>
@@ -1871,40 +1866,8 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>665</xloc>
-      <yloc>346</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Sort ext_data</name>
-    <type>SortRows</type>
-    <description/>
-    <distribute>N</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-      <directory>${SORT_DIR}</directory>
-      <prefix>out</prefix>
-      <sort_size>1000000</sort_size>
-      <free_memory/>
-      <compress>N</compress>
-      <compress_variable/>
-      <unique_rows>N</unique_rows>
-    <fields>
-      <field>
-        <name>rec_num</name>
-        <ascending>Y</ascending>
-        <case_sensitive>N</case_sensitive>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>506</xloc>
-      <yloc>764</yloc>
+      <xloc>483</xloc>
+      <yloc>408</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1967,18 +1930,18 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1159</xloc>
-      <yloc>600</yloc>
+      <xloc>1521</xloc>
+      <yloc>492</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Sort results by rec_num, field_idx, column_name</name>
+    <name>Sort results by rec_num, field_idx</name>
     <type>SortRows</type>
     <description/>
     <distribute>Y</distribute>
-    <copies>1</copies>
+    <copies>3</copies>
          <partitioning>
            <method>none</method>
            <schema_name/>
@@ -2002,47 +1965,15 @@
         <case_sensitive>N</case_sensitive>
       </field>
       <field>
-        <name>column_name</name>
+        <name>std_column_name</name>
         <ascending>Y</ascending>
         <case_sensitive>N</case_sensitive>
       </field>
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>620</xloc>
-      <yloc>504</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Sort rows</name>
-    <type>SortRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-      <directory>${SORT_DIR}</directory>
-      <prefix>out</prefix>
-      <sort_size>1000000</sort_size>
-      <free_memory/>
-      <compress>N</compress>
-      <compress_variable/>
-      <unique_rows>N</unique_rows>
-    <fields>
-      <field>
-        <name>rec_num</name>
-        <ascending>Y</ascending>
-        <case_sensitive>N</case_sensitive>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>160</xloc>
-      <yloc>719</yloc>
+      <xloc>824</xloc>
+      <yloc>506</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2098,8 +2029,8 @@
    <delimiter_is_regex>N</delimiter_is_regex>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>303</xloc>
-      <yloc>345</yloc>
+      <xloc>86</xloc>
+      <yloc>405</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2123,8 +2054,8 @@
    <delimiter_is_regex>N</delimiter_is_regex>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>300</xloc>
-      <yloc>215</yloc>
+      <xloc>254</xloc>
+      <yloc>237</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2156,8 +2087,8 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>491</xloc>
-      <yloc>215</yloc>
+      <xloc>485</xloc>
+      <yloc>237</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2189,8 +2120,8 @@
     </step>
 
   <step>
-    <name>Get seq for eqtl_id</name>
-    <type>TableInput</type>
+    <name>Merge data rows</name>
+    <type>SortedMerge</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -2198,24 +2129,23 @@
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <connection>BIOMART</connection>
-    <sql>SELECT next value for biomart.seq_bio_data_id as BIO_ASY_ANALYSIS_EQTL_ID;</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-    <lazy_conversion_active>N</lazy_conversion_active>
+    <fields>
+      <field>
+        <name>col_nbr</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>315</xloc>
-      <yloc>629</yloc>
+      <xloc>615</xloc>
+      <yloc>408</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Add eqtl_id</name>
-    <type>JoinRows</type>
+    <name>Sorted Merge</name>
+    <type>SortedMerge</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -2223,22 +2153,24 @@
            <method>none</method>
            <schema_name/>
            </partitioning>
-      <directory>${SORT_DIR}</directory>
-      <prefix>out</prefix>
-      <cache_size>500</cache_size>
-      <main>Flatten data back to single row</main>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue/>
- <function>=</function>
- <rightvalue/>
- </condition>
-    </compare>
+    <fields>
+      <field>
+        <name>rec_num</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>field_idx</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>std_column_name</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>151</xloc>
-      <yloc>630</yloc>
+      <xloc>686</xloc>
+      <yloc>532</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

@@ -25,48 +25,27 @@ Declare
 	i_etl_id  alias for $1;
 	i_job_id  alias for $2;
 	
-    -- create indexes using parallele 8  -zhanh101 5/10/2013 use ~20-30% original time  
     --Audit variables
     newJobFlag     int4;
     databaseName     VARCHAR(100);
     procedureName VARCHAR(100);
-    jobID         numeric(18,0);
-    stepCt         numeric(18,0);
-	rowCount		numeric(18,0);
+    jobID         bigint;
+    stepCt         int4;
+	rowCount		int4;
 	v_sqlerrm		varchar(1000);
 	
  
-    v_etl_id					number(18,0);
-    v_bio_assay_analysis_id		number(18,0);
-    v_data_type					varchar2(50);
-    v_sqlText					varchar2(2000);
+    v_etl_id					bigint;
+    v_bio_assay_analysis_id		bigint;
+    v_data_type					varchar(50);
+    v_sqlText					varchar(2000);
     v_exists					int4;
     v_GWAS_staged				int4;
-    v_EQTL_staged				int4;				
+    v_EQTL_staged				int4;	
+	v_max_ext_flds				int4;
     
-	stage_rec					record
-/*
-    type stage_rec  is record
-    (bio_assay_analysis_id        number(18,0)
-    ,etl_id                        number(18,0)
-    ,study_id                    varchar2(500)
-    ,data_type                    varchar2(50)
-    ,orig_data_type                varchar2(50)
-    ,analysis_name                varchar2(1000)
-    );
-
-    type stage_table is table of stage_rec; 
-    stage_array stage_table;
-    
-    type stage_table_names_rec is record
-    (table_name                    varchar2(500)
-    );
-    
-    type stage_table_names is table of stage_table_names_rec;
-    stage_table_array stage_table_names;
-    
-    no_staged_data    exception;
- */   
+	stage_rec					record;
+ 
 BEGIN    
     
     --Set Audit Parameters
@@ -145,16 +124,22 @@ BEGIN
 				   else 0 end = 1
 	loop   
 	
-	    call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Loading ' || stege_rec.study_id || ' ' || stege_rec.orig_data_type || ' ' ||
-                       stege_rec.analysis_name,0,stepCt,'Done');
+	    call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Loading ' || stage_rec.study_id || ' ' || stage_rec.orig_data_type || ' ' ||
+                       stage_rec.analysis_name,0,stepCt,'Done');
 					   
 		v_bio_assay_analysis_id := stage_rec.bio_assay_analysis_id;
-		v_data_type := stage_reg.data_type;
+		v_data_type := stage_rec.data_type;
 		v_etl_id := stage_rec.etl_id;
-					   
-        if stege_rec.data_type = 'GWAS' then
-            v_GWAS_staged := 1;
+		
+		--	get max nbr fields in ext_data for original data type
 			
+		select max(field_idx) into v_max_ext_flds
+		from biomart.bio_asy_analysis_data_idx
+		where ext_type = stage_rec.orig_data_type;
+					   
+        if stage_rec.data_type = 'GWAS' then
+            v_GWAS_staged := 1;
+
 			--	move GWAS data from biomart_stage to biomart
 			
 			insert into biomart.bio_assay_analysis_gwas
@@ -166,13 +151,16 @@ BEGIN
             ,etl_id
             ,ext_data
             ,log_p_value)
-            select bio_asy_analysis_gwas_id
+            select next value for biomart.seq_bio_data_id
                   ,bio_assay_analysis_id
                   ,rs_id
                   ,cast(p_value_char as double precision)
                   ,p_value_char
                   ,etl_id
-                  ,ext_data
+                  ,case when length(ext_data)-length(replace(ext_data,';','')) < v_max_ext_flds
+						then ext_data || repeat(';',v_max_ext_flds-(length(ext_data)-length(replace(ext_data,';',''))))
+						else ext_data
+				   end
                   ,log(cast(p_value_char as double precision))*-1
             from biomart_stage.bio_assay_analysis_gwas
             where bio_assay_analysis_id = v_bio_assay_analysis_id;
@@ -183,17 +171,15 @@ BEGIN
 			--	update data_count in bio_assay_analysis
 			
 		    update biomart.bio_assay_analysis baa
-			set data_count=upd.data_count
-			from (select count(*) as data_count
-				  from biomart.bio_assay_analysis_gwas be
-				  where be.bio_assay_analysis_id=v_bio_assay_analysis_id) upd
-            where bio_assay_analysis.bio_assay_analysis_id=v_bio_assay_analysis_id;
+			set data_count=rowCount
+            where baa.bio_assay_analysis_id=v_bio_assay_analysis_id;
 			rowCount := ROW_COUNT;
             stepCt := stepCt +1;
             call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update data_count in bio_assay_analysis',rowCount,stepCt,'Done');
 			
 			v_sqlText := 'delete from biomart_stage.bio_assay_analysis_' || v_data_type || 
-						 ' where bio_assay_analysis_id = ' || to_char(v_bio_assay_analysis_id);
+						 ' where bio_assay_analysis_id = ' || v_bio_assay_analysis_id;
+			raise notice '%', v_sqlText;
 			execute immediate v_sqlText;
 			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
@@ -201,7 +187,7 @@ BEGIN
            
         end if;
         
-        if stege_rec.data_type = 'EQTL' then
+        if stage_rec.data_type = 'EQTL' then
             v_EQTL_staged := 1;
 			
 			--	move EQTL data from biomart_stage to biomart
@@ -218,7 +204,7 @@ BEGIN
             ,etl_id
             ,ext_data
             ,log_p_value)
-            select bio_asy_analysis_eqtl_id
+            select next value for biomart.seq_bio_data_id
                   ,bio_assay_analysis_id
                   ,rs_id
                   ,gene
@@ -227,7 +213,10 @@ BEGIN
                   ,cis_trans
                   ,distance_from_gene
                   ,etl_id
-                  ,ext_data
+                  ,case when length(ext_data)-length(replace(ext_data,';','')) < v_max_ext_flds
+						then ext_data || repeat(';',v_max_ext_flds-(length(ext_data)-length(replace(ext_data,';',''))))
+						else ext_data
+				   end
                   ,log(cast(p_value_char as double precision))*-1
             from biomart_stage.bio_assay_analysis_eqtl
             where bio_assay_analysis_id = v_bio_assay_analysis_id;
@@ -238,17 +227,14 @@ BEGIN
 			--	update data_count in bio_assay_analysis
 			
 		    update biomart.bio_assay_analysis baa
-			set data_count=upd.data_count
-			from (select count(*) as data_count
-				  from biomart.bio_assay_analysis_eqtl be
-				  where be.bio_assay_analysis_id=v_bio_assay_analysis_id) upd
-            where bio_assay_analysis.bio_assay_analysis_id=v_bio_assay_analysis_id;
+			set data_count=rowCount
+            where baa.bio_assay_analysis_id=v_bio_assay_analysis_id;
 			rowCount := ROW_COUNT;
             stepCt := stepCt +1;
             call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Update data_count in bio_assay_analysis',rowCount,stepCt,'Done');
            			
 			v_sqlText := 'delete from biomart_stage.bio_assay_analysis_' || v_data_type || 
-						 ' where bio_assay_analysis_id = ' || to_char(v_bio_assay_analysis_id);
+						 ' where bio_assay_analysis_id = ' || v_bio_assay_analysis_id;
 			execute immediate v_sqlText;
 			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
@@ -299,7 +285,7 @@ BEGIN
 		v_sqlerrm := substr(SQLERRM,1,1000);
 		raise notice 'error: %', v_sqlerrm;
 		--Handle errors.
-        call tm_cz.czx_error_handler (jobID, , v_sqlerrm);
+        call tm_cz.czx_error_handler (jobID, procedureName,v_sqlerrm);
 		--End Proc
         call tm_cz.czx_end_audit (jobID, 'FAIL');
 		return 16;

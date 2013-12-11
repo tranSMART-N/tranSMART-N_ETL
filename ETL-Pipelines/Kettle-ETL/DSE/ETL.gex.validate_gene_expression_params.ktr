@@ -63,7 +63,7 @@
   <created_user>-</created_user>
   <created_date>2012&#47;02&#47;26 08:17:58.950</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;12 12:44:39.436</modified_date>
+  <modified_date>2013&#47;12&#47;06 10:32:18.162</modified_date>
   </info>
   <notepads>
     <notepad>
@@ -103,7 +103,7 @@
     </notepad>
   </notepads>
   <order>
-  <hop> <from>Get variables for STUDY_ID, TOP_NODE, LOAD_TYPE, DATA_TYPE</from><to>Check STUDY_ID is not nul</to><enabled>Y</enabled> </hop>  <hop> <from>Check STUDY_ID is not nul</from><to>Check TOP_NODE is not nul</to><enabled>Y</enabled> </hop>  <hop> <from>Check STUDY_ID is not nul</from><to>STUDY_ID required</to><enabled>Y</enabled> </hop>  <hop> <from>STUDY_ID required</from><to>Abort</to><enabled>Y</enabled> </hop>  <hop> <from>Check TOP_NODE is not nul</from><to>Check LOAD_TYPE in I,  F</to><enabled>Y</enabled> </hop>  <hop> <from>Check TOP_NODE is not nul</from><to>TOP_NODE required</to><enabled>Y</enabled> </hop>  <hop> <from>TOP_NODE required</from><to>Abort</to><enabled>Y</enabled> </hop>  <hop> <from>Check LOAD_TYPE in I,  F</from><to>LOAD_TYPE invalid</to><enabled>Y</enabled> </hop>  <hop> <from>LOAD_TYPE invalid</from><to>Abort</to><enabled>Y</enabled> </hop>  <hop> <from>Check LOAD_TYPE in I,  F</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>DATA_TYPE invaid</to><enabled>Y</enabled> </hop>  <hop> <from>DATA_TYPE invaid</from><to>Abort</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Get variables</from><to>Check STUDY_ID is not nul</to><enabled>Y</enabled> </hop>  <hop> <from>Check STUDY_ID is not nul</from><to>Check TOP_NODE is not nul</to><enabled>Y</enabled> </hop>  <hop> <from>Check STUDY_ID is not nul</from><to>STUDY_ID required</to><enabled>Y</enabled> </hop>  <hop> <from>STUDY_ID required</from><to>Abort</to><enabled>Y</enabled> </hop>  <hop> <from>Check TOP_NODE is not nul</from><to>Check LOAD_TYPE in I,  F</to><enabled>Y</enabled> </hop>  <hop> <from>Check TOP_NODE is not nul</from><to>TOP_NODE required</to><enabled>Y</enabled> </hop>  <hop> <from>TOP_NODE required</from><to>Abort</to><enabled>Y</enabled> </hop>  <hop> <from>Check LOAD_TYPE in I,  F</from><to>LOAD_TYPE invalid</to><enabled>Y</enabled> </hop>  <hop> <from>LOAD_TYPE invalid</from><to>Abort</to><enabled>Y</enabled> </hop>  <hop> <from>Check LOAD_TYPE in I,  F</from><to>Filter rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Filter rows</from><to>DATA_TYPE invaid</to><enabled>Y</enabled> </hop>  <hop> <from>DATA_TYPE invaid</from><to>Abort</to><enabled>Y</enabled> </hop>  <hop> <from>Get variables</from><to>Write to log</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Abort</name>
     <type>Abort</type>
@@ -282,10 +282,10 @@
     </step>
 
   <step>
-    <name>Get variables for STUDY_ID, TOP_NODE, LOAD_TYPE, DATA_TYPE</name>
+    <name>Get variables</name>
     <type>GetVariable</type>
     <description/>
-    <distribute>Y</distribute>
+    <distribute>N</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
@@ -340,11 +340,155 @@
         <precision>-1</precision>
         <trim_type>none</trim_type>
       </field>
+      <field>
+        <name>data_file_prefix</name>
+        <variable>${DATA_FILE_PREFIX}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>data_location</name>
+        <variable>${DATA_LOCATION}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>filepivot_location</name>
+        <variable>${FilePivot_LOCATION}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>java_location</name>
+        <variable>${JAVA_LOCATION}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>log_base</name>
+        <variable>${LOG_BASE}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>map_filename</name>
+        <variable>${MAP_FILENAME}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>pivoted_files</name>
+        <variable>${PIVOTED_FILES}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>sample_remap_filename</name>
+        <variable>${SAMPLE_REMAP_FILENAME}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>sample_suffix</name>
+        <variable>${SAMPLE_SUFFIX}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>security_required</name>
+        <variable>${SECURITY_REQUIRED}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>source_cd</name>
+        <variable>${SOURCE_CD}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
+      <field>
+        <name>sort_dir</name>
+        <variable>${SORT_DIR}</variable>
+        <type>String</type>
+        <format/>
+        <currency/>
+        <decimal/>
+        <group/>
+        <length>-1</length>
+        <precision>-1</precision>
+        <trim_type>none</trim_type>
+      </field>
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>155</xloc>
-      <yloc>45</yloc>
+      <xloc>210</xloc>
+      <yloc>19</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -417,6 +561,77 @@
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>493</xloc>
       <yloc>207</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Write to log</name>
+    <type>WriteToLog</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <loglevel>log_level_basic</loglevel>
+      <displayHeader>Y</displayHeader>
+      <logmessage>Input Parameters</logmessage>
+    <fields>
+      <field>
+        <name>data_file_prefix</name>
+        </field>
+      <field>
+        <name>data_location</name>
+        </field>
+      <field>
+        <name>data_type</name>
+        </field>
+      <field>
+        <name>filepivot_location</name>
+        </field>
+      <field>
+        <name>java_location</name>
+        </field>
+      <field>
+        <name>load_type</name>
+        </field>
+      <field>
+        <name>log_base</name>
+        </field>
+      <field>
+        <name>map_filename</name>
+        </field>
+      <field>
+        <name>pivoted_files</name>
+        </field>
+      <field>
+        <name>sample_remap_filename</name>
+        </field>
+      <field>
+        <name>sample_suffix</name>
+        </field>
+      <field>
+        <name>security_required</name>
+        </field>
+      <field>
+        <name>sort_dir</name>
+        </field>
+      <field>
+        <name>source_cd</name>
+        </field>
+      <field>
+        <name>study_id</name>
+        </field>
+      <field>
+        <name>top_node</name>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>118</xloc>
+      <yloc>120</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

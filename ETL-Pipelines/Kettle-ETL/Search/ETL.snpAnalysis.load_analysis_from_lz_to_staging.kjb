@@ -8,7 +8,7 @@
   <created_user>-</created_user>
   <created_date>2012&#47;09&#47;04 13:29:49.916</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;10&#47;14 10:03:42.684</modified_date>
+  <modified_date>2013&#47;12&#47;10 12:12:55.839</modified_date>
     <parameters>
         <parameter>
             <name>ARCHIVE_DIR</name>
@@ -143,8 +143,8 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>931</xloc>
-      <yloc>354</yloc>
+      <xloc>967</xloc>
+      <yloc>346</yloc>
       </entry>
     <entry>
       <name>Start Audit</name>
@@ -242,8 +242,8 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>901</xloc>
-      <yloc>441</yloc>
+      <xloc>872</xloc>
+      <yloc>512</yloc>
       </entry>
     <entry>
       <name>Load metadata to biomart</name>
@@ -499,6 +499,72 @@
       <xloc>841</xloc>
       <yloc>97</yloc>
       </entry>
+    <entry>
+      <name>Backout GWAS from staging</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>rep_name</specification_method>
+      <trans_object_id/>
+      <filename/>
+      <transname>ETL.snpAnalysis.backout_GWAS_from_stage</transname>
+      <directory>&#47;Search</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>797</xloc>
+      <yloc>188</yloc>
+      </entry>
+    <entry>
+      <name>Backout EQTL from staging</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>rep_name</specification_method>
+      <trans_object_id/>
+      <filename/>
+      <transname>ETL.snpAnalysis.backout_EQTL_from_stage</transname>
+      <directory>&#47;Search</directory>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>860</xloc>
+      <yloc>393</yloc>
+      </entry>
   </entries>
   <hops>
     <hop>
@@ -601,26 +667,8 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Load eQTL file to staging</from>
-      <to>Set FAILED status</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>N</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
       <from>Set SUCCESS status</from>
       <to>Zip and archive file</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Load eQTL file to staging</from>
-      <to>Set SUCCESS status</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -664,6 +712,51 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
+      <from>Metabolic GWAS</from>
+      <to>Load GWAS file to staging</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load GWAS file to staging</from>
+      <to>Backout GWAS from staging</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Backout GWAS from staging</from>
+      <to>Set FAILED status</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>Y</unconditional>
+    </hop>
+    <hop>
+      <from>Load eQTL file to staging</from>
+      <to>Backout EQTL from staging</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Backout EQTL from staging</from>
+      <to>Set FAILED status</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>Y</unconditional>
+    </hop>
+    <hop>
       <from>Load GWAS file to staging</from>
       <to>Set SUCCESS status</to>
       <from_nr>0</from_nr>
@@ -673,17 +766,8 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Load GWAS file to staging</from>
-      <to>Set FAILED status</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>N</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Metabolic GWAS</from>
-      <to>Load GWAS file to staging</to>
+      <from>Load eQTL file to staging</from>
+      <to>Set SUCCESS status</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
