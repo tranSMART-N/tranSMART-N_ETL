@@ -7,3 +7,11 @@ Insert into TM_CZ.CZ_FORM_LAYOUT (FORM_LAYOUT_ID,FORM_KEY,FORM_COLUMN,DISPLAY_NA
 Insert into TM_CZ.CZ_FORM_LAYOUT (FORM_LAYOUT_ID,FORM_KEY,FORM_COLUMN,DISPLAY_NAME,DATA_TYPE,SEQUENCE) select next value for tm_cz.cz_form_layout_seq,'study','disease','Disease','string',130;
 Insert into TM_CZ.CZ_FORM_LAYOUT (FORM_LAYOUT_ID,FORM_KEY,FORM_COLUMN,DISPLAY_NAME,DATA_TYPE,SEQUENCE) select next value for tm_cz.cz_form_layout_seq,'study','compound','Compound','string',130;
 Insert into TM_CZ.CZ_FORM_LAYOUT (FORM_LAYOUT_ID,FORM_KEY,FORM_COLUMN,DISPLAY_NAME,DATA_TYPE,SEQUENCE) select next value for tm_cz.cz_form_layout_seq,'study','design','Design','string',320;
+
+Insert into TM_CZ.CZ_FORM_LAYOUT (FORM_LAYOUT_ID,FORM_KEY,FORM_COLUMN,DISPLAY_NAME,DATA_TYPE,SEQUENCE) select next value for tm_cz.cz_form_layout_seq,'study','institution','Institution','string',320;
+Insert into TM_CZ.CZ_FORM_LAYOUT (FORM_LAYOUT_ID,FORM_KEY,FORM_COLUMN,DISPLAY_NAME,DATA_TYPE,SEQUENCE) select next value for tm_cz.cz_form_layout_seq,'study','primary_investigator','Primary Investigator','string',320;
+Insert into TM_CZ.CZ_FORM_LAYOUT (FORM_LAYOUT_ID,FORM_KEY,FORM_COLUMN,DISPLAY_NAME,DATA_TYPE,SEQUENCE) select next value for tm_cz.cz_form_layout_seq,'study','country','Country','string',320;
+Insert into TM_CZ.CZ_FORM_LAYOUT (FORM_LAYOUT_ID,FORM_KEY,FORM_COLUMN,DISPLAY_NAME,DATA_TYPE,SEQUENCE) select next value for tm_cz.cz_form_layout_seq,'study','access_type','Access Type','string',320;
+Insert into TM_CZ.CZ_FORM_LAYOUT (FORM_LAYOUT_ID,FORM_KEY,FORM_COLUMN,DISPLAY_NAME,DATA_TYPE,SEQUENCE) select next value for tm_cz.cz_form_layout_seq,'study','description','Description','string',320;
+
+

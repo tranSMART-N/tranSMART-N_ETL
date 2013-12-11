@@ -229,7 +229,101 @@ BEGIN
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted trial data into BIOMART bio_data_uid',rowCount,stepCt,'Done');
-
+	
+	--	delete old data from bio_clinical_trial
+	
+	delete from biomart.bio_clinical_trial
+	where trial_number in (select distinct m.study_id from tm_lz.lt_src_study_metadata m);
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete trial from bio_clinical_trial',rowCount,stepCt,'Done');
+	
+	--	Add new trial data to bio_clinical_trial
+	
+	insert into biomart.bio_clinical_trial
+	(trial_number
+	,study_owner
+	,study_phase
+	,blinding_procedure
+	,studytype
+	,duration_of_study_weeks
+	,number_of_patients
+	,number_of_sites
+	,route_of_administration
+	,dosing_regimen
+	,group_assignment
+	,type_of_control
+	,completion_date
+	,primary_end_points
+	,secondary_end_points
+	,inclusion_criteria
+	,exclusion_criteria
+	,subjects
+	,gender_restriction_mfb
+	,min_age
+	,max_age
+	,secondary_ids
+	,bio_experiment_id
+	,development_partner
+	,main_findings
+	,geo_platform
+	--,platform_name
+	,search_area
+	)
+	select m.study_id
+          ,m.study_owner
+          ,m.study_phase
+          ,m.blinding_procedure
+          ,m.studytype
+		  ,case when cast(regexp_extract(m.duration_of_study_weeks,regexp_numeric) as varchar(50)) is null
+					  then null
+					  else m.duration_of_study_weeks
+					  end as duration_of_study_weeks
+		  ,case when cast(regexp_extract(m.number_of_patients,regexp_numeric) as varchar(50)) is null
+					  then null
+					  else m.number_of_patients
+					  end as number_of_patients
+		   ,case when cast(regexp_extract(m.number_of_sites,regexp_numeric) as varchar(50)) is null
+					  then null
+					  else m.number_of_sites
+					  end as number_of_sites
+          ,m.route_of_administration
+          ,m.dosing_regimen
+          ,m.group_assignment
+          ,m.type_of_control
+		  ,case when cast(regexp_extract(m.completion_date,regexp_date) as varchar(50)) is null
+					  then null
+					  else to_date(m.completion_date,'YYYY/MM/DD')
+					  end as completion_date
+          ,m.primary_end_points
+          ,m.secondary_end_points
+          ,m.inclusion_criteria
+          ,m.exclusion_criteria
+          ,m.subjects
+          ,m.gender_restriction_mfb
+		  ,case when cast(regexp_extract(m.min_age,regexp_numeric) as varchar(50)) is null
+					  then null
+					  else m.min_age
+					  end as min_age
+		  ,case when cast(regexp_extract(m.max_age,regexp_numeric) as varchar(50)) is null
+					  then null
+					  else m.max_age
+					  end as max_age
+          ,m.secondary_ids
+          ,b.bio_experiment_id
+		  ,m.development_partner
+		  ,m.main_findings
+		  ,m.geo_platform
+		  --,m.platform_name
+		  ,m.search_area
+	from tm_lz.lt_src_study_metadata m
+	    ,biomart.bio_experiment b
+	where m.study_id is not null
+	  and m.study_id = b.accession;
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert trial into bio_clinical_trial',rowCount,stepCt,'Done');
+	
 	--	delete existing compound data for study, compound list may change
 	
 	delete from biomart.bio_data_compound dc
@@ -434,8 +528,7 @@ BEGIN
 		end loop;
 	end loop;
 
-	/*
-		--	Create i2b2_tags
+	--	Create i2b2_tags
 	
 	delete from i2b2metadata.i2b2_tags
 	where upper(tag_type) = 'TRIAL';
@@ -445,7 +538,7 @@ BEGIN
 	
 	insert into i2b2metadata.i2b2_tags
 	(tag_id, path, tag, tag_type, tags_idx)
-	select next value for i2b2metadata.seq_tag_id
+	select next value for i2b2metadata.sq_i2b2_tag_id
 		  ,x.path
 		  ,x.tag
 		  ,x.tag_type
@@ -460,8 +553,9 @@ BEGIN
 		  group by be.accession) x;
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Add Trial tags in i2b2_tags',rowCount,stepCt,'Done');
-					 
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Add Trial tag in i2b2_tags',rowCount,stepCt,'Done');
+
+/*	
 	--	Insert trial data tags - COMPOUND
 	
 	delete from i2b2metadata.i2b2_tags t
