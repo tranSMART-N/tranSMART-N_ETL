@@ -35,12 +35,15 @@ Declare
 	tmp_disease			varchar(200);
 	tmp_organism		varchar(200);
 	tmp_ad_hoc_link		varchar(4000);
+	tmp_pubmed			varchar(4000);
 	link_repo			varchar(200);
 	link_value			varchar(1000);
 	tmp_study			varchar(200);
 	tmp_property		varchar(200);
 	pExists				int4;
 	rowCount			numeric(18,0);
+	pubmed_id			varchar(50);
+	pubmed_title		varchar(4000);
 	
 	regexp_date			varchar(2000);
 	regexp_numeric		varchar(1000);
@@ -50,6 +53,7 @@ Declare
 	study_disease_rec	record;
 	study_taxonomy_rec	record;
 	study_link_rec		record;
+	study_pubmed_rec	record;
 
 BEGIN
     
@@ -60,7 +64,7 @@ BEGIN
 	databaseName := 'TM_CZ';
 	procedureName := 'I2B2_LOAD_STUDY_METADATA';
 	
-	regexp_date := '((((19|20)([2468][048]|[13579][26]|0[48])|2000)-02-29|((19|20)[0-9]{2}-(0[4678]|1[02])-(0[1-9]|[12][0-9]|30)|(19|20)[0-9]{2}-(0[1359]|11)-(0[1-9]|[12][0-9]|3[01])|(19|20)[0-9]{2}-02-(0[1-9]|1[0-9]|2[0-8])))\s([01][0-9]|2[0-3]):([012345][0-9]):([012345][0-9]))';
+	regexp_date := '^(?:(?:(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00)))(\/|-|\.)(?:0?2\1(?:29)))|(?:(?:(?:1[6-9]|[2-9]\d)?\d{2})(\/|-|\.)(?:(?:(?:0?[13578]|1[02])\2(?:31))|(?:(?:0?[1,3-9]|1[0-2])\2(29|30))|(?:(?:0?[1-9])|(?:1[0-2]))\2(?:0?[1-9]|1\d|2[0-8]))))$';
 	regexp_numeric := '^[0-9]+(\.[0-9]+)?$';
 
 	--Audit JOB Initialization
@@ -94,6 +98,7 @@ BEGIN
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert metadata in lz_src_study_metadata',rowCount,stepCt,'Done');
 	
+/*
 	--	delete existing metadata from lz_src_study_metadata_ad_hoc
 	
 	delete from tm_lz.lz_src_study_metadata_ad_hoc
@@ -119,9 +124,9 @@ BEGIN
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert metadata in lz_src_study_metadata_ad_hoc',rowCount,stepCt,'Done');
-  
+ */ 
 	--	Update existing bio_experiment data
-	
+
 	update biomart.bio_experiment b
 	set title=upd.title
 	   ,description=upd.description
@@ -135,6 +140,9 @@ BEGIN
 	   ,bio_experiment_type=upd.bio_experiment_type
 	   ,status=upd.status
 	   ,contact_field=upd.contact_field
+	   ,access_type=upd.access_type
+	   ,biomarker_type=upd.biomarker_type
+	   ,target=upd.target
 	from (select m.study_id
 				,m.title
 				,m.description
@@ -154,6 +162,9 @@ BEGIN
 				,'Experiment' as bio_experiment_type
 				,m.status
 				,m.contact_field
+				,m.access_type
+				,m.biomarker_type
+				,m.target
 		  from tm_lz.lt_src_study_metadata m
 		  where m.study_id is not null) upd
 	where b.accession = upd.study_id;
@@ -178,7 +189,11 @@ BEGIN
 	,overall_design
 	,accession
 	,country
-	,institution)
+	,institution
+	,access_type
+	,biomarker_type
+	,target
+	)
 	select next value for biomart.seq_bio_data_id
 		  ,'Experiment'
 	      ,m.title
@@ -200,6 +215,9 @@ BEGIN
 		  ,m.study_id
 		  ,country
 		  ,m.institution
+		  ,m.access_type
+		  ,m.biomarker_type
+		  ,m.target
 	from tm_lz.lt_src_study_metadata m
 	where m.study_id is not null
 	  and not exists
@@ -478,11 +496,10 @@ BEGIN
 		from tm_lz.lt_src_study_metadata
 		where organism is not null
 	loop
-		dcount := length(study_taxonomy_rec.organism) - length(replace(study_taxonomy_rec.organism,';',null))+1;
+		dcount := length(study_taxonomy_rec.organism) - length(replace(study_taxonomy_rec.organism,';',''))+1;
 		while dcount > 0
 		Loop	
 			tmp_organism := tm_cz.parse_nth_value(study_taxonomy_rec.organism,dcount,';');
-				   
 			if tmp_organism is not null then
 				--	add new organism
 				
@@ -497,7 +514,7 @@ BEGIN
 					 (select 1 from bio_taxonomy x
 					  where upper(x.taxon_name) = upper(tmp_organism))
 				  and tmp_organism is not null;
-				rowCount := ROW_COUNTp;
+				rowCount := ROW_COUNT;
 				stepCt := stepCt + 1;
 				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Added organism to bio_taxonomy',rowCount,stepCt,'Done');
 							
@@ -555,318 +572,227 @@ BEGIN
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Add Trial tag in i2b2_tags',rowCount,stepCt,'Done');
 
-/*	
-	--	Insert trial data tags - COMPOUND
+	--	GPL 1.0 code
 	
-	delete from i2b2metadata.i2b2_tags t
-	where upper(t.tag_type) = 'COMPOUND';
-	rowCount := ROW_COUNT;
-	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing Compound tags in I2B2METADATA i2b2_tags',rowCount,stepCt,'Done');
+	--	add ncbi/GEO linking
 	
-	insert into i2b2metadata.i2b2_tags
-	(tag_id, path, tag, tag_type, tags_idx)
-	select next value for i2b2metadata.seq_tag_id
-		  ,x.path
-		  ,x.tag
-		  ,x.tag_type
-		  ,x.tags_idx
-	from (select distinct min(o.c_fullname) as path
-		  		,case when x.rec_num = 1 then c.generic_name else c.brand_name end as tag
-		  		,'Compound' as tag_type
-		  		,1 as tags_idx
-		  from biomart.bio_experiment be
-			  ,biomart.bio_data_compound bc
-			  ,biomart.bio_compound c
-			  ,i2b2metadata.i2b2 o
-			  ,(select 1 as rec_num union select 2 as rec_num) x
-		  where be.bio_experiment_id = bc.bio_data_id
-       		and bc.bio_compound_id = c.bio_compound_id
-       		and be.accession = o.sourcesystem_cd
-       		and case when x.rec_num = 1 then c.generic_name else c.brand_name end is not null
-		  group by case when x.rec_num = 1 then c.generic_name else c.brand_name end) x;
-	rowCount := ROW_COUNT;
-	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert Compound tags in I2B2METADATA i2b2_tags',rowCount,stepCt,'Done');
-					 
-	--	Insert trial data tags - DISEASE
+	--	check if ncbi exists in bio_content_repository, if not, add
 	
-	delete from i2b2metadata.i2b2_tags t
-	where upper(t.tag_type) = 'DISEASE';
-	rowCount := ROW_COUNT;
-	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing DISEASE tags in I2B2METADATA i2b2_tags',rowCount,stepCt,'Done');
-		
-	insert into i2b2metadata.i2b2_tags
-	(tag_id, path, tag, tag_type, tags_idx)
-	select next value for i2b2metadata.seq_tag_id
-		  ,x.path
-		  ,x.tag
-		  ,x.tag_type
-		  ,x.tags_idx
-	from (select distinct min(o.c_fullname) as path
-		   ,c.prefered_name as tag
-		   ,'Disease' as tag_type
-		   ,1 as tags_idx
-		  from biomart.bio_experiment be
-			  ,biomart.bio_data_disease bc
-			  ,biomart.bio_disease c
-			  ,i2b2metadata.i2b2 o
-		  where be.bio_experiment_id = bc.bio_data_id
-      		and bc.bio_disease_id = c.bio_disease_id
-      		and be.accession = o.sourcesystem_cd
-			group by c.prefered_name) x;
-	rowCount := ROW_COUNT;
-	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert Disease tags in I2B2METADATA i2b2_tags',rowCount,stepCt,'Done');
-*/
-	--	Load bio_ad_hoc_property
+	select count(*) into dcount
+	from biomart.bio_content_repository
+	where repository_type = 'NCBI'
+	  and location_type = 'URL';
 	
-	delete from biomart.bio_ad_hoc_property
-	where bio_data_id in
-		 (select distinct x.bio_experiment_id 
-		  from tm_lz.lt_src_study_metadata_ad_hoc t
-			  ,biomart.bio_experiment x
-		  where t.study_id = x.accession);
-	rowCount := ROW_COUNT;
-	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing ad_hoc metadata from BIOMART BIO_AD_HOC_PROPERTY',rowCount,stepCt,'Done');	 
+	if dcount = 0 then
+		insert into biomart.bio_content_repository
+		(bio_content_repo_id
+		,location
+		,active_y_n
+		,repository_type
+		,location_type) 
+		select next value for biomart.seq_bio_data_id
+			  ,'http://www.ncbi.nlm.nih.gov/'
+			  ,'Y'
+			  ,'NCBI'
+			  ,'URL';
+		rowCount := ROW_COUNT;
+		stepCt := stepCt + 1;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted NCBI URL in bio_content_repository',rowCount,stepCt,'Done');	
+	end if;
+
+	--	insert GSE studies into bio_content
 	
-	insert into biomart.bio_ad_hoc_property
-	(ad_hoc_property_id
-	,bio_data_id
-	,property_key
-	,property_value)
+	insert into biomart.bio_content
+	(bio_file_content_id
+	,repository_id
+	,location
+	,file_type
+	,etl_id_c
+	)
 	select next value for biomart.seq_bio_data_id
-		  ,b.bio_experiment_id
-		  ,t.ad_hoc_property_key
-		  ,t.ad_hoc_property_value
-	from tm_lz.lt_src_study_metadata_ad_hoc t
-		,biomart.bio_experiment b
-	where t.study_id = b.accession
-	  and t.ad_hoc_property_key not like 'STUDY_LINK';
+		  ,bcr.bio_content_repo_id
+		  ,'geo/query/acc.cgi?acc=' || m.study_id
+		  ,'Experiment Web Link'
+		  ,'METADATA:' || m.study_id
+	from tm_lz.lt_src_study_metadata m
+		,biomart.bio_content_repository bcr
+	where m.study_id like 'GSE%' escape ''
+	  and bcr.repository_type = 'NCBI'
+	  and bcr.location_type = 'URL'
+	  and not exists
+		 (select 1 from biomart.bio_content x
+		  where x.etl_id_c like '%' || m.study_id || '%' escape ''
+		    and x.file_type = 'Experiment Web Link'
+			and x.location = 'geo/query/acc.cgi?acc=' || m.study_id);
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Insert ad_hoc metadata into BIOMART BIO_AD_HOC_PROPERTY',rowCount,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted GEO study into bio_content',rowCount,stepCt,'Done');
 	
-	--	add study-level links
+	--	insert GSE studies into bio_content_reference
 	
-	--	delete existing link data for studies
+	insert into biomart.bio_content_reference
+	(bio_content_reference_id
+	,bio_content_id
+	,bio_data_id
+	,content_reference_type
+	,etl_id_c
+	)
+	select next value for biomart.seq_bio_data_id
+		  ,bc.bio_file_content_id
+		  ,be.bio_experiment_id
+		  ,'Experiment Web Link'
+		  ,'METADATA:' || m.study_id
+	from tm_lz.lt_src_study_metadata m
+		,biomart.bio_experiment be
+		,biomart.bio_content bc
+	where m.study_id like 'GSE%' escape ''
+	  and m.study_id = be.accession
+	  and bc.file_type = 'Experiment Web Link'
+	  and bc.etl_id_c = 'METADATA:' || m.study_id
+	  and bc.location = 'geo/query/acc.cgi?acc=' || m.study_id
+	  and not exists
+		 (select 1 from biomart.bio_content_reference x
+		  where bc.bio_file_content_id = x.bio_content_id
+		    and be.bio_experiment_id = x.bio_data_id);
+	rowCount := ROW_COUNT;
+	stepCt := stepCt + 1;
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted GEO study into bio_content_reference',rowCount,stepCt,'Done');
+
+	--	add PUBMED linking
+	
+	--	delete existing pubmed data for studies
 	
 	delete from biomart.bio_content_reference dc
 	where dc.bio_content_id in 
 		 (select x.bio_file_content_id
 		  from biomart.bio_content x
 			  ,tm_lz.lt_src_study_metadata y
-		  where x.etl_id_c = 'METADATA:' || y.study_id
-		    and x.file_type != 'Data');
+		  where x.file_type = 'Publication Web Link'
+		    and x.etl_id_c = 'METADATA:' || y.study_id);
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing study-level links from bio_content_reference',rowCount,stepCt,'Done');		
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing Pubmed data from bio_content_reference',rowCount,stepCt,'Done');		
 			
 	delete from biomart.bio_content dc
 	where dc.bio_file_content_id in 
 		 (select x.bio_file_content_id
 		  from biomart.bio_content x
 			  ,tm_lz.lt_src_study_metadata y
-		  where x.file_type != 'Data'
+		  where x.file_type = 'Publication Web Link'
 		    and x.etl_id_c = 'METADATA:' || y.study_id);
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing study-level links from bio_content',rowCount,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete existing Pubmed data from bio_content',rowCount,stepCt,'Done');
 	
-	for study_link_rec in
-		select distinct t.study_id
-			  ,t.ad_hoc_property_link as ad_hoc_link
-			  ,'Experiment Web Link' as ad_hoc_property
-			  ,be.bio_experiment_id as ad_hoc_property_id
-		from tm_lz.lt_src_study_metadata_ad_hoc t
-			,biomart.bio_experiment be
-		where t.ad_hoc_property_link is not null
-		  and t.study_id = be.accession
-		  and t.ad_hoc_property_key = 'STUDY_LINK'
-	loop
-		dcount := length(study_link_rec.ad_hoc_link)-length(replace(study_link_rec.ad_hoc_link,';',''))+1;
-		tmp_study := study_link_rec.study_id;
-		tmp_property := study_link_rec.ad_hoc_property;
- 
-		while dcount > 0
-		Loop	
-			-- multiple ad_hoc_links can be separated by ;, ad_hoc_link repository_type and value (location) are separated by :
-				
-			tmp_ad_hoc_link := tm_cz.parse_nth_value(study_link_rec.ad_hoc_link,dcount,';');			
-			lcount := (tmp_ad_hoc_link,':');
-				
-			if lcount = 0 then
-				stepCt := stepCt + 1;
-				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Invalid link: ' || tmp_ad_hoc_link || ' for study ' || tmp_study || ' property ' || tmp_property,rowCount,stepCt,'Done');
-			else
-				link_repo := substr(tmp_ad_hoc_link,1,instr(tmp_ad_hoc_link,':')-1);
-				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'link_repo: ' || link_repo,1,stepCt,'Done');	
-				link_value := substr(tmp_ad_hoc_link,instr(tmp_ad_hoc_link,':')+1);
-				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'link_value: ' || link_value,1,stepCt,'Done');
-					
-				--	validate value in link_repo as repository_type in bio_content_reference
-				
-				select count(*) into pExists
-				from biomart.bio_content_repository
-				where repository_type = link_repo;
-				
-				if pExists = 0 then
-					stepCt := stepCt + 1;
-					call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Invalid repository in link: ' || tmp_ad_hoc_link || ' for study ' || tmp_study || ' property ' || tmp_property,rowCount,stepCt,'Done');
-				else	
-					insert into biomart.bio_content
-					(bio_file_content_id
-					,repository_id
-					,location
-					,file_type
-					,etl_id_c
-					)
-					select next value for biomart.seq_bio_data_id
-						  ,bcr.bio_content_repo_id
-						  ,link_value
-						  ,tmp_property
-						  ,'METADATA:' || tmp_study
-					from biomart.bio_content_repository bcr
-					where bcr.repository_type = link_repo
-					  and not exists
-						 (select 1 from biomart.bio_content x
-						  where x.etl_id_c like '%' || tmp_study || '%' escape ''
-							and x.file_type = tmp_property
-							and x.location = link_value);
-					rowCount := ROW_COUNT;
-					stepCt := stepCt + 1;
-					call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted ad_hoc_link for study into bio_content',rowCount,stepCt,'Done');		
+	--	Check if pubmed link exists, if not, add
+	
+	select count(*) into dCount
+	from tm_lz.lt_src_study_metadata
+	where pubmed_ids is not null;
+	
+	if dCount > 0 then
+		select count(*) into dcount
+		from biomart.bio_content_repository
+		where repository_type = 'PubMed';	
+	
+		if dcount = 0 then
+			insert into biomart.bio_content_repository
+			(bio_content_repo_id
+			,location
+			,active_y_n
+			,repository_type
+			,location_type) 
+			select next value for biomart.seq_bio_data_id
+				  ,'http://www.ncbi.nlm.nih.gov/pubmed/'
+				  ,'Y'
+				  ,'PubMed'
+				  ,'URL';
+			rowCount := ROW_COUNT;
+			stepCt := stepCt + 1;
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted GEO study into bio_content_reference',rowCount,stepCt,'Done');
+		end if;
+	end if;
 		
-					insert into biomart.bio_content_reference
-					(bio_content_reference_id
-					,bio_content_id
-					,bio_data_id
-					,content_reference_type
-					,etl_id_c
-					)
-					select next value for biomart.seq_bio_data_id
-						  ,bc.bio_file_content_id
-						  ,study_link_rec.ad_hoc_property_id
-						  ,tmp_property
-						  ,'METADATA:' || tmp_study
-					from biomart.bio_content bc
-					where bc.location = link_value
-					  and bc.file_type = tmp_property
-					  and bc.etl_id_c = 'METADATA:' || study_link_rec.study_id
-					  and not exists
-						 (select 1 from biomart.bio_content_reference x
-						  where bc.bio_file_content_id = x.bio_content_id
-							and study_link_rec.ad_hoc_property_id = x.bio_data_id);	
-					rowCount := ROW_COUNT;
-					stepCt := stepCt + 1;
-					call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted ad_hoc_link for study into bio_content_reference',rowCount,stepCt,'Done');	
-				end if;
-			end if;
-
-			dcount := dcount - 1;
-		end loop;
-	end loop;
+	--	loope through pubmed ids
 	
-	--	other links
-	
-	for study_link_rec in 
-		select distinct t.study_id
-			  ,t.ad_hoc_property_link as ad_hoc_link
-			  ,replace(t.ad_hoc_property_key,'adHocPropertyMap.','') as ad_hoc_property
-			  ,bahp.ad_hoc_property_id
-		from tm_lz.lt_src_study_metadata_ad_hoc t
-			,biomart.bio_experiment be
-			,biomart.bio_ad_hoc_property bahp
-		where t.ad_hoc_property_link is not null
-		  and t.study_id = be.accession
-		  and be.bio_experiment_id = bahp.bio_data_id
-		  and t.ad_hoc_property_key = bahp.property_key
-		  and t.ad_hoc_property_value = bahp.property_value
+	for study_pubmed_rec in
+		select distinct study_id, pubmed_ids
+		from tm_lz.lt_src_study_metadata
+		where pubmed_ids is not null
 	loop
-		dcount := length(study_link_rec.ad_hoc_link)-length(replace(study_link_rec.ad_hoc_link,';',''))+1;
-		tmp_study := study_link_rec.study_id;
-		tmp_property := study_link_rec.ad_hoc_property;
- 
+		dCount := length(study_pubmed_rec.pubmed_ids)-length(replace(study_pubmed_rec.pubmed_ids,'|',''))+1;
 		while dcount > 0
-		Loop	
-			-- multiple ad_hoc_links can be separated by ;, ad_hoc_link repository_type and value (location) are separated by :
-				
-			tmp_ad_hoc_link := tm_cz.parse_nth_value(study_link_rec.ad_hoc_link,dcount,';');		
-			lcount := instr(tmp_ad_hoc_link,':');
-				
+		loop	
+			-- multiple pubmed id can be separated by |, pubmed id and title are separated by @
+			tmp_pubmed := tm_cz.parse_nth_value(study_pubmed_rec.pubmed_ids,dcount,'|');		
+			lCount := instr(tmp_pubmed,'@');
 			if lcount = 0 then
+				pubmed_id := tmp_pubmed;
+				pubmed_title := null;
 				stepCt := stepCt + 1;
-				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Invalid link: ' || tmp_ad_hoc_link || ' for study ' || tmp_study || ' property ' || tmp_property,rowCount,stepCt,'Done');
+				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'pubmed_id: ' || pubmed_id,1,stepCt,'Done');
 			else
-				link_repo := substr(tmp_ad_hoc_link,1,instr(tmp_ad_hoc_link,':')-1);
-				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'link_repo: ' || link_repo,1,stepCt,'Done');	
-				link_value := substr(tmp_ad_hoc_link,instr(tmp_ad_hoc_link,':')+1);
-				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'link_value: ' || link_value,1,stepCt,'Done');
-				
-				--	validate value in link_repo as repository_type in bio_content_reference
-				
-				select count(*) into pExists
-				from biomart.bio_content_repository
-				where repository_type = link_repo;
-				
-				if pExists = 0 then
-					stepCt := stepCt + 1;
-					call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Invalid repository in link: ' || tmp_ad_hoc_link || ' for study ' || tmp_study || ' property ' || tmp_property,rowCount,stepCt,'Done');
-				else	
-					insert into biomart.bio_content
-					(bio_file_content_id
-					,repository_id
-					,location
-					,file_type
-					,etl_id_c
-					)
-					select next value for biomart.seq_bio_data_id
-						  ,bcr.bio_content_repo_id
-						  ,link_value
-						  ,tmp_property
-						  ,'METADATA:' || tmp_study
-					from biomart.bio_content_repository bcr
-					where bcr.repository_type = link_repo
-					  and not exists
-						 (select 1 from biomart.bio_content x
-						  where x.etl_id_c like '%' || tmp_study || '%' escape ''
-							and x.file_type = tmp_property
-							and x.location = link_value);
-					rowCount := ROW_COUNT;
-					stepCt := stepCt + 1;
-					call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted ad_hoc_link for study into bio_content',rowCount,stepCt,'Done');			
-	
-					insert into biomart.bio_content_reference
-					(bio_content_reference_id
-					,bio_content_id
-					,bio_data_id
-					,content_reference_type
-					,etl_id_c
-					)
-					select next value for biomart.seq_bio_data_id
-						  ,bc.bio_file_content_id
-						  ,study_link_rec.ad_hoc_property_id
-						  ,tmp_property
-						  ,'METADATA:' || tmp_study
-					from biomart.bio_content bc
-					where bc.location = link_value
-					  and bc.file_type = tmp_property
-					  and bc.etl_id_c = 'METADATA:' || study_link_rec.study_id
-					  and not exists
-						 (select 1 from biomart.bio_content_reference x
-						  where bc.bio_file_content_id = x.bio_content_id
-							and study_link_rec.ad_hoc_property_id = x.bio_data_id);	
-					rowCount := ROW_COUNT;
-					stepCt := stepCt + 1;
-					call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted ad_hoc_link for study into bio_content_reference',rowCount,stepCt,'Done');	
-				end if;
+				pubmed_id := substr(tmp_pubmed,1,instr(tmp_pubmed,'@')-1);
+				stepCt := stepCt + 1;
+				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'pubmed_id: ' || pubmed_id,1,stepCt,'Done');	
+				pubmed_title := substr(tmp_pubmed,instr(tmp_pubmed,'@')+1);
+				stepCt := stepCt + 1;
+				call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'pubmed_title: ' || pubmed_title,1,stepCt,'Done');
 			end if;
 	
+			insert into biomart.bio_content
+			(bio_file_content_id
+			,repository_id
+			,location
+			,title
+			,file_type
+			,etl_id_c
+			)
+			select next value for biomart.seq_bio_data_id
+				  ,bcr.bio_content_repo_id
+				  ,pubmed_id
+				  ,pubmed_title
+				  ,'Publication Web Link'
+				  ,'METADATA:' || study_pubmed_rec.study_id
+			from biomart.bio_content_repository bcr
+			where bcr.repository_type = 'PubMed'
+			  and not exists
+				 (select 1 from biomart.bio_content x
+				  where x.etl_id_c like '%' || study_pubmed_rec.study_id || '%' escape ''
+				    and x.file_type = 'Publication Web Link'
+					and x.location = pubmed_id);
+			rowCount := ROW_COUNT;
+			stepCt := stepCt + 1;
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted pubmed for study into bio_content',rowCount,stepCt,'Done');
+			
+			insert into biomart.bio_content_reference
+				(bio_content_reference_id
+				,bio_content_id
+				,bio_data_id
+				,content_reference_type
+				,etl_id_c
+				)
+				select next value for biomart.seq_bio_data_id
+					  ,bc.bio_file_content_id
+					  ,be.bio_experiment_id
+					  ,'Publication Web Link'
+					  ,'METADATA:' || study_pubmed_rec.study_id
+				from biomart.bio_experiment be
+					,biomart.bio_content bc
+				where be.accession = study_pubmed_rec.study_id
+				  and bc.file_type = 'Publication Web Link'
+				  and bc.etl_id_c = 'METADATA:' || study_pubmed_rec.study_id
+				  and bc.location = pubmed_id
+				  and not exists
+					 (select 1 from biomart.bio_content_reference x
+					  where bc.bio_file_content_id = x.bio_content_id
+						and be.bio_experiment_id = x.bio_data_id);
+			rowCount := ROW_COUNT;
+			stepCt := stepCt + 1;
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Inserted pubmed for study into bio_content_reference',rowCount,stepCt,'Done');
 			dcount := dcount - 1;
 		end loop;
-	end loop;
+	end loop;	
 
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'End i2b2_load_study_metadata',rowCount,stepCt,'Done');

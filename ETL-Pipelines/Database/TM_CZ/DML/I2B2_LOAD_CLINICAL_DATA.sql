@@ -51,10 +51,13 @@ Declare
   vCount		int4;
   bslash		char(1);
   regexp_date	varchar(500);
+  regexp_timestamp	varchar(500);
   regexp_numeric	varchar(500);
   date_metadataxml	varchar(1000);
   num_metadataxml	varchar(1000);
   v_sqlerrm			varchar(1000);
+  v_sourcesystem_ct	int4;
+  v_topNode_ct		int4;
 
 	vocab_rec	record;
 	del_nodes	record;
@@ -73,7 +76,8 @@ BEGIN
 	TrialID := upper(trial_id);
 	secureStudy := upper(secure_study);
 	bslash := '\\';
-	regexp_date := '((((19|20)([2468][048]|[13579][26]|0[48])|2000)-02-29|((19|20)[0-9]{2}-(0[4678]|1[02])-(0[1-9]|[12][0-9]|30)|(19|20)[0-9]{2}-(0[1359]|11)-(0[1-9]|[12][0-9]|3[01])|(19|20)[0-9]{2}-02-(0[1-9]|1[0-9]|2[0-8])))\s([01][0-9]|2[0-3]):([012345][0-9]):([012345][0-9]))';
+	-- regexp_date := '((((19|20)([2468][048]|[13579][26]|0[48])|2000)-02-29|((19|20)[0-9]{2}-(0[4678]|1[02])-(0[1-9]|[12][0-9]|30)|(19|20)[0-9]{2}-(0[1359]|11)-(0[1-9]|[12][0-9]|3[01])|(19|20)[0-9]{2}-02-(0[1-9]|1[0-9]|2[0-8])))\s([01][0-9]|2[0-3]):([012345][0-9]):([012345][0-9]))';
+	regexp_timestamp := '(^$)|(^([1-2]\d{3}-([0]?[1-9]|1[0-2])-([0]?[1-9]|[1-2][0-9]|3[0-1]))[ |T]?((([0-1]?\d)|(2[0-3])):[0-5]\d)?(:[0-5]\d)?(\.\d{1,3})?$)';
 	regexp_numeric := '^[0-9]+(\.[0-9]+)?$';
 	date_metadataxml := '<?xml version="1.0"?><ValueMetadata><Version>3.02</Version><CreationDateTime>08/14/2008 01:22:59</CreationDateTime><TestID></TestID><TestName></TestName><DataType>PosFloat</DataType><CodeType></CodeType><Loinc></Loinc><Flagstouse></Flagstouse><Oktousevalues>Y</Oktousevalues><MaxStringLength></MaxStringLength><LowofLowValue>0</LowofLowValue><HighofLowValue>0</HighofLowValue><LowofHighValue>100</LowofHighValue>100<HighofHighValue>100</HighofHighValue><LowofToxicValue></LowofToxicValue><HighofToxicValue></HighofToxicValue><EnumValues></EnumValues><CommentsDeterminingExclusion><Com></Com></CommentsDeterminingExclusion><UnitValues><NormalUnits>ratio</NormalUnits><EqualUnits></EqualUnits><ExcludingUnits></ExcludingUnits><ConvertingUnits><Units></Units><MultiplyingFactor></MultiplyingFactor></ConvertingUnits></UnitValues><Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>';
 	num_metadataxml := '<?xml version="1.0"?><ValueMetadata><Version>3.02</Version><CreationDateTime>08/14/2008 01:22:59</CreationDateTime><TestID></TestID><TestName></TestName><DataType>PosFloat</DataType><CodeType></CodeType><Loinc></Loinc><Flagstouse>LNH</Flagstouse><Oktousevalues>Y</Oktousevalues><MaxStringLength></MaxStringLength><LowofLowValue>0</LowofLowValue><HighofLowValue>0</HighofLowValue><LowofHighValue>100</LowofHighValue>100<HighofHighValue>100</HighofHighValue><LowofToxicValue></LowofToxicValue><HighofToxicValue></HighofToxicValue><EnumValues></EnumValues><CommentsDeterminingExclusion><Com></Com></CommentsDeterminingExclusion><UnitValues><NormalUnits>ratio</NormalUnits><EqualUnits></EqualUnits><ExcludingUnits></ExcludingUnits><ConvertingUnits><Units></Units><MultiplyingFactor></MultiplyingFactor></ConvertingUnits></UnitValues><Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>';
@@ -103,6 +107,38 @@ BEGIN
 	
 	if (secureStudy not in ('Y','N') ) then
 		secureStudy := 'Y';
+	end if;
+	
+	--	check for mismatch between TrialId and topNode for previously loaded data
+	
+	select count(*) into v_sourcesystem_ct
+	from i2b2metadata.i2b2
+	where sourcesystem_cd = TrialId;
+	
+	select count(*) into v_topNode_ct
+	from i2b2metadata.i2b2
+	where c_fullname = topNode;
+	
+	if (v_sourcesystem_ct = 0 and v_topNode_ct > 0) or (v_sourcesystem_ct > 0 and v_topNode_ct = 0) then
+		stepCt := stepCt + 1;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'TrialId and topNode are mismatched',0,stepCt,'Done');	
+		call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error');
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
+		return 16;
+	end if;
+	
+	if v_sourcesystem_ct > 0 and v_topNode_ct > 0 then
+		select count(*) into v_topNode_ct
+		from i2b2metadata.i2b2
+		where sourcesystem_cd = TrialId
+		  and c_fullname = topNode;
+		if v_topNode_ct = 0 then
+			stepCt := stepCt + 1;
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'TrialId and topNode are mismatched',0,stepCt,'Done') into rtnCd;	
+			call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error') into rtnCd;
+			call tm_cz.czx_end_audit (jobID, 'FAIL') into rtnCd;
+			return 16;
+		end if;
 	end if;
 	
 	topNode := REGEXP_REPLACE(bslash || top_node || bslash,'(\\){2,}', bslash);
@@ -138,7 +174,7 @@ BEGIN
 	select count(*) into pExists
 	from tm_lz.lt_src_clinical_data
 	where visit_date is not null
-	  and cast(regexp_extract(visit_date,regexp_date) as varchar(50)) != visit_date;
+	  and cast(regexp_extract(visit_date,regexp_timestamp) as varchar(50)) is null;
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Check for invalid visit_date',rowCount,stepCt,'Done');
@@ -155,7 +191,7 @@ BEGIN
 	select count(*) into pExists
 	from tm_lz.lt_src_clinical_data
 	where end_date is not null
-	  and cast(regexp_extract(end_date,regexp_date) as varchar(50)) != end_date;
+	  and cast(regexp_extract(end_date,regexp_timestamp) as varchar(50)) is null;
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Check for invalid end_date',rowCount,stepCt,'Done');
@@ -172,7 +208,7 @@ BEGIN
 	select count(*) into pExists
 	from tm_lz.lt_src_subj_enroll_date
 	where enroll_date is not null
-	  and cast(regexp_extract(enroll_date,regexp_date) as varchar(50)) != enroll_date;
+	  and cast(regexp_extract(enroll_date,regexp_timestamp) as varchar(50)) is null;
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Check for invalid enroll_date',rowCount,stepCt,'Done');

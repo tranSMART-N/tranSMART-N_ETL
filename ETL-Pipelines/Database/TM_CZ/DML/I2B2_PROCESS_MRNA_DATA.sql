@@ -62,6 +62,8 @@ Declare
 	runDate		timestamp;
 	bslash		char(1);
 	v_sqlerrm	varchar(1000);
+	v_sourcesystem_cd	int4;
+	v_topNode_ct		int4;
 	
 	--	records
 	r_Nodes	record;
@@ -118,6 +120,38 @@ BEGIN
 	stepCt := 0;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Starting i2b2_process_mrna_data',0,stepCt,'Done');
+	
+	--	check for mismatch between TrialId and topNode for previously loaded data
+	
+	select count(*) into v_sourcesystem_ct
+	from i2b2metadata.i2b2
+	where sourcesystem_cd = TrialId;
+	
+	select count(*) into v_topNode_ct
+	from i2b2metadata.i2b2
+	where c_fullname = topNode;
+	
+	if (v_sourcesystem_ct = 0 and v_topNode_ct > 0) or (v_sourcesystem_ct > 0 and v_topNode_ct = 0) then
+		stepCt := stepCt + 1;
+		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'TrialId and topNode are mismatched',0,stepCt,'Done');	
+		call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error');
+		call tm_cz.czx_end_audit (jobID, 'FAIL');
+		return 16;
+	end if;
+	
+	if v_sourcesystem_ct > 0 and v_topNode_ct > 0 then
+		select count(*) into v_topNode_ct
+		from i2b2metadata.i2b2
+		where sourcesystem_cd = TrialId
+		  and c_fullname = topNode;
+		if v_topNode_ct = 0 then
+			stepCt := stepCt + 1;
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'TrialId and topNode are mismatched',0,stepCt,'Done') into rtnCd;	
+			call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error') into rtnCd;
+			call tm_cz.czx_end_audit (jobID, 'FAIL') into rtnCd;
+			return 16;
+		end if;
+	end if;
 	
 	--	Get count of records in lt_src_mrna_subj_samp_map
 	
@@ -649,6 +683,7 @@ BEGIN
 		  and a.tissue_type = ln.tissue_type
 		  and coalesce(a.attribute_1,'@') = coalesce(ln.attribute_1,'@')
 		  and coalesce(a.attribute_2,'@') = coalesce(ln.attribute_2,'@')
+		  and a.category_cd = ln.category_cd
 		  and ln.node_type = 'LEAF';
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
@@ -666,6 +701,7 @@ BEGIN
 				on regexp_replace(TrialID || ':' || coalesce(a.site_id,'') || ':' || a.subject_id,'(::){1,}', ':') = b.sourcesystem_cd
 		  inner join tm_wz.wt_mrna_nodes pn
 				on  a.platform = pn.platform
+				and a.category_cd = pn.category_cd
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'PLATFORM')+8),'TISSUETYPE') > 1 then a.tissue_type else '@' end = coalesce(pn.tissue_type,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'PLATFORM')+8),'ATTR1') > 1 then a.attribute_1 else '@' end = coalesce(pn.attribute_1,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'PLATFORM')+8),'ATTR2') > 1 then a.attribute_2 else '@' end = coalesce(pn.attribute_2,'@')
@@ -689,6 +725,7 @@ BEGIN
 				on regexp_replace(TrialID || ':' || coalesce(a.site_id,'') || ':' || a.subject_id,'(::){1,}', ':') = b.sourcesystem_cd
 		  left outer join tm_wz.wt_mrna_nodes ttp
 				on  a.tissue_type = ttp.tissue_type
+				and a.category_cd = ttp.category_cd
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'TISSUETYPE')+10),'PLATFORM') > 1 then a.platform else '@' end = coalesce(ttp.platform,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'TISSUETYPE')+10),'ATTR1') > 1 then a.attribute_1 else '@' end = coalesce(ttp.attribute_1,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'TISSUETYPE')+10),'ATTR2') > 1 then a.attribute_2 else '@' end = coalesce(ttp.attribute_2,'@')
@@ -711,6 +748,7 @@ BEGIN
 				on  regexp_replace(TrialID || ':' || coalesce(a.site_id,'') || ':' || a.subject_id,'(::){1,}', ':') = b.sourcesystem_cd
   		  left outer join tm_wz.wt_mrna_nodes a1
 				on  a.attribute_1 = a1.attribute_1
+				and a.category_cd = a1.category_cd
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR1')+5),'PLATFORM') > 1 then a.platform else '@' end = coalesce(a1.platform,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR1')+5),'TISSUETYPE') > 1 then a.tissue_type else '@' end = coalesce(a1.tissue_type,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR1')+5),'ATTR2') > 1 then a.attribute_2 else '@' end = coalesce(a1.attribute_2,'@')
@@ -734,6 +772,7 @@ BEGIN
 				on  regexp_replace(TrialID || ':' || coalesce(a.site_id,'') || ':' || a.subject_id,'(::){1,}', ':') = b.sourcesystem_cd
   		  left outer join tm_wz.wt_mrna_nodes a2
 				on 	a.attribute_2 = a2.attribute_2
+				and a.category_cd = a2.category_cd
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR2')+5),'PLATFORM') > 1 then a.platform else '@' end = coalesce(a2.platform,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR2')+5),'TISSUETYPE') > 1 then a.tissue_type else '@' end = coalesce(a2.tissue_type,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR2')+5),'ATTR1') > 1 then a.attribute_1 else '@' end = coalesce(a2.attribute_1,'@')
