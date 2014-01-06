@@ -62,7 +62,7 @@ Declare
 	runDate		timestamp;
 	bslash		char(1);
 	v_sqlerrm	varchar(1000);
-	v_sourcesystem_cd	int4;
+	v_sourcesystem_ct	int4;
 	v_topNode_ct		int4;
 	
 	--	records
@@ -116,6 +116,7 @@ BEGIN
 		newJobFlag := 1; -- True
 		jobId := tm_cz.czx_start_audit (procedureName, databaseName);
 	END IF;
+	raise notice 'after start audit';
     	
 	stepCt := 0;
 	stepCt := stepCt + 1;
@@ -138,6 +139,7 @@ BEGIN
 		call tm_cz.czx_end_audit (jobID, 'FAIL');
 		return 16;
 	end if;
+	raise notice 'after test1';
 	
 	if v_sourcesystem_ct > 0 and v_topNode_ct > 0 then
 		select count(*) into v_topNode_ct
@@ -330,7 +332,13 @@ BEGIN
 	--	delete any existing data from de_subject_microarray_data
 	
 	delete from deapp.de_subject_microarray_data
-	where trial_name = TrialId;
+	where trial_name = TrialId
+	  and assay_id in 
+		  (select distinct x.assay_id
+		   from deapp.de_subject_sample_mapping x
+		   where x.trial_name = TrialId
+		     and coalesce(x.source_cd,'STD') = sourceCD
+		     and x.platform = 'MRNA_AFFYMETRIX');
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete data from de_subject_microarray_data',ROW_COUNT,stepCt,'Done');
@@ -382,18 +390,21 @@ BEGIN
 	,attribute_1
     ,attribute_2
 	,node_type
+	,orig_category_cd
 	)
-	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(replace(category_cd,'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',tissue_type),'+',bslash),'_',' ') || bslash,'(\\){2,}', bslash),1,2000)
+	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(replace(category_cd,'+',bslash),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',coalesce(tissue_type,'')),'_',' ') || bslash,'(\\){2,}', bslash),1,2000)
 		  ,category_cd
 		  ,platform as platform
 		  ,tissue_type
 		  ,attribute_1 as attribute_1
           ,attribute_2 as attribute_2
 		  ,'LEAF'
+		  ,category_cd
 	from  tm_wz.wt_mrna_node_values;  
 	rowCount := ROW_COUNT;
     stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create leaf nodes in DEAPP tmp_mrna_nodes',rowCount,stepCt,'Done');
+	raise notice 'after LEAF';
 	
 	--	insert for platform node so platform concept can be populated
 	
@@ -405,22 +416,24 @@ BEGIN
 	,attribute_1
     ,attribute_2
 	,node_type
-	,node_name
+	,orig_category_cd
 	)
-	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(replace(
-	       substr(category_cd,1,instr(category_cd,'PLATFORM')+8),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',tissue_type),'+',bslash),'_',' ') || bslash,
-		   '(\\){2,}',bslash),1,2000)
+	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(
+	       substr(replace(category_cd,'+',bslash),1,instr(category_cd,'PLATFORM')+8),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',coalesce(tissue_type,'')),'_',' ') || bslash,
+		   '(\\){2,}', bslash),1,2000)
 		  ,substr(category_cd,1,instr(category_cd,'PLATFORM')+8)
 		  ,platform as platform
 		  ,case when instr(substr(category_cd,1,instr(category_cd,'PLATFORM')+8),'TISSUETYPE') > 1 then tissue_type else null end as tissue_type
 		  ,case when instr(substr(category_cd,1,instr(category_cd,'PLATFORM')+8),'ATTR1') > 1 then attribute_1 else null end as attribute_1
           ,case when instr(substr(category_cd,1,instr(category_cd,'PLATFORM')+8),'ATTR2') > 1 then attribute_2 else null end as attribute_2
 		  ,'PLATFORM'
+		  ,category_cd
 	from  tm_wz.wt_mrna_node_values
-	where category_cd like '%PLATFORM%'; 
+	where category_cd like '%PLATFORM%' escape ''; 
 	rowCount := ROW_COUNT;
     stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create platform nodes in wt_mrna_nodes',rowCount,stepCt,'Done');
+	raise notice 'after platform';
 	
 	--	insert for ATTR1 node so ATTR1 concept can be populated in tissue_type_cd
 	
@@ -432,9 +445,10 @@ BEGIN
     ,attribute_1
 	,attribute_2
 	,node_type
+	,orig_category_cd
 	)
-	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(replace(
-	       substr(category_cd,1,instr(category_cd,'ATTR1')+5),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',coalesce(tissue_type,'')),'+',bslash),'_',' ') || bslash,
+	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(
+	       substr(replace(category_cd,'+',bslash),1,instr(category_cd,'ATTR1')+5),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',coalesce(tissue_type,'')),'_',' ') || bslash,
 		   '(\\){2,}', bslash),1,2000)
 		  ,substr(category_cd,1,instr(category_cd,'ATTR1')+5)
 		  ,case when instr(substr(category_cd,1,instr(category_cd,'ATTR1')+5),'PLATFORM') > 1 then platform else null end as platform
@@ -442,12 +456,14 @@ BEGIN
 		  ,attribute_1 as attribute_1
           ,case when instr(substr(category_cd,1,instr(category_cd,'ATTR1')+5),'ATTR2') > 1 then attribute_2 else null end as attribute_2
 		  ,'ATTR1'
+		  ,category_cd
 	from  tm_wz.wt_mrna_node_values
-	where category_cd like '%ATTR1%'
+	where category_cd like '%ATTR1%' escape ''
 	  and attribute_1 is not null;  
 	rowCount := ROW_COUNT;
     stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create ATTR1 nodes in wt_mrna_nodes',rowCount,stepCt,'Done');
+	raise notice 'after attr1';
 	
 	--	insert for ATTR2 node so ATTR2 concept can be populated in timepoint_cd
 	
@@ -459,9 +475,10 @@ BEGIN
     ,attribute_1
 	,attribute_2
 	,node_type
+	,orig_category_cd
 	)
-	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(replace(
-	       substr(category_cd,1,instr(category_cd,'ATTR2')+5),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',coalesce(tissue_type,'')),'+',bslash),'_',' ') || bslash,
+	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(
+	       substr(replace(category_cd,'+',bslash),1,instr(category_cd,'ATTR2')+5),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',coalesce(tissue_type,'')),'_',' ') || bslash,
 		   '(\\){2,}', bslash),1,2000)
 		  ,substr(category_cd,1,instr(category_cd,'ATTR2')+5)
 		  ,case when instr(substr(category_cd,1,instr(category_cd,'ATTR2')+5),'PLATFORM') > 1 then platform else null end as platform
@@ -469,12 +486,14 @@ BEGIN
           ,case when instr(substr(category_cd,1,instr(category_cd,'ATTR2')+5),'ATTR1') > 1 then attribute_1 else null end as attribute_1
 		  ,attribute_2 as attribute_2
 		  ,'ATTR2'
+		  ,category_cd
 	from  tm_wz.wt_mrna_node_values
-	where category_cd like '%ATTR2%'
+	where category_cd like '%ATTR2%' escape ''
 	  and attribute_2 is not null; 
 	rowCount := ROW_COUNT;
     stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create ATTR2 nodes in wt_mrna_nodes',rowCount,stepCt,'Done');
+	raise notice 'after attr2';
 	
 	--	insert for tissue_type node so sample_type_cd can be populated
 	
@@ -486,9 +505,10 @@ BEGIN
 	,attribute_1
     ,attribute_2
 	,node_type
+	,orig_category_cd
 	)
-	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(replace(
-	       substr(category_cd,1,instr(category_cd,'TISSUETYPE')+10),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',tissue_type),'+',bslash),'_',' ') || bslash,
+	select distinct substr(topNode || regexp_replace(replace(replace(replace(replace(replace(
+	       substr(replace(category_cd,'+',bslash),1,instr(category_cd,'TISSUETYPE')+10),'PLATFORM',title),'ATTR1',coalesce(attribute_1,'')),'ATTR2',coalesce(attribute_2,'')),'TISSUETYPE',coalesce(tissue_type,'')),'_',' ') || bslash,
 		   '(\\){2,}', bslash),1,2000)
 		  ,substr(category_cd,1,instr(category_cd,'TISSUETYPE')+10)
 		  ,case when instr(substr(category_cd,1,instr(category_cd,'TISSUETYPE')+10),'PLATFORM') > 1 then platform else null end as platform
@@ -496,11 +516,13 @@ BEGIN
 		  ,case when instr(substr(category_cd,1,instr(category_cd,'TISSUETYPE')+10),'ATTR1') > 1 then attribute_1 else null end as attribute_1
           ,case when instr(substr(category_cd,1,instr(category_cd,'TISSUETYPE')+10),'ATTR2') > 1 then attribute_2 else null end as attribute_2
 		  ,'TISSUETYPE'
+		  ,category_cd
 	from  tm_wz.wt_mrna_node_values
-	where category_cd like '%TISSUETYPE%';   
+	where category_cd like '%TISSUETYPE%' escape '';   
 	rowCount := ROW_COUNT;
     stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Create ATTR2 nodes in wt_mrna_nodes',rowCount,stepCt,'Done');
+	raise notice 'after tissuetype';
 
 	update tm_wz.wt_mrna_nodes t
 	set node_name=x.node_name
@@ -680,6 +702,7 @@ BEGIN
 		  on  regexp_replace(TrialID || ':' || coalesce(a.site_id,'') || ':' || a.subject_id,'(::){1,}', ':') = b.sourcesystem_cd
 	inner join tm_wz.wt_mrna_nodes ln
 		  on  a.platform = ln.platform
+		  and a.category_cd = ln.orig_category_cd
 		  and a.tissue_type = ln.tissue_type
 		  and coalesce(a.attribute_1,'@') = coalesce(ln.attribute_1,'@')
 		  and coalesce(a.attribute_2,'@') = coalesce(ln.attribute_2,'@')
@@ -701,7 +724,7 @@ BEGIN
 				on regexp_replace(TrialID || ':' || coalesce(a.site_id,'') || ':' || a.subject_id,'(::){1,}', ':') = b.sourcesystem_cd
 		  inner join tm_wz.wt_mrna_nodes pn
 				on  a.platform = pn.platform
-				and a.category_cd = pn.category_cd
+				and a.category_cd = pn.orig_category_cd
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'PLATFORM')+8),'TISSUETYPE') > 1 then a.tissue_type else '@' end = coalesce(pn.tissue_type,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'PLATFORM')+8),'ATTR1') > 1 then a.attribute_1 else '@' end = coalesce(pn.attribute_1,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'PLATFORM')+8),'ATTR2') > 1 then a.attribute_2 else '@' end = coalesce(pn.attribute_2,'@')
@@ -725,7 +748,7 @@ BEGIN
 				on regexp_replace(TrialID || ':' || coalesce(a.site_id,'') || ':' || a.subject_id,'(::){1,}', ':') = b.sourcesystem_cd
 		  left outer join tm_wz.wt_mrna_nodes ttp
 				on  a.tissue_type = ttp.tissue_type
-				and a.category_cd = ttp.category_cd
+				and a.category_cd = ttp.orig_category_cd
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'TISSUETYPE')+10),'PLATFORM') > 1 then a.platform else '@' end = coalesce(ttp.platform,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'TISSUETYPE')+10),'ATTR1') > 1 then a.attribute_1 else '@' end = coalesce(ttp.attribute_1,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'TISSUETYPE')+10),'ATTR2') > 1 then a.attribute_2 else '@' end = coalesce(ttp.attribute_2,'@')
@@ -748,7 +771,7 @@ BEGIN
 				on  regexp_replace(TrialID || ':' || coalesce(a.site_id,'') || ':' || a.subject_id,'(::){1,}', ':') = b.sourcesystem_cd
   		  left outer join tm_wz.wt_mrna_nodes a1
 				on  a.attribute_1 = a1.attribute_1
-				and a.category_cd = a1.category_cd
+				and a.category_cd = a1.orig_category_cd
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR1')+5),'PLATFORM') > 1 then a.platform else '@' end = coalesce(a1.platform,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR1')+5),'TISSUETYPE') > 1 then a.tissue_type else '@' end = coalesce(a1.tissue_type,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR1')+5),'ATTR2') > 1 then a.attribute_2 else '@' end = coalesce(a1.attribute_2,'@')
@@ -772,7 +795,7 @@ BEGIN
 				on  regexp_replace(TrialID || ':' || coalesce(a.site_id,'') || ':' || a.subject_id,'(::){1,}', ':') = b.sourcesystem_cd
   		  left outer join tm_wz.wt_mrna_nodes a2
 				on 	a.attribute_2 = a2.attribute_2
-				and a.category_cd = a2.category_cd
+				and a.category_cd = a2.orig_category_cd
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR2')+5),'PLATFORM') > 1 then a.platform else '@' end = coalesce(a2.platform,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR2')+5),'TISSUETYPE') > 1 then a.tissue_type else '@' end = coalesce(a2.tissue_type,'@')
 				and case when instr(substr(a.category_cd,1,instr(a.category_cd,'ATTR2')+5),'ATTR1') > 1 then a.attribute_1 else '@' end = coalesce(a2.attribute_1,'@')
@@ -819,7 +842,8 @@ BEGIN
 	  and sm.source_cd = upd.source_cd
 	  and coalesce(sm.site_id,'@') = coalesce(upd.site_id,'@')
 	  and sm.subject_id = upd.subject_id
-	  and sm.sample_cd = upd.sample_cd;
+	  and sm.sample_cd = upd.sample_cd
+	  and sm.platform = 'MRNA_AFFYMETRIX';
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Updated existing data in de_subject_sample_mappping',rowCount,stepCt,'Done');  

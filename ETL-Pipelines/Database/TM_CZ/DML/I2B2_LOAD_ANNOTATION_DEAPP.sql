@@ -147,7 +147,7 @@ BEGIN
 	select distinct d.gpl_id
 	,d.probe_id
 	,d.gene_symbol
-	,case when d.gene_id is null then null else to_number(d.gene_id,'9') end
+	,case when d.gene_id is null then null else d.gene_id::bigint end
 	,p.probeset_id
 	,coalesce(d.organism,'Homo sapiens')
 	from tm_lz.lt_src_deapp_annot d
@@ -170,7 +170,7 @@ BEGIN
 				 where upper(b.bio_marker_type) = 'GENE'
 				 group by b.bio_marker_name, b.organism) upd
 	where t.gene_symbol = upd.gene_symbol
-	  and t.organism = upd.organism
+	  and upper(t.organism) = upper(upd.organism)
 	  and t.gpl_id = gplId
 	  and t.gene_id is null
 	  and t.gene_symbol is not null;		
@@ -189,7 +189,7 @@ BEGIN
 				 where upper(b.bio_marker_type) = 'GENE'
 				 group by b.primary_external_id, b.organism) upd
 	where t.gene_id = upd.gene_id
-	  and t.organism = upd.organism
+	  and upper(t.organism) = upper(upd.organism)
 	  and t.gpl_id = gplId
 	  and t.gene_id is null
 	  and t.gene_symbol is not null;
