@@ -1,6 +1,6 @@
 CREATE OR REPLACE PROCEDURE TM_CZ."I2B2_MOVE_ANALYSIS_TO_PROD" 
-(numeric(18,0)
-,numeric(18,0)
+(bigint
+,bigint
 )
 RETURNS int4
 LANGUAGE NZPLSQL AS
@@ -179,12 +179,15 @@ BEGIN
 			
 			v_sqlText := 'delete from biomart_stage.bio_assay_analysis_' || v_data_type || 
 						 ' where bio_assay_analysis_id = ' || v_bio_assay_analysis_id;
-			raise notice '%', v_sqlText;
 			execute immediate v_sqlText;
 			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
 			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete data for analysis from BIOMART_STAGE.BIO_ASSAY_ANALYSIS_' || v_data_type,rowCount,stepCt,'Done');       
            
+			--	load top 500 rows to bio_asy_analysis_gwas_top50
+			
+			call tm_ca.i2b2_load_gwas_top50(v_bio_assay_analysis_id,jobId);
+			
         end if;
         
         if stage_rec.data_type = 'EQTL' then
@@ -239,7 +242,11 @@ BEGIN
 			rowCount := ROW_COUNT;
 			stepCt := stepCt + 1;
 			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete data for analysis from BIOMART_STAGE.BIO_ASSAY_ANALYSIS_' || v_data_type,rowCount,stepCt,'Done');       
-       
+
+			--	load top 500 rows to bio_asy_analysis_eqtl_top50
+			
+			call tm_ca.i2b2_load_eqtl_top50(v_bio_assay_analysis_id,jobId);
+			
 		end if;    
 		
 		--	update status in lz_src_analysis_metadata
@@ -261,18 +268,17 @@ BEGIN
 		return 0;
 	end if;
     
-    --	recreate top 50(0) if gwas or eqtl reloaded
+	--	check if any data left in stage tables after move, usually indicates missing bio_assay_analysis record
 	
-	if v_GWAS_staged > 0 then
-		call tm_cz.i2b2_load_gwas_top50(jobId);
-		stepCt := stepCt + 1;
-		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Created top 50 GWAS',0,stepCt,'Done');
-	end if;
-        
-    if v_EQTL_staged = 1 then 
-		call tm_cz.i2b2_load_eqtl_top50(jobId);
-		stepCt := stepCt + 1;
-		call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Created top 50 EQTL',0,stepCt,'Done');
+	if i_etl_id = -1 then
+		select count(*) into v_exists
+		from (select distinct bio_assay_analysis_id from biomart_stage.bio_assay_analysis_gwas
+			  union
+			  select distinct bio_assay_analysis_id from biomart_stage.bio_assay_analysis_eqtl) x;
+		if v_exists > 0 then
+			stepCt := stepCt + 1;
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'**WARNING ** Data remains in staging tables',0,stepCt,'Done');
+		end if;
 	end if;
     
     call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'End i2b2_move_analysis_to_prod',0,stepCt,'Done');

@@ -1,5 +1,6 @@
 CREATE OR REPLACE PROCEDURE TM_CZ.I2B2_LOAD_EQTL_TOP50 
-(numeric(18,0)
+(bigint
+,bigint
 )
 RETURNS int4
 LANGUAGE NZPLSQL AS
@@ -22,7 +23,8 @@ BEGIN_PROC
 Declare
 	--	Alias for parameters
 	
-	currentJobID alias for $1;
+	i_bio_assay_analysis_id	alias for $1;
+	currentJobID alias for $2;
 	
 	--Audit variables
 	newJobFlag int4;
@@ -56,9 +58,11 @@ begin
 	
 	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Start ' || procedureName,0,stepCt,'Done');
 	
-	execute immediate 'truncate table biomart.bio_asy_analysis_eqtl_top50';
+	delete from biomart.bio_asy_analysis_eqtl_top50
+	where bio_assay_analysis_id = i_bio_assay_analysis_id;
+	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
-	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Truncate bio_asy_analysis_eqtl_top50',0,stepCt,'Done');
+	call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'Delete analysis from bio_asy_analysis_eqtl_top50',rowCount,stepCt,'Done');
 	
 	insert into biomart.bio_asy_analysis_eqtl_top50
 	(bio_assay_analysis_id
@@ -82,13 +86,14 @@ begin
 				,eqtl.p_value as pvalue
 				,eqtl.log_p_value as logpvalue
 				,eqtl.ext_data as extdata
-				,row_number () over (partition by eqtl.bio_assay_analysis_id order by eqtl.p_value asc, eqtl.rs_id asc) as rnum
+				,row_number () over (order by eqtl.p_value asc, eqtl.rs_id asc) as rnum
 		  from biomart.bio_assay_analysis_eqtl eqtl 
 		  inner join biomart.bio_assay_analysis baa 
 				on  baa.bio_assay_analysis_id = eqtl.bio_assay_analysis_id
 		  inner join deapp.de_rc_snp_info info 
 				on  eqtl.rs_id = info.rs_id 
-				and hg_version='19') a
+				and hg_version='19'
+		  where eqtl.bio_assay_analysis_id = i_bio_assay_analysis_id) a
 	where a.rnum < 500;
 	rowCount := ROW_COUNT;
 	stepCt := stepCt + 1;
