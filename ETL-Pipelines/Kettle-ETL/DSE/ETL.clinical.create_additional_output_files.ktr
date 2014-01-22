@@ -63,7 +63,7 @@
   <created_user>-</created_user>
   <created_date>2013&#47;04&#47;18 13:54:30.379</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2013&#47;11&#47;01 12:05:32.137</modified_date>
+  <modified_date>2014&#47;01&#47;22 07:31:32.460</modified_date>
   </info>
   <notepads>
     <notepad>
@@ -103,7 +103,7 @@
     </notepad>
   </notepads>
   <order>
-  <hop> <from>Count rows by key fields</from><to>Check for dup values</to><enabled>Y</enabled> </hop>  <hop> <from>Check for dup values</from><to>No dups</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric or date std</from><to>Numeric default</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric or date std</from><to>Text default</to><enabled>Y</enabled> </hop>  <hop> <from>Skip text data, visit_date not null, or date</from><to>Skip dup check</to><enabled>Y</enabled> </hop>  <hop> <from>Special text ont</from><to>Sort ontology</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric default</from><to>Default numeric ont</to><enabled>Y</enabled> </hop>  <hop> <from>Default numeric ont</from><to>Sort ontology</to><enabled>Y</enabled> </hop>  <hop> <from>Text default</from><to>Default text ont</to><enabled>Y</enabled> </hop>  <hop> <from>Default text ont</from><to>Sort ontology</to><enabled>Y</enabled> </hop>  <hop> <from>Child contains parent</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Blocking Step</from><to>Abort</to><enabled>Y</enabled> </hop>  <hop> <from>Add dummy group field</from><to>Get next node</to><enabled>Y</enabled> </hop>  <hop> <from>Get next node</from><to>Child contains parent</to><enabled>Y</enabled> </hop>  <hop> <from>Last backslash</from><to>Replace double backslash</to><enabled>Y</enabled> </hop>  <hop> <from>Replace double backslash</from><to>Add dummy group field</to><enabled>Y</enabled> </hop>  <hop> <from>Sort ontology</from><to>Replace &lt;null&gt;</to><enabled>Y</enabled> </hop>  <hop> <from>Replace double backslash</from><to>Write ontology file</to><enabled>Y</enabled> </hop>  <hop> <from>Replace &lt;null&gt;</from><to>Last backslash</to><enabled>Y</enabled> </hop>  <hop> <from>Read std output file</from><to>Non-null visit_name</to><enabled>N</enabled> </hop>  <hop> <from>Non-null visit_name</from><to>Set non-null counts</to><enabled>N</enabled> </hop>  <hop> <from>Non-null visit_name</from><to>Set null cts</to><enabled>N</enabled> </hop>  <hop> <from>Set non-null counts</from><to>Sort for mult visit names</to><enabled>N</enabled> </hop>  <hop> <from>Set null cts</from><to>Sort for mult visit names</to><enabled>N</enabled> </hop>  <hop> <from>Sort for mult visit names</from><to>Group for mult visit names</to><enabled>N</enabled> </hop>  <hop> <from>Group for mult visit names</from><to>Check for both null and non-null visit names</to><enabled>N</enabled> </hop>  <hop> <from>Check for both null and non-null visit names</from><to>Single visit type</to><enabled>N</enabled> </hop>  <hop> <from>Check for both null and non-null visit names</from><to>Mixed visits</to><enabled>N</enabled> </hop>  <hop> <from>Mixed visits</from><to>Merge Join</to><enabled>N</enabled> </hop>  <hop> <from>Read std output file</from><to>Sort rows</to><enabled>N</enabled> </hop>  <hop> <from>Sort rows</from><to>Merge Join</to><enabled>N</enabled> </hop>  <hop> <from>Merge Join</from><to>Write mixed visits file</to><enabled>N</enabled> </hop>  <hop> <from>Check for dup values</from><to>Dup values</to><enabled>Y</enabled> </hop>  <hop> <from>Dup values</from><to>Write mult_data_values file</to><enabled>Y</enabled> </hop>  <hop> <from>Mixed visits</from><to>Block for mult visit message</to><enabled>N</enabled> </hop>  <hop> <from>Block for mult visit message</from><to>Add mixed visits message</to><enabled>N</enabled> </hop>  <hop> <from>Write user_messages</from><to>Blocking Step</to><enabled>Y</enabled> </hop>  <hop> <from>Dup values</from><to>Block for dup values</to><enabled>Y</enabled> </hop>  <hop> <from>Child contains parent</from><to>Child node found</to><enabled>Y</enabled> </hop>  <hop> <from>Child node found</from><to>Add child user message</to><enabled>Y</enabled> </hop>  <hop> <from>Select only user_message</from><to>Write user_messages</to><enabled>Y</enabled> </hop>  <hop> <from>Add mixed visits message</from><to>Select message for mixed visits</to><enabled>N</enabled> </hop>  <hop> <from>Select message for mixed visits</from><to>Write user_messages</to><enabled>N</enabled> </hop>  <hop> <from>Add dup values message</from><to>Select message for mult data values</to><enabled>Y</enabled> </hop>  <hop> <from>Block for dup values</from><to>Add dup values message</to><enabled>Y</enabled> </hop>  <hop> <from>Select message for mult data values</from><to>Write user_messages</to><enabled>Y</enabled> </hop>  <hop> <from>Add child user message</from><to>Write to log</to><enabled>Y</enabled> </hop>  <hop> <from>Add child user message</from><to>add path to child message</to><enabled>Y</enabled> </hop>  <hop> <from>add path to child message</from><to>Select only user_message</to><enabled>Y</enabled> </hop>  <hop> <from>Add backslash</from><to>Reformat category_cd</to><enabled>Y</enabled> </hop>  <hop> <from>Reformat category_cd</from><to>Reformat category_cd 2</to><enabled>Y</enabled> </hop>  <hop> <from>Replace DATALABEL</from><to>Replace VISITNAME</to><enabled>Y</enabled> </hop>  <hop> <from>Set nulls to &lt;null&gt;</from><to>Special category codes</to><enabled>Y</enabled> </hop>  <hop> <from>Reformat category_cd 2</from><to>Convert backslash to double backslash</to><enabled>Y</enabled> </hop>  <hop> <from>Convert backslash to double backslash</from><to>Replace DATALABEL</to><enabled>Y</enabled> </hop>  <hop> <from>copy category_cd</from><to>Add backslash</to><enabled>Y</enabled> </hop>  <hop> <from>Replace VISITNAME</from><to>Sort by category,label,visit</to><enabled>Y</enabled> </hop>  <hop> <from>Skip text data, visit_date not null, or date</from><to>Replace OBSERVATION 2</to><enabled>Y</enabled> </hop>  <hop> <from>Replace OBSERVATION 2</from><to>Sort rows by key fields</to><enabled>Y</enabled> </hop>  <hop> <from>Add data_value</from><to>Special text ont</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric or date special</from><to>Remove OBSERVATION</to><enabled>Y</enabled> </hop>  <hop> <from>Remove OBSERVATION</from><to>Add data_value</to><enabled>Y</enabled> </hop>  <hop> <from>Special numeric ont</from><to>Sort ontology</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric or date special</from><to>Replace OBSERVATION</to><enabled>Y</enabled> </hop>  <hop> <from>Replace OBSERVATION</from><to>Special numeric ont</to><enabled>Y</enabled> </hop>  <hop> <from>Sum valtype_ind</from><to>Skip text data, visit_date not null, or date</to><enabled>Y</enabled> </hop>  <hop> <from>Sum valtype_ind</from><to>Set nulls to &lt;null&gt;</to><enabled>Y</enabled> </hop>  <hop> <from>Read std output file</from><to>copy category_cd</to><enabled>Y</enabled> </hop>  <hop> <from>Set valtype_ind for text or numeric data</from><to>Sum valtype_ind</to><enabled>Y</enabled> </hop>  <hop> <from>Special category codes</from><to>Numeric or date special</to><enabled>Y</enabled> </hop>  <hop> <from>Special category codes</from><to>Numeric or date std</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by category,label,visit</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Sorted Merge</from><to>Set valtype_ind for text or numeric data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows by key fields</from><to>Merge key fields</to><enabled>Y</enabled> </hop>  <hop> <from>Merge key fields</from><to>Count rows by key fields</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Count rows by key fields</from><to>Check for dup values</to><enabled>Y</enabled> </hop>  <hop> <from>Check for dup values</from><to>No dups</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric or date std</from><to>Numeric default</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric or date std</from><to>Text default</to><enabled>Y</enabled> </hop>  <hop> <from>Skip text data, visit_date not null, or date</from><to>Skip dup check</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric default</from><to>Default numeric ont</to><enabled>Y</enabled> </hop>  <hop> <from>Text default</from><to>Default text ont</to><enabled>Y</enabled> </hop>  <hop> <from>Child contains parent</from><to>Dummy (do nothing)</to><enabled>Y</enabled> </hop>  <hop> <from>Blocking Step</from><to>Abort</to><enabled>Y</enabled> </hop>  <hop> <from>Add dummy group field</from><to>Get next node</to><enabled>Y</enabled> </hop>  <hop> <from>Get next node</from><to>Child contains parent</to><enabled>Y</enabled> </hop>  <hop> <from>Last backslash</from><to>Replace double backslash</to><enabled>Y</enabled> </hop>  <hop> <from>Replace &lt;null&gt;</from><to>Last backslash</to><enabled>Y</enabled> </hop>  <hop> <from>Read std output file</from><to>Non-null visit_name</to><enabled>N</enabled> </hop>  <hop> <from>Non-null visit_name</from><to>Set non-null counts</to><enabled>N</enabled> </hop>  <hop> <from>Non-null visit_name</from><to>Set null cts</to><enabled>N</enabled> </hop>  <hop> <from>Set non-null counts</from><to>Sort for mult visit names</to><enabled>N</enabled> </hop>  <hop> <from>Set null cts</from><to>Sort for mult visit names</to><enabled>N</enabled> </hop>  <hop> <from>Sort for mult visit names</from><to>Group for mult visit names</to><enabled>N</enabled> </hop>  <hop> <from>Group for mult visit names</from><to>Check for both null and non-null visit names</to><enabled>N</enabled> </hop>  <hop> <from>Check for both null and non-null visit names</from><to>Single visit type</to><enabled>N</enabled> </hop>  <hop> <from>Check for both null and non-null visit names</from><to>Mixed visits</to><enabled>N</enabled> </hop>  <hop> <from>Mixed visits</from><to>Merge Join</to><enabled>N</enabled> </hop>  <hop> <from>Read std output file</from><to>Sort rows</to><enabled>N</enabled> </hop>  <hop> <from>Sort rows</from><to>Merge Join</to><enabled>N</enabled> </hop>  <hop> <from>Merge Join</from><to>Write mixed visits file</to><enabled>N</enabled> </hop>  <hop> <from>Check for dup values</from><to>Dup values</to><enabled>Y</enabled> </hop>  <hop> <from>Dup values</from><to>Write mult_data_values file</to><enabled>Y</enabled> </hop>  <hop> <from>Mixed visits</from><to>Block for mult visit message</to><enabled>N</enabled> </hop>  <hop> <from>Block for mult visit message</from><to>Add mixed visits message</to><enabled>N</enabled> </hop>  <hop> <from>Write user_messages</from><to>Blocking Step</to><enabled>Y</enabled> </hop>  <hop> <from>Dup values</from><to>Block for dup values</to><enabled>Y</enabled> </hop>  <hop> <from>Child contains parent</from><to>Child node found</to><enabled>Y</enabled> </hop>  <hop> <from>Child node found</from><to>Add child user message</to><enabled>Y</enabled> </hop>  <hop> <from>Select only user_message</from><to>Write user_messages</to><enabled>Y</enabled> </hop>  <hop> <from>Add mixed visits message</from><to>Select message for mixed visits</to><enabled>N</enabled> </hop>  <hop> <from>Select message for mixed visits</from><to>Write user_messages</to><enabled>N</enabled> </hop>  <hop> <from>Add dup values message</from><to>Select message for mult data values</to><enabled>Y</enabled> </hop>  <hop> <from>Block for dup values</from><to>Add dup values message</to><enabled>Y</enabled> </hop>  <hop> <from>Select message for mult data values</from><to>Write user_messages</to><enabled>Y</enabled> </hop>  <hop> <from>Add child user message</from><to>Write to log</to><enabled>Y</enabled> </hop>  <hop> <from>Add child user message</from><to>add path to child message</to><enabled>Y</enabled> </hop>  <hop> <from>add path to child message</from><to>Select only user_message</to><enabled>Y</enabled> </hop>  <hop> <from>Add backslash</from><to>Reformat category_cd</to><enabled>Y</enabled> </hop>  <hop> <from>Reformat category_cd</from><to>Reformat category_cd 2</to><enabled>Y</enabled> </hop>  <hop> <from>Replace DATALABEL</from><to>Replace VISITNAME</to><enabled>Y</enabled> </hop>  <hop> <from>Set nulls to &lt;null&gt;</from><to>Special category codes</to><enabled>Y</enabled> </hop>  <hop> <from>Reformat category_cd 2</from><to>Convert backslash to double backslash</to><enabled>Y</enabled> </hop>  <hop> <from>Convert backslash to double backslash</from><to>Replace DATALABEL</to><enabled>Y</enabled> </hop>  <hop> <from>copy category_cd</from><to>Add backslash</to><enabled>Y</enabled> </hop>  <hop> <from>Replace VISITNAME</from><to>Sort by category,label,visit</to><enabled>Y</enabled> </hop>  <hop> <from>Skip text data, visit_date not null, or date</from><to>Replace OBSERVATION 2</to><enabled>Y</enabled> </hop>  <hop> <from>Replace OBSERVATION 2</from><to>Sort rows by key fields</to><enabled>Y</enabled> </hop>  <hop> <from>Add data_value</from><to>Special text ont</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric or date special</from><to>Remove OBSERVATION</to><enabled>Y</enabled> </hop>  <hop> <from>Remove OBSERVATION</from><to>Add data_value</to><enabled>Y</enabled> </hop>  <hop> <from>Numeric or date special</from><to>Replace OBSERVATION</to><enabled>Y</enabled> </hop>  <hop> <from>Replace OBSERVATION</from><to>Special numeric ont</to><enabled>Y</enabled> </hop>  <hop> <from>Sum valtype_ind</from><to>Skip text data, visit_date not null, or date</to><enabled>Y</enabled> </hop>  <hop> <from>Sum valtype_ind</from><to>Set nulls to &lt;null&gt;</to><enabled>Y</enabled> </hop>  <hop> <from>Read std output file</from><to>copy category_cd</to><enabled>Y</enabled> </hop>  <hop> <from>Set valtype_ind for text or numeric data</from><to>Sum valtype_ind</to><enabled>Y</enabled> </hop>  <hop> <from>Special category codes</from><to>Numeric or date special</to><enabled>Y</enabled> </hop>  <hop> <from>Special category codes</from><to>Numeric or date std</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by category,label,visit</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Sorted Merge</from><to>Set valtype_ind for text or numeric data</to><enabled>Y</enabled> </hop>  <hop> <from>Sort rows by key fields</from><to>Merge key fields</to><enabled>Y</enabled> </hop>  <hop> <from>Merge key fields</from><to>Count rows by key fields</to><enabled>Y</enabled> </hop>  <hop> <from>Default numeric ont</from><to>Replace &lt;null&gt;</to><enabled>Y</enabled> </hop>  <hop> <from>Default text ont</from><to>Replace &lt;null&gt;</to><enabled>Y</enabled> </hop>  <hop> <from>Special numeric ont</from><to>Replace &lt;null&gt;</to><enabled>Y</enabled> </hop>  <hop> <from>Special text ont</from><to>Replace &lt;null&gt;</to><enabled>Y</enabled> </hop>  <hop> <from>Replace double backslash</from><to>Sort ontology</to><enabled>Y</enabled> </hop>  <hop> <from>Sort ontology</from><to>Write ontology file</to><enabled>Y</enabled> </hop>  <hop> <from>Sort ontology</from><to>Add dummy group field</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Abort</name>
     <type>Abort</type>
@@ -244,8 +244,8 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1569</xloc>
-      <yloc>727</yloc>
+      <xloc>1562</xloc>
+      <yloc>728</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -466,7 +466,7 @@
  <negated>N</negated>
  <leftvalue>child_node</leftvalue>
  <function>CONTAINS</function>
- <rightvalue>Dataset Explorer Tree</rightvalue>
+ <rightvalue>ont_path</rightvalue>
  </condition>
     </compare>
      <cluster_schema/>
@@ -700,7 +700,7 @@
       <fields>
         <field>
           <aggregate>child_node</aggregate>
-          <subject>Dataset Explorer Tree</subject>
+          <subject>ont_path</subject>
           <type>LEAD</type>
           <valuefield>1</valuefield>
         </field>
@@ -795,15 +795,15 @@ else
 	new_ont=ont_path+&quot;\\&quot;;
 }</jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>new_ont</name>
-        <rename>Dataset Explorer Tree</rename>
+        <rename>ont_path</rename>
         <type>String</type>
         <length>-1</length>
         <precision>-1</precision>
-        <replace>N</replace>
+        <replace>Y</replace>
       </field>    </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1458</xloc>
-      <yloc>655</yloc>
+      <xloc>1278</xloc>
+      <yloc>635</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1543,8 +1543,8 @@ else
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1323</xloc>
-      <yloc>655</yloc>
+      <xloc>1370</xloc>
+      <yloc>557</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1673,7 +1673,7 @@ else
     <name>Replace double backslash</name>
     <type>ReplaceString</type>
     <description/>
-    <distribute>N</distribute>
+    <distribute>Y</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
@@ -1681,7 +1681,7 @@ else
            </partitioning>
     <fields>
       <field>
-        <in_stream_name>Dataset Explorer Tree</in_stream_name>
+        <in_stream_name>ont_path</in_stream_name>
         <out_stream_name/>
         <use_regex>yes</use_regex>
         <replace_string>(\\){2,}</replace_string>
@@ -1693,8 +1693,8 @@ else
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1577</xloc>
-      <yloc>656</yloc>
+      <xloc>1411</xloc>
+      <yloc>635</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2120,7 +2120,7 @@ if ( isnum_result )
     <name>Sort ontology</name>
     <type>SortRows</type>
     <description/>
-    <distribute>Y</distribute>
+    <distribute>N</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
@@ -2142,8 +2142,8 @@ if ( isnum_result )
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1325</xloc>
-      <yloc>571</yloc>
+      <xloc>1546</xloc>
+      <yloc>638</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2383,8 +2383,8 @@ if ( isnum_result )
       </field>        <select_unspecified>N</select_unspecified>
     </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1577</xloc>
-      <yloc>553</yloc>
+      <xloc>1555</xloc>
+      <yloc>535</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2846,7 +2846,7 @@ if ( isnum_result )
     </file>
     <fields>
       <field>
-        <name>Dataset Explorer Tree</name>
+        <name>ont_path</name>
         <type>String</type>
         <format/>
         <currency/>
@@ -2860,8 +2860,8 @@ if ( isnum_result )
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1709</xloc>
-      <yloc>651</yloc>
+      <xloc>1671</xloc>
+      <yloc>638</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2878,25 +2878,14 @@ if ( isnum_result )
            </partitioning>
       <loglevel>log_level_basic</loglevel>
       <displayHeader>Y</displayHeader>
-      <logmessage/>
+      <logmessage>*** ERROR ***
+child_node is child of ont_path</logmessage>
     <fields>
       <field>
         <name>ont_path</name>
         </field>
       <field>
-        <name>bslash</name>
-        </field>
-      <field>
-        <name>Dataset Explorer Tree</name>
-        </field>
-      <field>
-        <name>group</name>
-        </field>
-      <field>
         <name>child_node</name>
-        </field>
-      <field>
-        <name>child_user_message</name>
         </field>
       </fields>
      <cluster_schema/>
@@ -2982,7 +2971,7 @@ if ( isnum_result )
            </partitioning>
        <calculation><field_name>user_message</field_name>
 <calc_type>ADD</calc_type>
-<field_a>Dataset Explorer Tree</field_a>
+<field_a>ont_path</field_a>
 <field_b>child_user_message</field_b>
 <field_c/>
 <value_type>String</value_type>
