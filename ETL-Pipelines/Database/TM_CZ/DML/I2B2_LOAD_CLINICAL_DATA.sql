@@ -111,13 +111,15 @@ BEGIN
 	
 	--	check for mismatch between TrialId and topNode for previously loaded data
 	
+	topNode := REGEXP_REPLACE(bslash || top_node || bslash,'(\\){2,}', bslash);
+	
 	select count(*) into v_sourcesystem_ct
 	from i2b2metadata.i2b2
 	where sourcesystem_cd = TrialId;
 	
 	select count(*) into v_topNode_ct
 	from i2b2metadata.i2b2
-	where c_fullname = topNode;
+	where c_fullname = topNode escape '';
 	
 	if (v_sourcesystem_ct = 0 and v_topNode_ct > 0) or (v_sourcesystem_ct > 0 and v_topNode_ct = 0) then
 		stepCt := stepCt + 1;
@@ -140,8 +142,6 @@ BEGIN
 			return 16;
 		end if;
 	end if;
-	
-	topNode := REGEXP_REPLACE(bslash || top_node || bslash,'(\\){2,}', bslash);
 	
 	--	figure out how many nodes (folders) are at study name and above
 	--	\Public Studies\Clinical Studies\Pancreatic_Cancer_Smith_GSE22780\: topLevel = 4, so there are 3 nodes
