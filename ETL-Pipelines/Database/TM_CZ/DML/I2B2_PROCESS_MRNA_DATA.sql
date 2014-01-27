@@ -370,7 +370,7 @@ BEGIN
 	    ,deapp.de_gpl_info g 
 	where a.trial_name = TrialID
 	  and coalesce(a.platform,'GPL570') = g.platform
-	  and a.source_cd = sourceCD
+	  and coalesce(a.source_cd,'STD') = sourceCD
 	  and a.platform = g.platform
 	  and upper(g.marker_type) = 'GENE EXPRESSION'
 	  group by a.category_cd
