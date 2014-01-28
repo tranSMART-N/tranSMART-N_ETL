@@ -136,8 +136,8 @@ BEGIN
 		  and c_fullname = topNode;
 		if v_topNode_ct = 0 then
 			stepCt := stepCt + 1;
-			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'TrialId and topNode are mismatched',0,stepCt,'Done') into rtnCd;	
-			call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error') into rtnCd;
+			call tm_cz.czx_write_audit(jobId,databaseName,procedureName,'TrialId and topNode are mismatched',0,stepCt,'Done');	
+			call tm_cz.czx_error_handler (jobID, procedureName,'Application raised error');
 			call tm_cz.czx_end_audit (jobID, 'FAIL') into rtnCd;
 			return 16;
 		end if;
